@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Makmal Dr. Cerdas - Litar Elektrik</title>
+    <style>
+        :root {
+            --bg-color: #1e272e;
+            --panel-bg: #ecf0f1;
+            --text-main: #2c3e50;
+        }
+        body {
+            margin: 0; padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+        /* Top Bar */
+        .top-bar {
+            position: absolute; top: 20px; width: 900px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 50;
+        }
+        .logo {
+            background: white; padding: 10px 20px; border-radius: 30px;
+            font-weight: 900; font-size: 20px; color: #2c3e50;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+        .objective {
+            background: white; padding: 10px 40px; border-radius: 30px;
+            text-align: center; font-weight: bold; border: 4px solid #f1c40f;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.3);
+            color: #2c3e50;
+        }
+        
+        /* Main Game Area */
+        .game-window {
+            width: 1000px; height: 620px;
+            background: #2f3640; 
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            position: relative;
+            margin-top: 50px;
+            display: flex;
+            border: 8px solid #00a8ff;
+        }
+
+        /* Intro Overlay (Pre-Game) */
+        .intro-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(30, 39, 46, 0.95); z-index: 200; border-radius: 22px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white; text-align: center; padding: 40px; box-sizing: border-box;
+            transition: opacity 0.5s;
+        }
+        .intro-overlay h1 { color: #fbc531; font-size: 36px; margin-bottom: 10px; }
+        .intro-overlay p { font-size: 22px; line-height: 1.5; max-width: 700px; margin-bottom: 40px; font-weight: bold;}
+        .intro-btn {
+            background: #00a8ff; color: white; border: none; padding: 15px 50px;
+            font-size: 24px; font-weight: bold; border-radius: 30px; cursor: pointer;
+            box-shadow: 0 8px 0 #0097e6, 0 15px 20px rgba(0,0,0,0.3); transition: all 0.1s;
+        }
+        .intro-btn:active { transform: translateY(8px); box-shadow: 0 0 0 #0097e6; }
+        .intro-btn:hover { background: #48dbfb; }
+        
+        /* Left Toolkit Panel */
+        .toolkit {
+            width: 310px; background: rgba(236, 240, 241, 0.98);
+            border-right: 4px solid rgba(0,0,0,0.2);
+            border-radius: 22px 0 0 22px;
+            padding: 20px; display: flex; flex-direction: column; align-items: center;
+            z-index: 20; box-sizing: border-box;
+        }
+        .toolkit h2 { color: #d35400; font-size: 22px; margin: 0 0 10px 0; }
+        
+        .item-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%;
+            max-height: 380px; overflow-y: auto; padding-right: 5px;
+        }
+        .item-grid::-webkit-scrollbar { width: 6px; }
+        .item-grid::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 10px; }
+        
+        /* Visual Items (The "Real Benda") */
+        .item {
+            background: white; border: 3px solid #bdc3c7; border-radius: 15px;
+            height: 70px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            cursor: pointer; text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s, border-color 0.2s; position: relative; z-index: 10;
+        }
+        .item:active { transform: translateY(4px); box-shadow: 0 0 0 rgba(0,0,0,0); }
+        .item:hover { border-color: #00a8ff; }
+        .item-icon { font-size: 32px; margin-bottom: 2px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); }
+        .item-label { font-size: 11px; font-weight: bold; color: #34495e; line-height: 1.1; }
+
+        /* DR CERDAS CONTAINER (INSIDE TOOLKIT) */
+        .dr-container {
+            margin-top: auto; 
+            display: flex; align-items: center; justify-content: flex-start;
+            position: relative; width: 100%; padding-top: 15px;
+            border-top: 2px dashed #bdc3c7;
+        }
+        .dr-avatar-btn {
+            width: 60px; height: 60px; background: white; border-radius: 50%;
+            border: 3px solid #00a8ff; font-size: 35px; 
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 100;
+            transition: transform 0.2s; flex-shrink: 0;
+            animation: bounceIn 2s infinite alternate;
+        }
+        .dr-avatar-btn:hover { transform: scale(1.1); animation: none; }
+        
+        /* Dialog pointing from Dr Cerdas in Toolkit */
+        .dr-dialog {
+            position: absolute; bottom: 85px; left: 0; 
+            background: white; border-radius: 20px 20px 20px 0; padding: 15px; 
+            border: 3px solid #00a8ff; box-shadow: 0 5px 0 #0097e6;
+            width: 250px; font-weight: bold; color: #2c3e50; font-size: 13px;
+            opacity: 0; transform: translateY(10px) scale(0.9); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100; transform-origin: bottom left; pointer-events: none;
+        }
+        .dr-dialog.show { opacity: 1; transform: translateY(0) scale(1); }
+        @keyframes bounceIn { 0% { transform: translateY(0); } 100% { transform: translateY(-5px); } }
+        
+        /* Center Lab - Blueprint Style */
+        .lab-center {
+            flex: 1; position: relative; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background-color: #192a56;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.05) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(255,255,255,0.05) 2px, transparent 2px),
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+            background-position: -2px -2px, -2px -2px, -1px -1px, -1px -1px;
+            border-radius: 0 22px 22px 0;
+        }
+        
+        /* Circuit Path */
+        .circuit-board {
+            width: 550px; height: 350px;
+            border: 8px solid #0097e6;
+            border-radius: 20px;
+            position: relative;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px; box-sizing: border-box;
+            background: rgba(0, 168, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0, 151, 230, 0.4), inset 0 0 30px rgba(0, 151, 230, 0.2);
+        }
+        
+        /* Slots */
+        .slot {
+            width: 90px; height: 90px;
+            border: 4px dashed #00a8ff; border-radius: 15px;
+            background: rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: #00a8ff; font-weight: bold; font-size: 12px; text-align: center;
+            position: absolute; transition: all 0.3s;
+        }
+        .slot.filled { border: 4px solid #4cd137; background: rgba(76, 209, 55, 0.2); }
+        #slot-bateri { top: -45px; left: 215px; }
+        #slot-mentol { bottom: -45px; left: 80px; }
+        #slot-ujian { bottom: -45px; right: 80px; width: 120px; }
+        
+        /* Glowing bulb effect */
+        .glow {
+            box-shadow: 0 0 40px 20px #fbc531, inset 0 0 20px #fbc531 !important;
+            background-color: #fffacd !important;
+            border-color: #fbc531 !important;
+        }
+
+        /* Test button */
+        .btn-uji {
+            position: absolute; bottom: 30px; right: 30px;
+            background: #e84118; color: white; border: none; padding: 15px 40px;
+            font-size: 20px; font-weight: bold; border-radius: 30px;
+            cursor: pointer; box-shadow: 0 6px 0 #c23616;
+            transition: all 0.1s; z-index: 100;
+        }
+        .btn-uji:active { transform: translateY(6px); box-shadow: 0 0 0 #c23616; }
+        .btn-uji.on { background: #4cd137; box-shadow: 0 6px 0 #44bd32; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="logo" onclick="window.location.href='makmal-menu-utama.html'" style="background:#e84118; color:white;">⬅ Kembali</div>
+        <div class="logo">⚡ Makmal Pintar</div>
+        <div class="objective">Topik: Konduktor & Penebat (D5)<br><span style="color:#e84118; font-size:14px;">Uji pelbagai bahan elektrik</span></div>
+        <div class="logo">💡 Status: <span id="status-litar">Terputus</span></div>
+    </div>
+
+    <div class="game-window" id="game-window">
+        
+        <!-- INTRO OVERLAY -->
+        <div class="intro-overlay" id="intro-overlay">
+            <div style="font-size: 100px; margin-bottom: 0px; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));">👨🏽‍🔬</div>
+            <h1>Misi Darjah 5: Konduktor & Penebat</h1>
+            <p>"Selamat datang ke makmal litar! Misi kamu hari ini adalah untuk mengenal pasti bahan manakah yang boleh mengalirkan arus elektrik, dan bahan manakah yang menghalangnya. Mari kita mulakan!"</p>
+            <button class="intro-btn" onclick="startModule()">Mula Eksperimen 🚀</button>
+        </div>
+
+        <!-- Toolkit (Left) -->
+        <div class="toolkit" id="toolkit">
+            <h2>KOMPONEN</h2>
+            <div class="item-grid">
+                <!-- Asas -->
+                <div class="item bateri" data-type="bateri">
+                    <div class="item-icon">🔋</div><div class="item-label">Bateri 1.5V</div>
+                </div>
+                <div class="item mentol" data-type="mentol">
+                    <div class="item-icon">💡</div><div class="item-label">Mentol</div>
+                </div>
+                
+                <!-- Konduktor Ekstra -->
+                <div class="item konduktor" data-type="konduktor" data-name="Klip Kertas">
+                    <div class="item-icon">📎</div><div class="item-label">Klip Kertas</div>
+                </div>
+                <div class="item konduktor" data-type="konduktor" data-name="Duit Syiling">
+                    <div class="item-icon">🪙</div><div class="item-label">Syiling Logam</div>
+                </div>
+                <div class="item konduktor" data-type="konduktor" data-name="Paku Besi">
+                    <div class="item-icon">🔩</div><div class="item-label">Paku Besi</div>
+                </div>
+                
+                <!-- Penebat Ekstra -->
+                <div class="item penebat" data-type="penebat" data-name="Pemadam">
+                    <div class="item-icon">🧽</div><div class="item-label">Pemadam Getah</div>
+                </div>
+                <div class="item penebat" data-type="penebat" data-name="Pembaris">
+                    <div class="item-icon">📏</div><div class="item-label">Pembaris Plastik</div>
+                </div>
+                <div class="item penebat" data-type="penebat" data-name="Kain">
+                    <div class="item-icon">👕</div><div class="item-label">Kain Kapas</div>
+                </div>
+                <div class="item penebat" data-type="penebat" data-name="Kayu">
+                    <div class="item-icon">🪵</div><div class="item-label">Bongkah Kayu</div>
+                </div>
+            </div>
+
+            <!-- DR CERDAS INSIDE TOOLKIT -->
+            <div class="dr-container">
+                <div class="dr-dialog" id="dialog">"Bagus! Sekarang, seret bateri, mentol dan satu bahan ujian ke atas litar."</div>
+                <div class="dr-avatar-btn" id="dr-btn" onclick="interactiveChat()">👨🏽‍🔬</div>
+                <div style="font-size:12px; font-weight:bold; color:#7f8c8d; margin-left:15px;">Klik untuk<br>Fakta Sains</div>
+            </div>
+        </div>
+        
+        <!-- Circuit Board (Right) -->
+        <div class="lab-center">
+            <div class="circuit-board">
+                <div class="slot" id="slot-bateri" data-accept="bateri">
+                    <div style="font-size:30px; opacity:0.5;">🔋</div><br>Letak Bateri
+                </div>
+                <div class="slot" id="slot-mentol" data-accept="mentol">
+                    <div style="font-size:30px; opacity:0.5;">💡</div><br>Letak Mentol
+                </div>
+                <div class="slot" id="slot-ujian" data-accept="konduktor,penebat">
+                    <div style="font-size:30px; opacity:0.5;">❓</div><br>Bahan Ujian
+                </div>
+            </div>
+            
+            <button class="btn-uji" id="btn-uji">Uji Litar</button>
+        </div>
+    </div>
+
+    <script>
+        const items = document.querySelectorAll('.item');
+        const slots = document.querySelectorAll('.slot');
+        const windowEl = document.getElementById('game-window');
+        const dialog = document.getElementById('dialog');
+        const btnUji = document.getElementById('btn-uji');
+        const statusLitar = document.getElementById('status-litar');
+        
+        let circuit = {
+            bateri: false,
+            mentol: null,
+            bahanUjianType: null,
+            bahanUjianName: null
+        };
+
+        // Audio System
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        function initAudio() {
+            if(!audioCtx) audioCtx = new AudioContext();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(type) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+            
+            if (type === 'snap') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'buzz') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'light') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.3);
+                gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            }
+        }
+
+        // Intro Sequence
+        function startModule() {
+            initAudio();
+            playSound('snap');
+            const overlay = document.getElementById('intro-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                showDialog("Bagus! Sekarang, seret bateri, mentol dan satu bahan ujian ke atas litar.", true);
+            }, 500);
+        }
+
+        // Interactive Chat System
+        const chats = [
+            "Tahukah kamu? Kebanyakan LOGAM adalah KONDUKTOR yang baik.",
+            "PLASTIK, GETAH, dan KAYU adalah PENEBAT. Ia melindungi kita dari terkena renjatan elektrik!",
+            "Cuba letak Duit Syiling. Adakah ia boleh mengalirkan arus elektrik?",
+            "Dalam silibus Darjah 5, suis bertindak memutuskan atau menyambungkan litar.",
+            "Kain kapas ialah bahan penebat. Ia tidak membenarkan arus melaluinya."
+        ];
+        let chatIndex = 0;
+        
+        function interactiveChat() {
+            initAudio();
+            playSound('snap');
+            showDialog(chats[chatIndex], true);
+            chatIndex = (chatIndex + 1) % chats.length;
+        }
+
+        items.forEach(item => {
+            item.addEventListener('mousedown', startDrag);
+            item.addEventListener('touchstart', startDrag, {passive: false});
+        });
+
+        function startDrag(e) {
+            initAudio();
+            if(e.type === 'touchstart') e.preventDefault();
+            const target = e.target.closest('.item');
+            
+            if(!target.classList.contains('dragging')) {
+                const clone = target.cloneNode(true);
+                clone.classList.add('dragging');
+                clone.style.position = 'absolute';
+                clone.style.zIndex = '1000';
+                clone.style.margin = '0';
+                clone.style.width = target.offsetWidth + 'px';
+                clone.style.height = target.offsetHeight + 'px';
+                
+                const rect = target.getBoundingClientRect();
+                const winRect = windowEl.getBoundingClientRect();
+                
+                clone.style.left = (rect.left - winRect.left) + 'px';
+                clone.style.top = (rect.top - winRect.top) + 'px';
+                windowEl.appendChild(clone);
+                
+                let isDragging = true;
+                
+                function onMove(eMove) {
+                    if(!isDragging) return;
+                    if(eMove.type === 'touchmove') eMove.preventDefault();
+                    const cx = eMove.clientX || eMove.touches[0].clientX;
+                    const cy = eMove.clientY || eMove.touches[0].clientY;
+                    clone.style.left = (cx - winRect.left - clone.offsetWidth/2) + 'px';
+                    clone.style.top = (cy - winRect.top - clone.offsetHeight/2) + 'px';
+                }
+                
+                function onUp() {
+                    isDragging = false;
+                    document.removeEventListener('mousemove', onMove);
+                    document.removeEventListener('mouseup', onUp);
+                    document.removeEventListener('touchmove', onMove);
+                    document.removeEventListener('touchend', onUp);
+                    
+                    checkDrop(clone, target);
+                }
+                
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onUp);
+                document.addEventListener('touchmove', onMove, {passive: false});
+                document.addEventListener('touchend', onUp);
+            }
+        }
+        
+        function checkDrop(clone, original) {
+            const cloneRect = clone.getBoundingClientRect();
+            let snapped = false;
+            
+            slots.forEach(slot => {
+                const slotRect = slot.getBoundingClientRect();
+                const acceptedTypes = slot.getAttribute('data-accept').split(',');
+                const cloneType = clone.getAttribute('data-type');
+                
+                const cloneCenterX = cloneRect.left + cloneRect.width/2;
+                const cloneCenterY = cloneRect.top + cloneRect.height/2;
+                
+                if (cloneCenterX > slotRect.left && cloneCenterX < slotRect.right &&
+                    cloneCenterY > slotRect.top && cloneCenterY < slotRect.bottom) {
+                    
+                    if (acceptedTypes.includes(cloneType)) {
+                        playSound('snap');
+                        slot.innerHTML = ''; 
+                        
+                        clone.style.position = 'relative';
+                        clone.style.left = '0'; clone.style.top = '0';
+                        clone.style.width = '100%'; clone.style.height = '100%';
+                        clone.style.boxSizing = 'border-box';
+                        clone.style.boxShadow = 'none';
+                        
+                        slot.appendChild(clone);
+                        slot.classList.add('filled');
+                        snapped = true;
+                        
+                        if(cloneType === 'bateri') circuit.bateri = true;
+                        if(cloneType === 'mentol') circuit.mentol = clone;
+                        if(cloneType === 'konduktor' || cloneType === 'penebat') {
+                            circuit.bahanUjianType = cloneType;
+                            circuit.bahanUjianName = clone.getAttribute('data-name');
+                        }
+                        
+                        btnUji.classList.remove('on');
+                        btnUji.innerText = "Uji Litar";
+                        if(circuit.mentol) circuit.mentol.classList.remove('glow');
+                        statusLitar.innerText = "Terputus"; statusLitar.style.color = "#e84118";
+                    }
+                }
+            });
+            
+            if(!snapped) {
+                clone.remove(); 
+            } else {
+                original.style.opacity = '0.3';
+                clone.style.pointerEvents = 'none'; 
+            }
+        }
+        
+        let dialogTimeout;
+        function showDialog(text, success) {
+            clearTimeout(dialogTimeout);
+            dialog.innerText = text;
+            dialog.style.borderColor = success ? '#00a8ff' : '#e84118';
+            dialog.style.boxShadow = success ? '0 10px 0 #0097e6' : '0 10px 0 #c23616';
+            dialog.classList.add('show');
+            dialogTimeout = setTimeout(() => { dialog.classList.remove('show'); }, 6000);
+        }
+
+        btnUji.addEventListener('click', () => {
+            initAudio();
+            
+            if (btnUji.classList.contains('on')) {
+                btnUji.classList.remove('on');
+                btnUji.innerText = "Uji Litar";
+                if(circuit.mentol) circuit.mentol.classList.remove('glow');
+                statusLitar.innerText = "Terputus"; statusLitar.style.color = "#e84118";
+                return;
+            }
+            
+            btnUji.classList.add('on');
+            btnUji.innerText = "Matikan Suis";
+            
+            if (!circuit.bateri || !circuit.mentol || !circuit.bahanUjianType) {
+                playSound('buzz');
+                showDialog("Litar tidak lengkap! Pastikan Bateri, Mentol, dan sekurang-kurangnya SATU Bahan Ujian diletakkan.", false);
+                btnUji.classList.remove('on'); btnUji.innerText = "Uji Litar";
+                return;
+            }
+            
+            if (circuit.bahanUjianType === 'konduktor') {
+                playSound('light');
+                circuit.mentol.classList.add('glow');
+                statusLitar.innerText = "Bersambung"; statusLitar.style.color = "#4cd137";
+                showDialog(`Menyala! ${circuit.bahanUjianName} membenarkan arus mengalir. Ia adalah KONDUKTOR yang baik.`, true);
+            } else if (circuit.bahanUjianType === 'penebat') {
+                playSound('buzz');
+                statusLitar.innerText = "Terhalang"; statusLitar.style.color = "#e84118";
+                showDialog(`Mentol Padam! ${circuit.bahanUjianName} menghalang arus elektrik. Ia adalah PENEBAT.`, false);
+            }
+        });
+        
+    </script>
+</body>
+</html>

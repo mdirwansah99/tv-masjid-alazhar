@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kustomisasi Makmal - WonderLab</title>
+    <style>
+        :root {
+            --primary: #8e44ad;
+            --bg: #f5eef8;
+            --wall: #dcf3eb;
+            --desk: #a6acaf;
+        }
+        body {
+            margin: 0; padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden; user-select: none;
+        }
+        
+        .shop-container {
+            width: 900px; height: 600px;
+            background: white; border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            display: flex; overflow: hidden;
+            border: 5px solid white;
+        }
+
+        /* Left: Preview Area */
+        .preview-area {
+            flex: 1; position: relative;
+            background-color: var(--wall);
+            transition: background 0.4s ease;
+            display: flex; flex-direction: column; justify-content: flex-end;
+            border-right: 2px solid #eee;
+        }
+        
+        /* The Desk in preview */
+        .preview-desk {
+            width: 100%; height: 150px;
+            background-color: var(--desk);
+            transition: background 0.4s ease;
+            box-shadow: 0 -10px 20px rgba(0,0,0,0.1);
+            display: flex; justify-content: center; align-items: flex-end;
+        }
+        
+        .beaker {
+            width: 60px; height: 80px; background: rgba(255,255,255,0.6);
+            border: 4px solid #fff; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            position: relative; margin-bottom: 20px; box-shadow: 0 10px 0 rgba(0,0,0,0.05);
+        }
+        .beaker::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%;
+            background: #2ecc71; border-bottom-left-radius: 26px; border-bottom-right-radius: 26px;
+        }
+
+        /* Right: Shop/Inventory */
+        .inventory-area {
+            width: 400px; padding: 30px;
+            background: #fafafa; display: flex; flex-direction: column;
+        }
+        
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px;
+        }
+        .header h2 { margin: 0; color: #2c3e50; }
+        .coins {
+            background: #f1c40f; color: #d35400; padding: 8px 15px;
+            border-radius: 20px; font-weight: bold; box-shadow: 0 4px 0 #d35400;
+        }
+        
+        .category-title {
+            font-size: 16px; font-weight: bold; color: #7f8c8d;
+            margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 5px;
+        }
+        
+        .item-list {
+            display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;
+        }
+        
+        .shop-item {
+            width: 80px; height: 80px; border-radius: 15px;
+            border: 3px solid #bdc3c7; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            flex-direction: column; font-size: 12px; font-weight: bold; color: white;
+            transition: transform 0.1s, border-color 0.2s;
+            position: relative; overflow: hidden;
+        }
+        .shop-item:hover { transform: translateY(-3px); }
+        .shop-item.active { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.3); }
+        
+        .item-price {
+            position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.5);
+            text-align: center; padding: 2px 0; font-size: 10px;
+        }
+
+        /* Wallpapers */
+        .wall-1 { background: #dcf3eb; color: #333; }
+        .wall-2 { background: #2c3e50; }
+        .wall-3 { background: #f9e79f; color: #333; }
+        
+        /* Desks */
+        .desk-1 { background: #a6acaf; color: #333; }
+        .desk-2 { background: #d35400; }
+        .desk-3 { background: #8e44ad; }
+        
+    </style>
+</head>
+<body>
+
+    <div class="shop-container">
+        <!-- Preview Lab -->
+        <div class="preview-area" id="preview-wall">
+            <div style="position:absolute; top:20px; left:20px; background:white; padding:10px 20px; border-radius:20px; font-weight:bold; box-shadow:0 5px 15px rgba(0,0,0,0.1);">
+                👁️ Pratonton Makmal Saya
+            </div>
+            
+            <div class="preview-desk" id="preview-desk">
+                <div class="beaker"></div>
+            </div>
+        </div>
+        
+        <!-- Shop Panel -->
+        <div class="inventory-area">
+            <div class="header">
+                <h2>Kedai Makmal 🛒</h2>
+                <div class="coins">⭐ <span id="coin-amount">1450</span></div>
+            </div>
+            
+            <div class="category-title">Warna Dinding (Wallpaper)</div>
+            <div class="item-list">
+                <div class="shop-item wall-1 active" onclick="changeWall('#dcf3eb', this)">Asas</div>
+                <div class="shop-item wall-2" onclick="buyOrEquip('wall', '#2c3e50', 500, this)">
+                    Angkasa<div class="item-price">⭐ 500</div>
+                </div>
+                <div class="shop-item wall-3" onclick="buyOrEquip('wall', '#f9e79f', 300, this)">
+                    Ceria<div class="item-price">⭐ 300</div>
+                </div>
+            </div>
+
+            <div class="category-title">Material Meja (Desk)</div>
+            <div class="item-list">
+                <div class="shop-item desk-1 active" onclick="changeDesk('#a6acaf', this)">Besi</div>
+                <div class="shop-item desk-2" onclick="buyOrEquip('desk', '#d35400', 400, this)">
+                    Kayu Jati<div class="item-price">⭐ 400</div>
+                </div>
+                <div class="shop-item desk-3" onclick="buyOrEquip('desk', '#8e44ad', 800, this)">
+                    Neon<div class="item-price">⭐ 800</div>
+                </div>
+            </div>
+            
+            <button onclick="window.location.href='makmal-menu-utama.html'" style="margin-top:auto; padding:15px; background:#ecf0f1; border:none; border-radius:15px; font-weight:bold; cursor:pointer;">⬅ Kembali ke Menu</button>
+        </div>
+    </div>
+
+    <script>
+        let coins = 1450;
+        const root = document.documentElement;
+        
+        // Track purchased items to avoid buying twice
+        const inventory = {
+            wall: ['#dcf3eb'],
+            desk: ['#a6acaf']
+        };
+
+        function changeWall(color, el) {
+            root.style.setProperty('--wall', color);
+            // update active states
+            document.querySelectorAll('.shop-item[class*="wall-"]').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function changeDesk(color, el) {
+            root.style.setProperty('--desk', color);
+            document.querySelectorAll('.shop-item[class*="desk-"]').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+        }
+        
+        function buyOrEquip(type, color, price, el) {
+            // Check if already bought
+            if (inventory[type].includes(color)) {
+                // Just equip
+                if(type === 'wall') changeWall(color, el);
+                else changeDesk(color, el);
+                return;
+            }
+            
+            // Try to buy
+            if (coins >= price) {
+                if(confirm(`Adakah anda pasti ingin membeli item ini dengan harga ${price} Bintang?`)) {
+                    coins -= price;
+                    document.getElementById('coin-amount').innerText = coins;
+                    inventory[type].push(color);
+                    
+                    // Remove price tag visually
+                    el.querySelector('.item-price').style.display = 'none';
+                    
+                    // Equip it
+                    if(type === 'wall') changeWall(color, el);
+                    else changeDesk(color, el);
+                    
+                    alert("Pembelian Berjaya! Makmal anda kelihatan lebih cantik.");
+                }
+            } else {
+                alert("Maaf, Bintang Sains anda tidak mencukupi. Teruskan siapkan modul eksperimen!");
+            }
+        }
+    </script>
+</body>
+</html>

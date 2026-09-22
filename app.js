@@ -652,10 +652,19 @@ function calcBalance(){
 // ============================================================
 function initFullscreen(){
     const btn=document.getElementById('btn-fullscreen');
-    if(!btn)return;
-    btn.onclick=()=>{
-        if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(e=>console.warn(e));
-        else document.exitFullscreen();
-    };
-    document.addEventListener('fullscreenchange',()=>{btn.innerText=document.fullscreenElement?'⛶':'🖵';});
+    if(btn){
+        btn.onclick=(e)=>{
+            e.stopPropagation();
+            if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(e=>console.warn(e));
+            else document.exitFullscreen();
+        };
+    }
+    document.addEventListener('fullscreenchange',()=>{if(btn) btn.innerText=document.fullscreenElement?'⛶':'🖵';});
+    
+    // Klik/tap mana-mana untuk fullscreen (sesuai untuk remote TV)
+    document.addEventListener('click',()=>{
+        if(!document.fullscreenElement){
+            document.documentElement.requestFullscreen().catch(e=>console.warn(e));
+        }
+    });
 }

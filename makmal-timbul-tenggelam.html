@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Makmal Ajaib Dr. Cerdik: Timbul & Tenggelam</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 { color: #2c3e50; margin-bottom: 5px; }
+        .header h2 { color: #34495e; margin-top: 0; font-weight: normal; }
+        
+        .game-container {
+            display: flex;
+            width: 800px;
+            height: 500px;
+            background-color: white;
+            border: 4px solid #2c3e50;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        
+        .inventory {
+            width: 30%;
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-right: 4px solid #2c3e50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .inventory h3 {
+            margin-top: 0;
+            text-align: center;
+            color: #d35400;
+            border-bottom: 2px dashed #bdc3c7;
+            padding-bottom: 10px;
+            width: 100%;
+        }
+        
+        .item {
+            width: 80px;
+            height: 80px;
+            margin: 10px;
+            border: 3px solid #34495e;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            cursor: grab;
+            user-select: none;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+        .item:active { cursor: grabbing; transform: scale(0.95); }
+        
+        /* Objek styles */
+        .item.batu { background-color: #95a5a6; color: white; }
+        .item.kayu { background-color: #d35400; color: white; }
+        .item.paku { background-color: #7f8c8d; color: white; border-radius: 5px; width: 40px; }
+        .item.span { background-color: #f1c40f; color: #333; }
+        .item.itik { background-color: #f39c12; color: white; border-radius: 50%; }
+
+        .lab-area {
+            width: 70%;
+            position: relative;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 30px;
+            background-image: radial-gradient(#bdc3c7 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .water-tank {
+            width: 80%;
+            height: 250px;
+            background-color: rgba(52, 152, 219, 0.3);
+            border: 6px solid #2980b9;
+            border-top: none;
+            border-radius: 0 0 20px 20px;
+            position: relative;
+            box-shadow: inset 0 -20px 50px rgba(41, 128, 185, 0.4);
+        }
+        .water-level {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background-color: rgba(52, 152, 219, 0.8);
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+        }
+        
+        .dr-cerdik-dialog {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: white;
+            border: 3px solid #f39c12;
+            padding: 15px;
+            border-radius: 15px 15px 0 15px;
+            width: 250px;
+            box-shadow: 3px 3px 0 #f39c12;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        #buku-log {
+            margin-top: 20px;
+            width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border: 3px dashed #2c3e50;
+            border-radius: 15px;
+            box-sizing: border-box;
+        }
+        #buku-log h3 { margin-top: 0; color: #2c3e50; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 2px solid #bdc3c7;
+            padding: 12px;
+            text-align: center;
+            font-size: 16px;
+        }
+        th { background-color: #ecf0f1; color: #2c3e50; }
+        
+        .btn-reset {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .btn-reset:hover { background-color: #c0392b; }
+        
+        /* Floating animation keyframes applied dynamically */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>👨‍🔬 Makmal Ajaib Dr. Cerdik</h1>
+        <h2>Modul 1: Timbul atau Tenggelam? (Sains Darjah 1)</h2>
+    </div>
+
+    <div class="game-container" id="game-container">
+        <div class="inventory" id="inventory">
+            <h3>Almari Radas</h3>
+            <!-- Items to drag -->
+            <div class="item batu" id="batu" data-type="tenggelam">Batu</div>
+            <div class="item kayu" id="kayu" data-type="timbul">Kayu</div>
+            <div class="item paku" id="paku" data-type="tenggelam">Paku</div>
+            <div class="item span" id="span" data-type="timbul">Span</div>
+            <div class="item itik" id="itik" data-type="timbul">Itik Mainan</div>
+        </div>
+
+        <div class="lab-area" id="lab-area">
+            <div class="dr-cerdik-dialog" id="dialog">
+                "Hai Saintis Muda! Seret (drag) objek dari almari ke dalam tangki air untuk melihat apa yang berlaku."
+            </div>
+            
+            <div class="water-tank" id="water-tank">
+                <div class="water-level"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="buku-log">
+        <h3>📓 Buku Log Pemerhatian</h3>
+        <table id="log-table">
+            <tr>
+                <th>Objek</th>
+                <th>Pemerhatian (Timbul/Tenggelam)</th>
+            </tr>
+        </table>
+        <button class="btn-reset" onclick="location.reload()">Mula Semula Eksperimen</button>
+    </div>
+
+    <script>
+        const items = document.querySelectorAll('.item');
+        const waterTank = document.getElementById('water-tank');
+        const gameContainer = document.getElementById('game-container');
+        const dialog = document.getElementById('dialog');
+        const logTable = document.getElementById('log-table');
+
+        let isDragging = false;
+        let currentItem = null;
+        let initialX, initialY;
+
+        // Setup Event Listeners for dragging
+        items.forEach(item => {
+            item.addEventListener('mousedown', dragStart);
+            // Touch support for tablets
+            item.addEventListener('touchstart', dragStart, {passive: false});
+        });
+
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+        // Touch support
+        document.addEventListener('touchmove', drag, {passive: false});
+        document.addEventListener('touchend', dragEnd);
+
+        function getClientX(e) { return e.clientX || e.touches[0].clientX; }
+        function getClientY(e) { return e.clientY || e.touches[0].clientY; }
+
+        function dragStart(e) {
+            if (e.type === 'touchstart') e.preventDefault(); // Prevent scrolling
+            
+            initialX = getClientX(e);
+            initialY = getClientY(e);
+            currentItem = e.target;
+            
+            // Pop out of flexbox logic to make it draggable anywhere
+            if (currentItem.style.position !== 'absolute') {
+                const rect = currentItem.getBoundingClientRect();
+                const containerRect = gameContainer.getBoundingClientRect();
+                
+                currentItem.style.position = 'absolute';
+                currentItem.style.left = (rect.left - containerRect.left) + 'px';
+                currentItem.style.top = (rect.top - containerRect.top) + 'px';
+                
+                gameContainer.appendChild(currentItem);
+            }
+
+            isDragging = true;
+            currentItem.style.zIndex = 100;
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            if (e.type === 'touchmove') e.preventDefault();
+            
+            const currentX = getClientX(e);
+            const currentY = getClientY(e);
+            
+            const dx = currentX - initialX;
+            const dy = currentY - initialY;
+            
+            initialX = currentX;
+            initialY = currentY;
+
+            const currentLeft = parseFloat(currentItem.style.left || 0);
+            const currentTop = parseFloat(currentItem.style.top || 0);
+
+            currentItem.style.left = (currentLeft + dx) + 'px';
+            currentItem.style.top = (currentTop + dy) + 'px';
+        }
+
+        function dragEnd(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            currentItem.style.zIndex = 10;
+            checkDropZone(currentItem);
+            currentItem = null;
+        }
+
+        function checkDropZone(element) {
+            const tankRect = waterTank.getBoundingClientRect();
+            const elRect = element.getBoundingClientRect();
+            const containerRect = gameContainer.getBoundingClientRect();
+
+            // Collision detection (is element inside the tank vertically and horizontally)
+            if (elRect.left > tankRect.left - 20 && elRect.right < tankRect.right + 20 &&
+                elRect.bottom > tankRect.top) {
+                
+                const type = element.getAttribute('data-type');
+                
+                if (type === 'tenggelam') {
+                    // Logic for SINKING
+                    const tankBottomRelativeToContainer = (tankRect.bottom - containerRect.top) - elRect.height - 10;
+                    element.style.transition = 'top 0.8s cubic-bezier(0.55, 0.085, 0.68, 0.53)'; // Gravity-like fall
+                    element.style.top = tankBottomRelativeToContainer + 'px';
+                    
+                    updateDialog("Bloop bloop... Ia jatuh ke dasar! Objek ini TENGGELAM kerana ia lebih tumpat daripada air.");
+                    logResult(element.innerText, "Tenggelam");
+                    
+                } else {
+                    // Logic for FLOATING
+                    const waterLevelRelativeToContainer = (tankRect.top - containerRect.top) - (elRect.height / 2);
+                    element.style.transition = 'top 0.4s ease-out';
+                    element.style.top = waterLevelRelativeToContainer + 'px';
+                    
+                    // Add CSS animation for bobbing in water
+                    setTimeout(() => {
+                        element.style.animation = 'float 2s ease-in-out infinite';
+                    }, 400);
+
+                    updateDialog("Hebat! Ia terapung di permukaan. Objek ini TIMBUL kerana ia kurang tumpat daripada air.");
+                    logResult(element.innerText, "Timbul");
+                }
+                
+                // Disable dragging once in water to finalize the experiment for that object
+                element.removeEventListener('mousedown', dragStart);
+                element.removeEventListener('touchstart', dragStart);
+                element.style.cursor = 'default';
+            } else {
+                // Not dropped in tank, snap back to inventory
+                resetToInventory(element);
+            }
+        }
+
+        function resetToInventory(element) {
+            element.style.transition = 'none';
+            element.style.position = 'relative';
+            element.style.left = '0px';
+            element.style.top = '0px';
+            document.getElementById('inventory').appendChild(element);
+        }
+
+        function updateDialog(text) {
+            dialog.innerHTML = `<strong>Dr. Cerdik:</strong><br>"${text}"`;
+        }
+
+        function logResult(objekName, result) {
+            // Check if already logged to prevent duplicates
+            const rows = logTable.getElementsByTagName('tr');
+            for(let i=1; i<rows.length; i++) {
+                if(rows[i].cells[0].innerText === objekName) return; 
+            }
+
+            // Insert new row
+            const row = logTable.insertRow();
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            
+            cell1.innerText = objekName;
+            
+            if(result === "Timbul") {
+                cell2.innerHTML = "<span style='color:#27ae60; font-weight:bold;'>Timbul (Terapung) 🟢</span>";
+            } else {
+                cell2.innerHTML = "<span style='color:#c0392b; font-weight:bold;'>Tenggelam 🔴</span>";
+            }
+        }
+    </script>
+</body>
+</html>

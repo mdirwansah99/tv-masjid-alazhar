@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuro-Navigators: Asteroid Sequence (Audio Enabled)</title>
+    <style>
+        body { 
+            margin: 0; padding: 0; 
+            background-color: #0b0c10; color: #c5c6c7; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; height: 100vh; overflow: hidden; 
+        }
+        #game-container { position: relative; }
+        canvas { 
+            background-color: #1f2833; 
+            border: 2px solid #66fcf1; 
+            border-radius: 10px; 
+            box-shadow: 0 0 20px rgba(102, 252, 241, 0.2); 
+            cursor: pointer; 
+        }
+        #ui-layer { 
+            position: absolute; top: 0; left: 0; 
+            width: 100%; height: 100%; pointer-events: none; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        }
+        .hidden { display: none !important; }
+        #start-btn { 
+            pointer-events: auto; padding: 15px 30px; 
+            font-size: 24px; font-weight: bold; 
+            background-color: #66fcf1; color: #0b0c10; 
+            border: none; border-radius: 5px; cursor: pointer; 
+            transition: transform 0.1s; 
+        }
+        #start-btn:hover { background-color: #45a29e; color: #fff; }
+        #start-btn:active { transform: scale(0.95); }
+        #hud { 
+            position: absolute; top: 10px; left: 10px; right: 10px; 
+            display: flex; justify-content: space-between; 
+            font-size: 18px; font-weight: bold; pointer-events: none; 
+        }
+        #message { 
+            position: absolute; top: 20%; 
+            font-size: 32px; font-weight: bold; text-align: center; 
+            color: #fff; text-shadow: 0 0 10px #000; transition: opacity 0.3s; 
+            background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 10px;
+        }
+        .red-alert { 
+            color: #ff4c4c !important; 
+            text-shadow: 0 0 20px #ff0000 !important; 
+            font-size: 40px !important; border: 2px solid #ff4c4c;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="hud">
+        <span id="score-display">Score: 0</span>
+        <span id="level-display">Sequence Length: 3</span>
+    </div>
+    <canvas id="gameCanvas" width="600" height="600"></canvas>
+    <div id="ui-layer">
+        <div id="message" class="hidden"></div>
+        <button id="start-btn">Initialize System & Audio</button>
+    </div>
+</div>
+
+<script>
+    /**
+     * NEURO-NAVIGATORS: MVP PROTOTYPE (AUDIO ENABLED)
+     * Target Audience: Ages 8-10
+     * Cognitive Targets: Working Memory & Inhibitory Control
+     */
+
+    // --- TELEMETRY & LOGGING ---
+    function logTelemetry(event, data) {
+        console.log(`[TELEMETRY] ${event} | Time: ${new Date().toISOString()} | Data:`, JSON.stringify(data));
+    }
+
+    // --- AUDIO SYSTEM (Web Audio API) ---
+    // Synthesizing sounds directly in the browser so no external files are needed.
+    let audioCtx;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.3, volume = 0.3) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        
+        // Envelope to prevent popping and sound smooth
+        gain.gain.setValueAtTime(0, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(volume, audioCtx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function playSuccessChime() {
+        playTone(523.25, 'sine', 0.15); // C5
+        setTimeout(() => playTone(659.25, 'sine', 0.3), 100); // E5
+    }
+
+    function playFailureBuzzer() {
+        playTone(150, 'sawtooth', 0.4, 0.4); 
+        setTimeout(() => playTone(100, 'sawtooth', 0.5, 0.4), 200); 
+    }
+
+    // --- GAME ENGINE & STATE ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const startBtn = document.getElementById('start-btn');
+    const msgEl = document.getElementById('message');
+    const scoreEl = document.getElementById('score-display');
+    const levelEl = document.getElementById('level-display');
+
+    let state = 'MENU'; 
+    
+    // --- NEURO-MECHANICS & DDA VARIABLES ---
+    let sequenceLength = 3; 
+    let showSpeed = 1000;   
+    let streak = 0;         
+    let score = 0;
+    
+    let sequence = [];
+    let playerStep = 0;
+    let isRedAlert = false;
+
+    // --- ASTEROIDS (Visuals + Audio Frequencies) ---
+    const asteroids = [
+        { id: 0, x: 300, y: 150, r: 50, color: '#45a29e', highColor: '#66fcf1', freq: 261.63 }, // C4
+        { id: 1, x: 450, y: 300, r: 50, color: '#c5a3ff', highColor: '#e0caff', freq: 329.63 }, // E4
+        { id: 2, x: 300, y: 450, r: 50, color: '#ffb347', highColor: '#ffd180', freq: 392.00 }, // G4
+        { id: 3, x: 150, y: 300, r: 50, color: '#ff6666', highColor: '#ff9999', freq: 523.25 }  // C5
+    ];
+
+    let highlightedAsteroid = -1;
+
+    // --- RENDERING LOOP ---
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        asteroids.forEach((ast, index) => {
+            ctx.beginPath();
+            ctx.arc(ast.x, ast.y, ast.r, 0, Math.PI * 2);
+            ctx.fillStyle = (highlightedAsteroid === index) ? ast.highColor : ast.color;
+            
+            if (highlightedAsteroid === index) {
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = ast.highColor;
+            } else {
+                ctx.shadowBlur = 0;
+            }
+            
+            ctx.fill();
+            ctx.strokeStyle = '#0b0c10';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            ctx.shadowBlur = 0; 
+        });
+
+        requestAnimationFrame(draw);
+    }
+
+    // --- UI HELPERS ---
+    function showMessage(text, isAlert = false, duration = 0) {
+        msgEl.textContent = text;
+        msgEl.className = isAlert ? 'red-alert' : '';
+        if (duration > 0) {
+            setTimeout(() => { msgEl.className = 'hidden'; }, duration);
+        }
+    }
+
+    // --- CORE GAMEPLAY LOGIC ---
+    function startGame() {
+        initAudio(); // Initialize audio on first user gesture
+        startBtn.classList.add('hidden');
+        score = 0;
+        sequenceLength = 3;
+        showSpeed = 1000;
+        streak = 0;
+        updateHUD();
+        
+        logTelemetry('SESSION_START', { initialSeqLen: sequenceLength });
+        startRound();
+    }
+
+    function startRound() {
+        state = 'SHOWING_SEQ';
+        playerStep = 0;
+        sequence = [];
+        
+        for (let i = 0; i < sequenceLength; i++) {
+            sequence.push(Math.floor(Math.random() * asteroids.length));
+        }
+
+        isRedAlert = Math.random() < 0.3;
+
+        showMessage('Memorize the pattern...', false, 2000);
+        
+        setTimeout(() => playSequence(0), 1000);
+    }
+
+    function playSequence(index) {
+        if (index < sequence.length) {
+            let astId = sequence[index];
+            highlightedAsteroid = astId;
+            playTone(asteroids[astId].freq, 'sine', 0.4); // Play tone for memory encoding
+            
+            setTimeout(() => {
+                highlightedAsteroid = -1;
+                setTimeout(() => {
+                    playSequence(index + 1);
+                }, showSpeed / 2);
+            }, showSpeed / 2);
+        } else {
+            if (isRedAlert) {
+                handleRedAlert();
+            } else {
+                startPlayerTurn();
+            }
+        }
+    }
+
+    function handleRedAlert() {
+        state = 'WAITING_INHIBITION';
+        showMessage('RED ALERT! DO NOT CLICK YET!', true);
+        playTone(200, 'square', 0.8, 0.2); // Alarming sound
+        logTelemetry('INHIBITION_TASK_START', { waitDuration: 3000 });
+        
+        setTimeout(() => {
+            if (state === 'WAITING_INHIBITION') { 
+                msgEl.className = 'hidden';
+                playTone(600, 'sine', 0.2); // Safe to go chime
+                startPlayerTurn();
+                logTelemetry('INHIBITION_TASK_SUCCESS', { waited: true });
+            }
+        }, 3000);
+    }
+
+    function startPlayerTurn() {
+        state = 'PLAYER_TURN';
+        showMessage('Your Turn!', false, 1000);
+    }
+
+    function handleRoundEnd(win) {
+        if (win) {
+            score += 100;
+            streak++;
+            showMessage('Pattern Correct!', false, 1500);
+            playSuccessChime();
+            logTelemetry('ROUND_WON', { score, streak, seqLen: sequenceLength });
+            
+            if (streak >= 2) {
+                sequenceLength++;
+                showSpeed = Math.max(500, showSpeed - 100); 
+                streak = 0;
+                logTelemetry('DDA_INCREASE', { newSeqLen: sequenceLength, newSpeed: showSpeed });
+                setTimeout(() => {
+                    showMessage('Level Up! Harder Sequence.', false, 1500);
+                    playTone(880, 'sine', 0.5); // Level up ping
+                }, 1000);
+            }
+        } else {
+            streak--;
+            showMessage('Pattern Failed!', true, 2000);
+            playFailureBuzzer();
+            logTelemetry('ROUND_LOST', { streak, seqLen: sequenceLength });
+            
+            if (streak <= -2 && sequenceLength > 2) {
+                sequenceLength--;
+                showSpeed = Math.min(1500, showSpeed + 200);
+                streak = 0;
+                logTelemetry('DDA_DECREASE', { newSeqLen: sequenceLength, newSpeed: showSpeed });
+                setTimeout(() => showMessage('Difficulty Adjusted.', false, 1500), 1000);
+            }
+        }
+
+        updateHUD();
+        state = 'MENU'; 
+        
+        setTimeout(() => {
+            startRound();
+        }, 3000); 
+    }
+
+    function updateHUD() {
+        scoreEl.textContent = `Score: ${score}`;
+        levelEl.textContent = `Sequence Length: ${sequenceLength}`;
+    }
+
+    // --- INPUT HANDLING ---
+    canvas.addEventListener('mousedown', (e) => {
+        if (state === 'MENU' || state === 'SHOWING_SEQ') return;
+
+        // Initialize audio context if somehow missed
+        initAudio();
+
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        let clickedId = -1;
+        for (let i = 0; i < asteroids.length; i++) {
+            const ast = asteroids[i];
+            const dist = Math.sqrt((mouseX - ast.x) ** 2 + (mouseY - ast.y) ** 2);
+            if (dist <= ast.r) {
+                clickedId = i;
+                break;
+            }
+        }
+
+        if (clickedId === -1) return; 
+
+        // INHIBITORY CONTROL CHECK 
+        if (state === 'WAITING_INHIBITION') {
+            logTelemetry('INHIBITION_TASK_FAILED', { clickedEarly: true });
+            showMessage('Impulsive Click! Wait for the signal!', true, 2000);
+            streak--; 
+            handleRoundEnd(false);
+            return;
+        }
+
+        // WORKING MEMORY CHECK 
+        if (state === 'PLAYER_TURN') {
+            highlightedAsteroid = clickedId;
+            playTone(asteroids[clickedId].freq, 'sine', 0.2); // Play the asteroid's tone
+
+            setTimeout(() => { highlightedAsteroid = -1; }, 200);
+
+            if (clickedId === sequence[playerStep]) {
+                playerStep++;
+                if (playerStep === sequenceLength) {
+                    handleRoundEnd(true); 
+                }
+            } else {
+                handleRoundEnd(false);
+            }
+        }
+    });
+
+    // Boot Engine
+    startBtn.addEventListener('click', startGame);
+    requestAnimationFrame(draw);
+
+</script>
+</body>
+</html>

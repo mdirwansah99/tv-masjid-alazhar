@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Makmal Dr. Cerdas - Sifat Haba Sandbox</title>
+    <style>
+        :root {
+            --bg-color: #1e272e;
+            --panel-bg: #ecf0f1;
+            --text-main: #2c3e50;
+        }
+        body {
+            margin: 0; padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden; user-select: none;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            position: absolute; top: 20px; width: 900px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 50;
+        }
+        .logo { background: white; padding: 10px 20px; border-radius: 30px; font-weight: 900; font-size: 20px; color: #2c3e50; box-shadow: 0 5px 0 rgba(0,0,0,0.3); cursor: pointer; }
+        .objective { background: white; padding: 10px 40px; border-radius: 30px; text-align: center; font-weight: bold; border: 4px solid #e84118; box-shadow: 0 5px 0 rgba(0,0,0,0.3); color: #2c3e50; }
+        
+        /* Main Game Area */
+        .game-window {
+            width: 1000px; height: 620px; background: #dfe6e9; border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6); position: relative; margin-top: 50px; display: flex; border: 8px solid #e84118;
+        }
+
+        /* Intro Overlay */
+        .intro-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(30, 39, 46, 0.95); z-index: 200; border-radius: 22px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white; text-align: center; padding: 40px; box-sizing: border-box; transition: opacity 0.5s;
+        }
+        .intro-overlay h1 { color: #fbc531; font-size: 36px; margin-bottom: 10px; }
+        .intro-overlay p { font-size: 22px; line-height: 1.5; max-width: 700px; margin-bottom: 40px; font-weight: bold;}
+        .intro-btn { background: #e84118; color: white; border: none; padding: 15px 50px; font-size: 24px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 8px 0 #c23616; transition: all 0.1s; }
+        .intro-btn:active { transform: translateY(8px); box-shadow: 0 0 0; }
+        
+        /* Left Toolkit Panel */
+        .toolkit {
+            width: 310px; background: rgba(255, 255, 255, 0.98); border-right: 4px solid rgba(0,0,0,0.1);
+            border-radius: 22px 0 0 22px; padding: 20px; display: flex; flex-direction: column; align-items: center;
+            z-index: 20; box-sizing: border-box;
+        }
+        .toolkit h2 { color: #d35400; font-size: 22px; margin: 0 0 10px 0; }
+        
+        .spawn-btn {
+            width: 100%; padding: 15px; margin-bottom: 10px; background: white;
+            border: 3px solid #bdc3c7; border-radius: 15px; font-size: 14px; font-weight: bold; color: #2c3e50;
+            cursor: pointer; display: flex; align-items: center; box-shadow: 0 4px 0 #bdc3c7; transition: all 0.1s;
+        }
+        .spawn-btn:active { transform: translateY(4px); box-shadow: 0 0 0; }
+        .spawn-btn.active { border-color: #e84118; box-shadow: 0 4px 0 #e84118; background: #fff1f0; }
+        .spawn-icon { font-size: 24px; margin-right: 15px; }
+
+        /* DR CERDAS CONTAINER */
+        .dr-container { margin-top: auto; display: flex; align-items: center; justify-content: flex-start; position: relative; width: 100%; padding-top: 15px; border-top: 2px dashed #bdc3c7; }
+        .dr-avatar-btn { width: 60px; height: 60px; background: white; border-radius: 50%; border: 3px solid #e84118; font-size: 35px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 100; transition: transform 0.2s; flex-shrink: 0; animation: bounceIn 2s infinite alternate; }
+        .dr-avatar-btn:hover { transform: scale(1.1); animation: none; }
+        .dr-dialog { position: absolute; bottom: 85px; left: 0; background: white; border-radius: 20px 20px 20px 0; padding: 15px; border: 3px solid #e84118; box-shadow: 0 5px 0 #c23616; width: 250px; font-weight: bold; color: #2c3e50; font-size: 13px; opacity: 0; transform: translateY(10px) scale(0.9); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100; transform-origin: bottom left; pointer-events: none; }
+        .dr-dialog.show { opacity: 1; transform: translateY(0) scale(1); }
+        @keyframes bounceIn { 0% { transform: translateY(0); } 100% { transform: translateY(-5px); } }
+
+        /* Lab Center */
+        .lab-center {
+            flex: 1; position: relative; display: flex;
+            flex-direction: column; justify-content: flex-end; align-items: center;
+            background-image: linear-gradient(#b2bec3 1px, transparent 1px), linear-gradient(90deg, #b2bec3 1px, transparent 1px);
+            background-size: 40px 40px; padding-bottom: 50px; border-radius: 0 22px 22px 0;
+            overflow: hidden; /* Prevent dragging out of bounds */
+        }
+        
+        /* Table */
+        .table { width: 95%; height: 20px; background: #636e72; border-radius: 10px; position: absolute; bottom: 30px; box-shadow: 0 10px 0 #2d3436; }
+
+        /* Stations */
+        .apparatus-zone { display: flex; justify-content: space-around; width: 100%; position: absolute; bottom: 50px; z-index: 10; padding: 0 20px; box-sizing: border-box; }
+        .station { display: flex; flex-direction: column; align-items: center; position: relative; }
+        .station-hitbox { position: absolute; top: -140px; width: 140px; height: 160px; border: 3px dashed rgba(231, 76, 60, 0.2); border-radius: 15px; z-index: 5; transition: border-color 0.3s;}
+
+        /* Bunsen Burner */
+        .bunsen { width: 70px; height: 110px; background: #7f8c8d; border-radius: 5px 5px 0 0; border-bottom: 20px solid #2c3e50; position: relative; }
+        .flame { width: 40px; height: 70px; background: #e74c3c; border-radius: 50% 50% 20% 20%; position: absolute; top: -70px; left: 15px; box-shadow: 0 0 30px #f1c40f, inset 0 0 10px #f1c40f; animation: flicker 0.1s infinite alternate; }
+        @keyframes flicker { 0% { transform: scale(1) translateY(0); background: #e74c3c; } 100% { transform: scale(1.1) translateY(-5px); background: #f39c12; } }
+
+        /* Ice Bath */
+        .ice-bath { width: 150px; height: 90px; background: rgba(52, 152, 219, 0.5); border: 4px solid #2980b9; border-top: none; border-radius: 0 0 20px 20px; position: relative; }
+        .ice-cube { width: 30px; height: 30px; background: white; position: absolute; opacity: 0.8; border-radius: 4px; }
+
+        /* Metal Ring */
+        .metal-ring-stand { width: 12px; height: 180px; background: #2d3436; position: relative; }
+        .metal-ring-base { width: 100px; height: 12px; background: #2d3436; position: absolute; bottom: 0; left: -44px; border-radius: 5px; }
+        .metal-ring { width: 90px; height: 30px; border: 12px solid #95a5a6; border-radius: 50%; position: absolute; top: 20px; left: -50px; transform: rotateX(60deg); z-index: 20; box-shadow: 0 10px 0 rgba(0,0,0,0.2); }
+        .metal-ring-front { width: 90px; height: 30px; border: 12px solid #95a5a6; border-radius: 50%; position: absolute; top: 20px; left: -50px; transform: rotateX(60deg); clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%); z-index: 40; }
+        
+        .station-label { margin-top: 15px; background: white; padding: 5px 15px; border-radius: 10px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 0 rgba(0,0,0,0.2); z-index: 10;}
+
+        /* DRAGGABLE OBJECTS (Sandbox Physics) */
+        .draggable-obj { position: absolute; z-index: 30; cursor: grab; display: flex; justify-content: center; align-items: center; }
+        .draggable-obj:active { cursor: grabbing; z-index: 50; }
+
+        /* 1. Pepejal (Bebola Logam) */
+        .obj-pepejal { width: 60px; height: 60px; background: radial-gradient(circle at 30% 30%, #bdc3c7, #7f8c8d); border-radius: 50%; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.3); transition: all 1s ease; }
+        .obj-pepejal.hot { transform: scale(1.4); background: radial-gradient(circle at 30% 30%, #ff7675, #d63031); box-shadow: 0 0 30px #e17055, inset -5px -5px 15px rgba(0,0,0,0.5); }
+        .obj-pepejal.cold { transform: scale(0.8); background: radial-gradient(circle at 30% 30%, #74b9ff, #0984e3); }
+
+        /* 2. Cecair (Kelalang Air Berwarna) */
+        .obj-cecair { width: 80px; height: 110px; border: 4px solid rgba(255,255,255,0.9); border-radius: 5px 5px 20px 20px; background: rgba(255,255,255,0.4); display: flex; align-items: flex-end; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: all 0.2s ease; overflow: hidden; }
+        /* Glass Tube */
+        .obj-cecair::before { content: ''; position: absolute; top: -50px; left: 50%; transform: translateX(-50%); width: 12px; height: 160px; border: 2px solid rgba(255,255,255,0.8); border-radius: 5px; z-index: 5; }
+        .liquid-fill { width: 100%; height: 35%; background: #e84118; transition: height 1s ease; border-radius: 0 0 15px 15px; }
+        .obj-cecair.hot .liquid-fill { height: 95%; background: #ff4757; }
+        .obj-cecair.cold .liquid-fill { height: 10%; background: #c23616; }
+
+        /* 3. Gas (Kelalang Belon) */
+        .obj-gas { width: 90px; height: 90px; border: 4px solid rgba(255,255,255,0.9); border-radius: 50%; background: rgba(255,255,255,0.4); box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: all 0.2s ease; margin-top: 40px;}
+        /* Neck */
+        .obj-gas::before { content: ''; position: absolute; top: -30px; left: 50%; transform: translateX(-50%); width: 25px; height: 35px; border-left: 4px solid rgba(255,255,255,0.9); border-right: 4px solid rgba(255,255,255,0.9); background: rgba(255,255,255,0.4); }
+        /* Balloon */
+        .gas-balloon { width: 45px; height: 55px; background: #4cd137; border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%; position: absolute; top: -65px; left: 50%; transform: translateX(-50%) scale(1); transition: all 1s ease; transform-origin: bottom center; z-index: 10; border: 2px solid #44bd32;}
+        .obj-gas.hot .gas-balloon { transform: translateX(-50%) scale(2.5); background: #f1c40f; border-color: #f39c12; }
+        .obj-gas.cold .gas-balloon { transform: translateX(-50%) scale(0.6); background: #2f3640; border-color: #2c3e50;}
+
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="logo" onclick="window.location.href='makmal-menu-utama.html'">⬅ Kembali</div>
+        <div class="logo">🔥 Makmal Pintar</div>
+        <div class="objective">Topik: Sifat Haba (D5)<br><span style="color:#e84118; font-size:14px;">Interaksi Drag & Drop</span></div>
+    </div>
+
+    <div class="game-window" id="game-window">
+        
+        <!-- INTRO OVERLAY -->
+        <div class="intro-overlay" id="intro-overlay">
+            <div style="font-size: 100px; margin-bottom: 0px; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));">👨🏽‍🔬</div>
+            <h1>Misi Darjah 5: Sifat Haba Sandbox</h1>
+            <p>"Selamat kembali ke mod Sandbox! Pilih salah satu radas jirim di sebelah kiri. Seret radas tersebut terus ke atas nyalaan api atau ke dalam tab mandi ais untuk melihat tindak balas haba secara langsung!"</p>
+            <button class="intro-btn" onclick="startModule()">Mula Eksperimen 🚀</button>
+        </div>
+
+        <!-- Toolkit (Left) -->
+        <div class="toolkit">
+            <h2>KABINET RADAS</h2>
+            <p style="font-size:12px; font-weight:bold; color:#7f8c8d; text-align:center;">Klik butang di bawah untuk meletakkan radas di atas meja makmal.</p>
+            
+            <button class="spawn-btn" id="btn-pepejal" onclick="spawnObj('pepejal', this)">
+                <span class="spawn-icon">🔩</span> Bebola Logam (Pepejal)
+            </button>
+            <button class="spawn-btn" id="btn-cecair" onclick="spawnObj('cecair', this)">
+                <span class="spawn-icon">🧪</span> Tiub Kaca Air (Cecair)
+            </button>
+            <button class="spawn-btn" id="btn-gas" onclick="spawnObj('gas', this)">
+                <span class="spawn-icon">🎈</span> Kelalang Belon (Gas)
+            </button>
+
+            <!-- DR CERDAS INSIDE TOOLKIT -->
+            <div class="dr-container">
+                <div class="dr-dialog" id="dialog">"Pilih satu bahan, kemudian cuba seret ia ke atas penunu bunsen."</div>
+                <div class="dr-avatar-btn" id="dr-btn" onclick="interactiveChat()">👨🏽‍🔬</div>
+                <div style="font-size:12px; font-weight:bold; color:#7f8c8d; margin-left:15px;">Klik untuk<br>Fakta</div>
+            </div>
+        </div>
+        
+        <!-- Lab Center (Right) -->
+        <div class="lab-center" id="lab-center">
+            
+            <div class="apparatus-zone">
+                <!-- Heat Station -->
+                <div class="station">
+                    <div class="station-hitbox" id="zone-fire" style="border-color: rgba(231, 76, 60, 0.4);"></div>
+                    <div class="bunsen"><div class="flame"></div></div>
+                    <div class="station-label" style="color:#e84118;">Api (Panas)</div>
+                </div>
+
+                <!-- Cold Station -->
+                <div class="station">
+                    <div class="station-hitbox" id="zone-ice" style="border-color: rgba(52, 152, 219, 0.4); top:-100px; height:120px;"></div>
+                    <div class="ice-bath">
+                        <div class="ice-cube" style="top:15px; left:15px;"></div>
+                        <div class="ice-cube" style="top:40px; left:60px;"></div>
+                        <div class="ice-cube" style="top:20px; left:90px;"></div>
+                    </div>
+                    <div class="station-label" style="color:#2980b9;">Ais (Sejuk)</div>
+                </div>
+
+                <!-- Ring Station -->
+                <div class="station">
+                    <div class="station-hitbox" id="zone-ring" style="border-color: rgba(45, 52, 54, 0.4); top:-80px; width:120px; height:120px; border-radius:50%;"></div>
+                    <div class="metal-ring-stand">
+                        <div class="metal-ring"></div>
+                        <div class="metal-ring-front"></div>
+                        <div class="metal-ring-base"></div>
+                    </div>
+                    <div class="station-label" style="color:#2d3436;">Uji Gelang</div>
+                </div>
+            </div>
+            
+            <div class="table"></div>
+            
+            <!-- Draggable Objects (Hidden by default, spawned via buttons) -->
+            <div class="draggable-obj obj-pepejal" id="obj-pepejal" style="display:none;" data-type="pepejal"></div>
+            
+            <div class="draggable-obj obj-cecair" id="obj-cecair" style="display:none;" data-type="cecair">
+                <div class="liquid-fill"></div>
+            </div>
+            
+            <div class="draggable-obj obj-gas" id="obj-gas" style="display:none;" data-type="gas">
+                <div class="gas-balloon"></div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        const win = document.getElementById('game-window');
+        const labCenter = document.getElementById('lab-center');
+        const dialog = document.getElementById('dialog');
+        
+        const zoneFire = document.getElementById('zone-fire');
+        const zoneIce = document.getElementById('zone-ice');
+        const zoneRing = document.getElementById('zone-ring');
+        
+        let activeObj = null;
+        let isAnimating = false;
+
+        // Audio
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        function initAudio() { if(!audioCtx) { audioCtx = new AudioContext(); audioCtx.resume(); } }
+        function playSound(type) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            
+            if(type === 'fire') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 1.5);
+            } else if (type === 'ice') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 1.0);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
+                osc.start(); osc.stop(audioCtx.currentTime + 1.0);
+            } else if (type === 'clink') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.5, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'stuck') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.4, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'snap') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            }
+        }
+
+        function startModule() {
+            initAudio(); playSound('snap');
+            document.getElementById('intro-overlay').style.opacity = '0';
+            setTimeout(() => { document.getElementById('intro-overlay').style.display = 'none'; spawnObj('pepejal', document.getElementById('btn-pepejal')); }, 500);
+        }
+
+        const chats = [
+            "Bahan MENGEMBANG apabila dipanaskan, dan MENGECUT apabila disejukkan.",
+            "Seret objek dengan tetikus atau jari kamu merata-rata. Ini makmal bebas (sandbox)!",
+            "Eksperimen Gelang Logam direka khas untuk membuktikan bahawa PEPEJAL membesar (mengembang) walaupun kita tidak nampak perubahan itu dengan jelas.",
+            "Gas mengembang paling cepat berbanding pepejal dan cecair."
+        ];
+        let chatIndex = 0;
+        function interactiveChat() {
+            initAudio(); playSound('snap');
+            showDialog(chats[chatIndex], true);
+            chatIndex = (chatIndex + 1) % chats.length;
+        }
+
+        // Spawn Logic
+        function spawnObj(type, btnElement) {
+            initAudio(); playSound('snap');
+            if(isAnimating) return;
+            
+            // Reset Buttons
+            document.querySelectorAll('.spawn-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            
+            // Hide all objects and reset states
+            document.querySelectorAll('.draggable-obj').forEach(obj => {
+                obj.style.display = 'none';
+                obj.className = `draggable-obj obj-${obj.getAttribute('data-type')}`; // remove hot/cold
+            });
+            
+            activeObj = document.getElementById(`obj-${type}`);
+            activeObj.style.display = 'flex';
+            
+            // Spawn in middle of table
+            activeObj.style.left = '450px';
+            activeObj.style.top = '250px';
+            
+            showDialog(`Radas diletakkan! Sila seret ia ke atas api atau ais.`, true);
+        }
+
+        // Sandbox Physics Drag Logic
+        const allDraggables = document.querySelectorAll('.draggable-obj');
+        allDraggables.forEach(obj => {
+            obj.addEventListener('mousedown', startDrag);
+            obj.addEventListener('touchstart', startDrag, {passive: false});
+        });
+
+        function startDrag(e) {
+            initAudio();
+            if(isAnimating || e.target.closest('.draggable-obj') !== activeObj) return;
+            if(e.type === 'touchstart') e.preventDefault();
+            
+            activeObj.style.transition = 'none'; // Instant follow
+            
+            let isDragging = true;
+            const lcRect = labCenter.getBoundingClientRect();
+            
+            function onMove(eMove) {
+                if(!isDragging) return; if(eMove.type === 'touchmove') eMove.preventDefault();
+                const cx = eMove.clientX || eMove.touches[0].clientX; 
+                const cy = eMove.clientY || eMove.touches[0].clientY;
+                
+                // Keep within lab center bounds
+                let nx = cx - lcRect.left - activeObj.offsetWidth/2;
+                let ny = cy - lcRect.top - activeObj.offsetHeight/2;
+                
+                if(nx < 0) nx = 0; if(nx > lcRect.width - activeObj.offsetWidth) nx = lcRect.width - activeObj.offsetWidth;
+                if(ny < 0) ny = 0; if(ny > lcRect.height - activeObj.offsetHeight) ny = lcRect.height - activeObj.offsetHeight;
+                
+                activeObj.style.left = nx + 'px';
+                activeObj.style.top = ny + 'px';
+                
+                checkHoverStates(cx, cy);
+            }
+            
+            function onUp(eUp) {
+                isDragging = false;
+                activeObj.style.transition = 'all 1s ease'; // Return physics smoothing
+                
+                document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp);
+                document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onUp);
+                
+                // On drop, check if dropped on ring
+                const cx = eUp.clientX || (eUp.changedTouches ? eUp.changedTouches[0].clientX : 0);
+                const cy = eUp.clientY || (eUp.changedTouches ? eUp.changedTouches[0].clientY : 0);
+                checkDropRing(cx, cy);
+                
+                // Clear highlights
+                document.querySelectorAll('.station-hitbox').forEach(hb => hb.style.backgroundColor = 'transparent');
+            }
+            
+            document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
+            document.addEventListener('touchmove', onMove, {passive: false}); document.addEventListener('touchend', onUp);
+        }
+
+        // Live Hover Detection for Temperature Changes
+        function checkHoverStates(cx, cy) {
+            const fRect = zoneFire.getBoundingClientRect();
+            const iRect = zoneIce.getBoundingClientRect();
+            
+            // Highlight zones on hover for feedback
+            zoneFire.style.backgroundColor = 'transparent';
+            zoneIce.style.backgroundColor = 'transparent';
+
+            if (cx > fRect.left && cx < fRect.right && cy > fRect.top && cy < fRect.bottom) {
+                zoneFire.style.backgroundColor = 'rgba(231, 76, 60, 0.1)';
+                if(!activeObj.classList.contains('hot')) {
+                    activeObj.className = `draggable-obj obj-${activeObj.getAttribute('data-type')} hot`;
+                    playSound('fire');
+                    showDialog(`${activeObj.getAttribute('data-type').toUpperCase()} menerima haba dan MENGEMBANG!`, true);
+                }
+            } else if (cx > iRect.left && cx < iRect.right && cy > iRect.top && cy < iRect.bottom) {
+                zoneIce.style.backgroundColor = 'rgba(52, 152, 219, 0.1)';
+                if(!activeObj.classList.contains('cold')) {
+                    activeObj.className = `draggable-obj obj-${activeObj.getAttribute('data-type')} cold`;
+                    playSound('ice');
+                    showDialog(`${activeObj.getAttribute('data-type').toUpperCase()} kehilangan haba dan MENGECUT!`, true);
+                }
+            }
+        }
+
+        // Check if dropped on Ring
+        function checkDropRing(cx, cy) {
+            const rRect = zoneRing.getBoundingClientRect();
+            if (cx > rRect.left && cx < rRect.right && cy > rRect.top && cy < rRect.bottom) {
+                const type = activeObj.getAttribute('data-type');
+                if (type === 'pepejal') {
+                    animateRingTest();
+                } else {
+                    showDialog(`Gelang ini khas untuk menguji pengembangan PEPEJAL (logam) sahaja.`, false);
+                }
+            }
+        }
+
+        // Automatic drop animation through the ring
+        function animateRingTest() {
+            isAnimating = true;
+            const rRect = zoneRing.getBoundingClientRect();
+            const lcRect = labCenter.getBoundingClientRect();
+            
+            // Snap ball above ring
+            const dropX = (rRect.left - lcRect.left) + (rRect.width/2) - (activeObj.offsetWidth/2);
+            const dropY = (rRect.top - lcRect.top) - 50;
+            
+            activeObj.style.transition = 'all 0.5s ease';
+            activeObj.style.left = dropX + 'px';
+            activeObj.style.top = dropY + 'px';
+            activeObj.style.zIndex = '30';
+            
+            setTimeout(() => {
+                // Determine logic
+                if (activeObj.classList.contains('hot')) {
+                    playSound('stuck');
+                    activeObj.style.top = (dropY + 40) + 'px'; // Gets stuck on ring
+                    showDialog("Tersekat! Bebola logam telah MENGEMBANG melepasi saiz gelang.", false);
+                    setTimeout(() => { isAnimating = false; }, 1000);
+                } else {
+                    playSound('clink');
+                    activeObj.style.top = (lcRect.height - 120) + 'px'; // Falls to table
+                    showDialog("Berjaya melalui gelang! Saiz bebola adalah normal / mengecut.", true);
+                    setTimeout(() => { isAnimating = false; }, 1000);
+                }
+            }, 600);
+        }
+
+        let dialogTimeout;
+        function showDialog(text, success) {
+            clearTimeout(dialogTimeout);
+            dialog.innerText = text;
+            dialog.style.borderColor = success ? '#00a8ff' : '#e84118';
+            dialog.style.boxShadow = success ? '0 10px 0 #0097e6' : '0 10px 0 #c23616';
+            dialog.classList.add('show');
+            dialogTimeout = setTimeout(() => { dialog.classList.remove('show'); }, 6000);
+        }
+    </script>
+</body>
+</html>

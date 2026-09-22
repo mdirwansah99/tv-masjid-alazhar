@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selamat Datang ke WonderLab!</title>
+    <style>
+        :root {
+            --primary: #2ab7a9;
+            --secondary: #f39c12;
+            --bg-dark: #1e3799;
+            --text-dark: #2c3e50;
+        }
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
+            color: white;
+        }
+        
+        /* Starry Background */
+        .stars {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 4px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px);
+            background-size: 550px 550px, 350px 350px;
+            background-position: 0 0, 40px 60px;
+            animation: moveStars 100s linear infinite;
+            z-index: 1;
+        }
+        @keyframes moveStars { from {background-position: 0 0, 40px 60px;} to {background-position: 550px 550px, 590px 610px;} }
+
+        .container {
+            position: relative; z-index: 10;
+            display: flex; flex-direction: column; align-items: center;
+            width: 800px;
+        }
+
+        /* Dr Cerdik Avatar Animation */
+        .character-container {
+            position: relative;
+            margin-bottom: 20px;
+            animation: float 4s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .avatar {
+            width: 150px; height: 150px;
+            background: white; border-radius: 50%;
+            border: 8px solid var(--secondary);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 80px; box-shadow: 0 10px 30px rgba(243, 156, 18, 0.5);
+            position: relative;
+        }
+        
+        .lightbulb {
+            position: absolute; top: -30px; right: -20px;
+            font-size: 40px; animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; filter: drop-shadow(0 0 10px #f1c40f); }
+            50% { transform: scale(1.2); opacity: 1; filter: drop-shadow(0 0 20px #f1c40f); }
+            100% { transform: scale(1); opacity: 0.8; filter: drop-shadow(0 0 10px #f1c40f); }
+        }
+
+        /* Dialogue Box */
+        .dialogue-box {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 30px 40px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            border: 4px solid var(--primary);
+            position: relative;
+            margin-bottom: 40px;
+        }
+        .dialogue-box::before {
+            content: ''; position: absolute; top: -20px; left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 20px 20px 20px;
+            border-style: solid;
+            border-color: transparent transparent var(--primary) transparent;
+        }
+        .dialogue-box::after {
+            content: ''; position: absolute; top: -14px; left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 16px 16px 16px;
+            border-style: solid;
+            border-color: transparent transparent white transparent;
+        }
+
+        .name-tag {
+            position: absolute; top: -15px; left: 40px;
+            background: var(--secondary); color: white;
+            padding: 5px 20px; border-radius: 20px;
+            font-weight: bold; font-size: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .text-content {
+            color: var(--text-dark);
+            font-size: 22px;
+            line-height: 1.5;
+            font-weight: 600;
+            min-height: 100px;
+        }
+
+        /* Input Form */
+        .form-group {
+            display: flex; flex-direction: column; align-items: center;
+            opacity: 0; transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        .form-group.show {
+            opacity: 1; transform: translateY(0);
+        }
+        
+        input[type="text"] {
+            padding: 15px 30px;
+            border-radius: 30px;
+            border: 4px solid white;
+            font-size: 24px; font-weight: bold;
+            text-align: center; color: var(--text-dark);
+            width: 400px; outline: none;
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: var(--secondary);
+            transform: scale(1.05);
+        }
+        input[type="text"]::placeholder {
+            color: #95a5a6; font-weight: normal;
+        }
+
+        .btn-start {
+            margin-top: 20px;
+            background: var(--secondary);
+            color: white; border: none;
+            padding: 15px 50px; border-radius: 30px;
+            font-size: 24px; font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #d35400, 0 15px 20px rgba(0,0,0,0.3);
+            transition: all 0.1s;
+        }
+        .btn-start:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #d35400, 0 5px 10px rgba(0,0,0,0.3);
+        }
+        .btn-start:hover {
+            background: #f1c40f;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+
+    <div class="container">
+        <!-- Character -->
+        <div class="character-container">
+            <div class="lightbulb" id="bulb" style="display:none;">💡</div>
+            <div class="avatar">👨🏽‍🔬</div>
+        </div>
+
+        <!-- Dialogue -->
+        <div class="dialogue-box">
+            <div class="name-tag">Dr. Cerdik</div>
+            <div class="text-content" id="dialogue-text"></div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="form-group" id="form-area">
+            <input type="text" id="student-name" placeholder="Masukkan Nama Kamu..." autocomplete="off">
+            <button class="btn-start" onclick="startGame()">MULA MISI! 🚀</button>
+        </div>
+    </div>
+
+    <script>
+        // Storytelling Typewriter Effect
+        const storyText = "Selamat datang ke WonderLab! Bumi sedang kehabisan saintis yang hebat... Misi kita adalah untuk meneroka rahsia alam semula jadi. Sebelum kita mula bereksperimen, siapa nama kamu, Saintis Muda?";
+        const textElement = document.getElementById('dialogue-text');
+        const formArea = document.getElementById('form-area');
+        const bulb = document.getElementById('bulb');
+        
+        let i = 0;
+        
+        // Audio for typewriter (optional, simulated with code delay)
+        function typeWriter() {
+            if (i < storyText.length) {
+                textElement.innerHTML += storyText.charAt(i);
+                i++;
+                setTimeout(typeWriter, 40); // typing speed
+            } else {
+                // Done typing
+                setTimeout(() => {
+                    formArea.classList.add('show');
+                    bulb.style.display = 'block';
+                    document.getElementById('student-name').focus();
+                }, 500);
+            }
+        }
+
+        // Start animation when page loads
+        window.onload = () => {
+            setTimeout(typeWriter, 500);
+        };
+
+        // Game Play Logic (Saving name)
+        function startGame() {
+            let name = document.getElementById('student-name').value.trim();
+            if (name === "") name = "Saintis Muda";
+            
+            // Save name to localStorage so Menu Utama can read it
+            localStorage.setItem('wonderlab_student_name', name);
+            
+            // Navigate to Main Menu
+            window.location.href = 'makmal-menu-utama.html';
+        }
+        
+        // Allow pressing Enter to submit
+        document.getElementById('student-name').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                startGame();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Utama - Makmal Ajaib</title>
+    <style>
+        :root {
+            --primary: #2ab7a9;
+            --secondary: #f39c12;
+            --bg: #e0f7f4;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --card-bg: #ffffff;
+        }
+        body {
+            margin: 0; padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden; user-select: none;
+        }
+        
+        .app-container {
+            width: 1024px; height: 700px;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            border-radius: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            border: 8px solid white;
+        }
+
+        /* Top Navigation / Profile Header */
+        .header {
+            background: var(--primary);
+            padding: 20px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(42, 183, 169, 0.4);
+            z-index: 10;
+        }
+        
+        .profile-section {
+            display: flex; align-items: center; gap: 15px;
+        }
+        .avatar {
+            width: 70px; height: 70px;
+            background: #fff; border-radius: 50%;
+            border: 4px solid var(--secondary);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .avatar:hover { transform: scale(1.1); }
+        .user-info h2 { margin: 0; font-size: 24px; font-weight: 800; }
+        .user-info p { margin: 0; font-size: 14px; opacity: 0.9; font-weight: 500;}
+        
+        .stats-section {
+            display: flex; gap: 20px;
+        }
+        .stat-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px; border-radius: 20px;
+            display: flex; align-items: center; gap: 10px;
+            font-weight: bold; font-size: 18px;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255,255,255,0.4);
+        }
+        .stat-badge span.icon { font-size: 24px; }
+
+        /* Main Content Area */
+        .content {
+            flex: 1; padding: 40px;
+            display: flex; flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .section-title {
+            color: var(--text-dark); font-size: 28px; font-weight: 800;
+            margin-top: 0; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        .filter-tabs {
+            display: flex; gap: 10px;
+        }
+        .tab {
+            padding: 8px 20px; background: #e0e0e0; color: var(--text-light);
+            border-radius: 20px; font-weight: bold; cursor: pointer;
+            transition: all 0.2s; font-size: 14px;
+        }
+        .tab.active {
+            background: var(--primary); color: white;
+            box-shadow: 0 4px 10px rgba(42, 183, 169, 0.3);
+        }
+
+        /* Module Grid */
+        .module-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px;
+        }
+        
+        .card {
+            background: var(--card-bg); border-radius: 25px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            border: 2px solid #ecf0f1;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer; position: relative;
+            display: flex; flex-direction: column;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(42, 183, 169, 0.2);
+            border-color: var(--primary);
+        }
+        .card.locked {
+            opacity: 0.7; filter: grayscale(0.8); cursor: not-allowed;
+        }
+        .card.locked:hover { transform: none; border-color: #ecf0f1; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        
+        .card-icon {
+            width: 70px; height: 70px; border-radius: 20px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 35px; margin-bottom: 15px;
+        }
+        .bg-blue { background: #d4e6f1; color: #2980b9; }
+        .bg-yellow { background: #fcf3cf; color: #f39c12; }
+        .bg-green { background: #d5f5e3; color: #27ae60; }
+        
+        .card h3 { margin: 0 0 5px 0; color: var(--text-dark); font-size: 20px; }
+        .card p { margin: 0 0 15px 0; color: var(--text-light); font-size: 14px; flex: 1; }
+        
+        .progress-bar-bg {
+            width: 100%; height: 8px; background: #ecf0f1; border-radius: 10px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: var(--secondary); border-radius: 10px;
+        }
+        
+        .lock-icon {
+            position: absolute; top: 20px; right: 20px;
+            font-size: 24px; color: #95a5a6;
+        }
+
+        /* Bottom Nav (Simulation) */
+        .bottom-nav {
+            background: white; padding: 15px 40px;
+            display: flex; justify-content: center; gap: 40px;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+            border-top: 1px solid #eee;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            color: var(--text-light); cursor: pointer; font-weight: bold; font-size: 13px; gap: 5px;
+            transition: color 0.2s;
+        }
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 24px; font-style: normal; }
+        .nav-item:hover { color: var(--primary); }
+        
+        /* Popup overlay (hidden by default) */
+        .overlay {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 100;
+        }
+        .popup {
+            background: white; padding: 40px; border-radius: 30px; text-align: center;
+            width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            transform: scale(0.8); transition: transform 0.3s;
+        }
+        .overlay.show { display: flex; }
+        .overlay.show .popup { transform: scale(1); }
+        .btn-play {
+            background: var(--primary); color: white; border: none; padding: 15px 40px;
+            border-radius: 30px; font-size: 20px; font-weight: bold; margin-top: 20px;
+            cursor: pointer; box-shadow: 0 5px 0 #16a085; transition: transform 0.1s;
+        }
+        .btn-play:active { transform: translateY(5px); box-shadow: none; }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Header Profile -->
+        <div class="header">
+            <div class="profile-section">
+                <div class="avatar">👦🏻</div>
+                <div class="user-info">
+                    <h2>Aiman Hakim</h2>
+                    <p>🎓 Saintis Muda (Darjah 5)</p>
+                </div>
+            </div>
+            <div class="stats-section">
+                <div class="stat-badge">
+                    <span class="icon">⭐</span> 1,450
+                </div>
+                <div class="stat-badge">
+                    <span class="icon">🏆</span> Tahap 12
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <div class="section-title">
+                Misi Eksperimen
+                <div class="filter-tabs">
+                    <div class="tab">Darjah 4</div>
+                    <div class="tab active">Darjah 5</div>
+                    <div class="tab">Darjah 6</div>
+                </div>
+            </div>
+
+            <!-- Modules Grid -->
+            <div class="module-grid">
+                
+                <!-- Card 1 -->
+                <div class="card" onclick="openPopup('Litar Elektrik', 'Uji kefahaman kamu tentang komponen konduktor dan penebat.', 'bg-yellow')">
+                    <div class="card-icon bg-yellow">⚡</div>
+                    <h3>Litar Elektrik</h3>
+                    <p>Konduktor & Penebat (Topik 5.1)</p>
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px; font-weight:bold; color:var(--text-light);">
+                        <span>Progres</span> <span>100%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-fill" style="width: 100%; background:#27ae60;"></div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="card" onclick="openPopup('Sifat Haba', 'Lihat bagaimana bahan mengembang dan mengecut apabila dipanaskan.', 'bg-blue')">
+                    <div class="card-icon bg-blue">🔥</div>
+                    <h3>Sifat Haba</h3>
+                    <p>Kesan Haba pada Bahan (Topik 6.1)</p>
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px; font-weight:bold; color:var(--text-light);">
+                        <span>Progres</span> <span>45%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-fill" style="width: 45%;"></div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="card" onclick="openPopup('Asid & Alkali', 'Uji kertas litmus ke atas pelbagai cecair untuk tentukan sifat kimianya.', 'bg-purple')">
+                    <div class="card-icon" style="background:#9b59b6; color:white;">🧪</div>
+                    <h3>Asid & Alkali</h3>
+                    <p>Ujian Kertas Litmus (Topik 8.1)</p>
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px; font-weight:bold; color:var(--text-light);">
+                        <span>Progres</span> <span>Baru</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-fill" style="width: 0%; background:#9b59b6;"></div>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="card" onclick="openPopup('Daya Geseran', 'Uji kereta mainan ke atas permukaan yang berbeza kekasarannya.', 'bg-green')">
+                    <div class="card-icon" style="background:#16a085; color:white;">🏎️</div>
+                    <h3>Daya Geseran</h3>
+                    <p>Daya dan Gerakan (Darjah 6)</p>
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px; font-weight:bold; color:var(--text-light);">
+                        <span>Progres</span> <span>Baru</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-fill" style="width: 0%; background:#16a085;"></div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="section-title" style="margin-top: 40px; font-size:22px;">
+                Misi Harian Cikgu Dr. Cerdik 🎯
+            </div>
+            <div style="background: white; border-radius: 20px; padding: 20px; display:flex; justify-content:space-between; align-items:center; border: 2px dashed var(--primary);">
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <div style="font-size: 40px;">🎁</div>
+                    <div>
+                        <h4 style="margin:0; font-size:18px; color:var(--text-dark);">Siapkan 1 Eksperimen Haba</h4>
+                        <p style="margin:5px 0 0 0; color:var(--text-light); font-size:14px;">Ganjaran: +50 Bintang & Poster Makmal Baru</p>
+                    </div>
+                </div>
+                <button style="background:var(--secondary); color:white; border:none; padding:10px 20px; border-radius:15px; font-weight:bold; cursor:pointer;">Mula Sekarang</button>
+            </div>
+            
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active">
+                <i>🏠</i> Utama
+            </div>
+            <div class="nav-item" onclick="window.location.href='makmal-kustomisasi.html'">
+                <i>🧪</i> Makmal Saya
+            </div>
+            <div class="nav-item">
+                <i>🏅</i> Pencapaian
+            </div>
+            <div class="nav-item">
+                <i>⚙️</i> Tetapan
+            </div>
+        </div>
+
+        <!-- Popup Modal -->
+        <div class="overlay" id="popup-overlay" onclick="closePopup(event)">
+            <div class="popup" id="popup-box">
+                <div class="card-icon" id="popup-icon" style="margin: 0 auto 20px auto;"></div>
+                <h2 id="popup-title" style="margin-top:0; color:var(--text-dark);">Tajuk</h2>
+                <p id="popup-desc" style="color:var(--text-light); margin-bottom:30px;">Penerangan</p>
+                <button class="btn-play" onclick="playGame()">▶ MAIN SEKARANG</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const overlay = document.getElementById('popup-overlay');
+        const pTitle = document.getElementById('popup-title');
+        const pDesc = document.getElementById('popup-desc');
+        const pIcon = document.getElementById('popup-icon');
+
+        // Load Name from LocalStorage
+        window.onload = () => {
+            const savedName = localStorage.getItem('wonderlab_student_name');
+            if (savedName) {
+                document.querySelector('.user-info h2').innerText = savedName;
+            }
+        };
+
+        function openPopup(title, desc, colorClass) {
+            pTitle.innerText = title;
+            pDesc.innerText = desc;
+            pIcon.className = `card-icon ${colorClass}`;
+            if(title === 'Litar Elektrik') pIcon.innerText = '⚡';
+            else if(title === 'Sifat Haba') pIcon.innerText = '🔥';
+            else if(title === 'Asid & Alkali') { pIcon.innerText = '🧪'; pIcon.style.background = '#9b59b6'; }
+            
+            overlay.classList.add('show');
+        }
+
+        function closePopup(e) {
+            if (e.target === overlay) {
+                overlay.classList.remove('show');
+            }
+        }
+        
+        function playGame() {
+            if (pTitle.innerText === 'Sifat Haba') {
+                window.location.href = 'makmal-haba.html';
+            } else if (pTitle.innerText === 'Litar Elektrik') {
+                window.location.href = 'makmal-litar-elektrik.html';
+            } else if (pTitle.innerText === 'Asid & Alkali') {
+                window.location.href = 'makmal-litmus.html';
+            } else if (pTitle.innerText === 'Daya Geseran') {
+                window.location.href = 'makmal-geseran.html';
+            } else {
+                window.location.href = 'makmal-v2-profesional.html';
+            }
+        }
+    </script>
+</body>
+</html>
