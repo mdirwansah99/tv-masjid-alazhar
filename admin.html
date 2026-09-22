@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Pentadbir Masjid</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                fontFamily: { sans:['Poppins','sans-serif'] },
+                colors: { navy:'#0a1128', navyLight:'#111d3a', gold:'#c9a84c', goldLight:'#e8d48b' }
+            }}
+        }
+    </script>
+    <style>
+        body { background:#0a1128; font-family:'Poppins',sans-serif; }
+        .input-field { background:#0d1a36; border:1px solid #1e2d4a; color:white; padding:10px 14px; border-radius:10px; width:100%; outline:none; transition:border 0.3s; }
+        .input-field:focus { border-color:#c9a84c; }
+        .btn-save { background:linear-gradient(135deg,#c9a84c,#e8d48b); color:#0a1128; font-weight:700; padding:12px 30px; border-radius:10px; border:none; cursor:pointer; font-size:16px; transition:transform 0.2s; }
+        .btn-save:hover { transform:scale(1.02); }
+        .btn-save:active { transform:scale(0.98); }
+        .section-card { background:linear-gradient(135deg,rgba(13,26,54,0.8),rgba(10,17,40,0.9)); border:1px solid rgba(201,168,76,0.15); border-radius:16px; padding:24px; margin-bottom:20px; }
+        .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#10B981; color:white; padding:14px 30px; border-radius:12px; font-weight:600; display:none; z-index:100; box-shadow:0 10px 30px rgba(16,185,129,0.3); }
+        .toast.show { display:block; animation:toastIn 0.4s ease; }
+        @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(20px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
+    </style>
+</head>
+<body class="text-white min-h-screen">
+
+    <!-- Header -->
+    <div class="sticky top-0 z-10" style="background:linear-gradient(180deg,#0a1128,rgba(10,17,40,0.95));">
+        <div class="max-w-2xl mx-auto px-5 py-5 flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-bold text-gold">☪ Panel Pentadbir Masjid</h1>
+                <p class="text-xs text-gray-500">Sistem Paparan Waktu Solat TV</p>
+            </div>
+            <a href="index.html" class="text-sm text-gray-400 hover:text-gold transition-colors">📺 Lihat Paparan TV →</a>
+        </div>
+        <div class="h-[1px] bg-gradient-to-r from-transparent via-gold to-transparent opacity-30"></div>
+    </div>
+
+    <div class="max-w-2xl mx-auto px-5 py-6">
+
+        <!-- SECTION 1: PENGUMUMAN -->
+        <div class="section-card">
+            <h2 class="text-lg font-bold text-gold mb-1">📢 Pengumuman Masjid</h2>
+            <p class="text-xs text-gray-500 mb-4">Teks ini akan berjalan (scroll) di bahagian bawah skrin TV. Gunakan simbol <strong class="text-gold">•</strong> untuk memisahkan ayat.</p>
+            
+            <textarea id="input-ticker" rows="4" class="input-field text-sm mb-3"
+                placeholder="Contoh:&#10;Kutipan minggu ini RM2,000 • Bilal: En Irwan • Imam: Ustaz Supriyadi • Penceramah: Ustaz Adi • Sila matikan telefon bimbit anda"></textarea>
+            
+            <p class="text-xs text-gray-600 mb-1">Preview:</p>
+            <div class="bg-navy rounded-lg p-3 overflow-hidden">
+                <p class="text-gold text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis" id="ticker-preview">Tiada pengumuman</p>
+            </div>
+            <div class="mt-6 border-t border-gray-700 pt-5">
+                <h2 class="text-md font-bold text-gold mb-1">📌 Pengumuman Khas (Kiri Skrin)</h2>
+                <p class="text-xs text-gray-500 mb-4">Pengumuman statik ini akan dipaparkan di bahagian KIRI skrin TV (cth: Kuliah Agama, Gotong-royong).</p>
+                <div class="mb-3">
+                    <label class="text-xs text-gray-400 mb-1 block">Tajuk Pengumuman</label>
+                    <input type="text" id="input-announce-title" class="input-field text-sm font-bold" placeholder="Contoh: KULIAH MAGHRIB">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 mb-1 block">Butiran / Kandungan</label>
+                    <textarea id="input-announce-desc" rows="3" class="input-field text-sm" placeholder="Contoh: Penceramah: Ustaz Wadi Annuar&#10;Tarikh: Hari Ini"></textarea>
+                </div>
+                <p class="text-xs text-gray-500 mt-2 italic">*Biarkan kosong jika tiada pengumuman khas.</p>
+            </div>
+        </div>
+
+        <!-- SECTION 2: KEWANGAN -->
+        <div class="section-card">
+            <h2 class="text-lg font-bold text-gold mb-1">💰 Laporan Kewangan</h2>
+            <p class="text-xs text-gray-500 mb-4">Maklumat kewangan ini akan dipaparkan di skrin TV secara telus.</p>
+            
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                    <label class="text-xs text-gray-400 mb-1 block">📅 Bulan / Tempoh</label>
+                    <input type="text" id="input-fin-period" class="input-field text-sm" placeholder="September 2026">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 mb-1 block">💰 Baki Terdahulu (RM)</label>
+                    <input type="number" id="input-fin-prev" step="0.01" class="input-field text-sm" placeholder="0.00">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                    <label class="text-xs text-emerald-400 mb-1 block font-semibold">📥 Jumlah Pemasukan (RM)</label>
+                    <input type="number" id="input-fin-in" step="0.01" class="input-field text-sm" style="border-color:rgba(16,185,129,0.3);" placeholder="0.00">
+                </div>
+                <div>
+                    <label class="text-xs text-red-400 mb-1 block font-semibold">📤 Jumlah Pengeluaran (RM)</label>
+                    <input type="number" id="input-fin-out" step="0.01" class="input-field text-sm" style="border-color:rgba(239,68,68,0.3);" placeholder="0.00">
+                </div>
+            </div>
+            <div class="bg-navy rounded-xl p-4 text-center mb-3">
+                <p class="text-xs text-gray-400 mb-1">BAKI SEMASA TABUNG MASJID</p>
+                <p class="text-3xl font-bold text-gold" id="display-balance">RM 0.00</p>
+            </div>
+            <div>
+                <label class="text-xs text-gray-400 mb-1 block">📝 Catatan</label>
+                <input type="text" id="input-fin-note" class="input-field text-sm" placeholder="Catatan tambahan...">
+            </div>
+        </div>
+
+        <!-- SECTION 3: PERKONGSIAN ILMU (Custom) -->
+        <div class="section-card">
+            <h2 class="text-lg font-bold text-gold mb-1">📖 Perkongsian Ilmu Tambahan</h2>
+            <p class="text-xs text-gray-500 mb-4">Tambah hadis, motivasi, atau ayat al-Quran anda sendiri. Ini akan dipapar berselang-seli dengan koleksi sedia ada di skrin TV.</p>
+            
+            <div id="custom-slides-list" class="mb-4"></div>
+
+            <div class="bg-navy rounded-xl p-4 mb-3">
+                <div class="grid grid-cols-1 gap-3">
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">Kategori</label>
+                        <select id="new-slide-cat" class="input-field text-sm">
+                            <option value="HADIS SAHIH">Hadis Sahih</option>
+                            <option value="MOTIVASI ISLAMI">Motivasi Islami</option>
+                            <option value="AYAT AL-QURAN">Ayat Al-Quran</option>
+                            <option value="DOA HARIAN">Doa Harian</option>
+                            <option value="PENGUMUMAN MASJID">Pengumuman Masjid</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">Isi Kandungan</label>
+                        <textarea id="new-slide-content" rows="2" class="input-field text-sm" placeholder="Contoh: Sebaik-baik manusia ialah yang paling bermanfaat kepada manusia lain."></textarea>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">Sumber / Rujukan</label>
+                        <input type="text" id="new-slide-source" class="input-field text-sm" placeholder="Contoh: HR. Ahmad, al-Tabrani">
+                    </div>
+                </div>
+                <button onclick="addCustomSlide()" class="mt-3 bg-navyLight border border-gold border-opacity-30 text-gold px-5 py-2 rounded-lg text-sm font-semibold hover:bg-opacity-80 transition-all w-full">
+                    ➕ Tambah Perkongsian
+                </button>
+            </div>
+        </div>
+
+        <!-- SECTION 4: INFO MASJID -->
+        <div class="section-card">
+            <h2 class="text-lg font-bold text-gold mb-1">🕌 Maklumat Masjid</h2>
+            <p class="text-xs text-gray-500 mb-4">Maklumat asas yang dipaparkan di skrin TV.</p>
+            <div class="grid grid-cols-1 gap-3">
+                <div><label class="text-xs text-gray-400 mb-1 block">Nama Masjid</label><input type="text" id="input-name" class="input-field text-sm"></div>
+                <div><label class="text-xs text-gray-400 mb-1 block">Lokasi / Daerah</label><input type="text" id="input-sub" class="input-field text-sm"></div>
+            </div>
+        </div>
+
+        <!-- SAVE BUTTON -->
+        <button onclick="saveAll()" class="btn-save w-full mb-10">💾 Simpan Semua Perubahan</button>
+
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">✅ Perubahan telah disimpan! Skrin TV akan dikemas kini.</div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="firebase-init.js"></script>
+
+    <script>
+        // Load data
+        let appConfig = {};
+        let customSlides = [];
+
+        function loadData(){
+            // Baca dari Firebase dahulu, jika gagal atau kosong, baca dari localStorage
+            database.ref('mosqueData').once('value').then((snapshot) => {
+                if(snapshot.exists()) {
+                    const data = snapshot.val();
+                    if(data.mosqueConfigV4) {
+                        appConfig = data.mosqueConfigV4;
+                        localStorage.setItem('mosqueConfigV4', JSON.stringify(appConfig));
+                    }
+                    if(data.mosqueCustomSlides) {
+                        let slides = data.mosqueCustomSlides;
+                        // Firebase tukar array jadi object — convert balik
+                        if(!Array.isArray(slides) && typeof slides === 'object'){
+                            slides = Object.values(slides);
+                        }
+                        customSlides = Array.isArray(slides) ? slides : [];
+                        localStorage.setItem('mosqueCustomSlides', JSON.stringify(customSlides));
+                    }
+                } else {
+                    const mc = localStorage.getItem('mosqueConfigV4');
+                    if(mc) appConfig = JSON.parse(mc);
+                    const cs = localStorage.getItem('mosqueCustomSlides');
+                    if(cs) customSlides = JSON.parse(cs);
+                }
+                populateUI();
+            }).catch(e => {
+                console.error('Firebase error:', e);
+                // Fallback to local storage if offline
+                const mc = localStorage.getItem('mosqueConfigV4');
+                if(mc) appConfig = JSON.parse(mc);
+                const cs = localStorage.getItem('mosqueCustomSlides');
+                if(cs) customSlides = JSON.parse(cs);
+                populateUI();
+            });
+        }
+
+        function populateUI(){
+            document.getElementById('input-name').value = appConfig.mosqueName || '';
+            document.getElementById('input-sub').value = appConfig.mosqueSub || '';
+            
+            // Map admin fields to appConfig fields (so they are identical in index.html)
+            document.getElementById('input-ticker').value = appConfig.announcement || '';
+            document.getElementById('input-announce-title').value = appConfig.announceTitle || '';
+            document.getElementById('input-announce-desc').value = appConfig.announceDesc || '';
+            document.getElementById('input-fin-period').value = appConfig.finPeriod || '';
+            document.getElementById('input-fin-prev').value = appConfig.finPrev || '';
+            document.getElementById('input-fin-in').value = appConfig.finIn || '';
+            document.getElementById('input-fin-out').value = appConfig.finOut || '';
+            document.getElementById('input-fin-note').value = appConfig.finNote || '';
+
+            updatePreview();
+            calcBalance();
+            renderCustomSlides();
+        }
+
+        function updatePreview(){
+            const t = document.getElementById('input-ticker').value;
+            document.getElementById('ticker-preview').innerText = t || 'Tiada pengumuman';
+        }
+
+        document.getElementById('input-ticker').addEventListener('input', updatePreview);
+
+        function calcBalance(){
+            const prev = parseFloat(document.getElementById('input-fin-prev').value)||0;
+            const inc = parseFloat(document.getElementById('input-fin-in').value)||0;
+            const out = parseFloat(document.getElementById('input-fin-out').value)||0;
+            document.getElementById('display-balance').innerText = `RM ${(prev+inc-out).toFixed(2)}`;
+        }
+        ['input-fin-prev','input-fin-in','input-fin-out'].forEach(id=>{
+            document.getElementById(id).addEventListener('input',calcBalance);
+        });
+
+        function addCustomSlide(){
+            const cat = document.getElementById('new-slide-cat').value;
+            const content = document.getElementById('new-slide-content').value.trim();
+            const source = document.getElementById('new-slide-source').value.trim();
+            if(!content){ alert('Sila isi kandungan.'); return; }
+
+            customSlides.push({ category:cat, content:content, source:source||'—' });
+            localStorage.setItem('mosqueCustomSlides', JSON.stringify(customSlides));
+            database.ref('mosqueData/mosqueCustomSlides').set(customSlides);
+
+            document.getElementById('new-slide-content').value='';
+            document.getElementById('new-slide-source').value='';
+            renderCustomSlides();
+        }
+
+        function removeSlide(i){
+            customSlides.splice(i,1);
+            localStorage.setItem('mosqueCustomSlides', JSON.stringify(customSlides));
+            database.ref('mosqueData/mosqueCustomSlides').set(customSlides);
+            renderCustomSlides();
+        }
+
+        function renderCustomSlides(){
+            const list = document.getElementById('custom-slides-list');
+            if(customSlides.length===0){
+                list.innerHTML='<p class="text-xs text-gray-600 italic">Belum ada perkongsian tambahan. Tambah di bawah.</p>';
+                return;
+            }
+            let html='';
+            customSlides.forEach((s,i)=>{
+                const catColor = s.category==='HADIS SAHIH'?'text-yellow-500':s.category==='AYAT AL-QURAN'?'text-emerald-400':s.category==='DOA HARIAN'?'text-blue-400':'text-purple-400';
+                html+=`<div class="bg-navy rounded-lg p-3 mb-2 flex justify-between items-start">
+                    <div class="flex-1 mr-3">
+                        <p class="text-xs ${catColor} font-semibold mb-1">${s.category}</p>
+                        <p class="text-sm text-gray-200">"${s.content}"</p>
+                        <p class="text-xs text-gray-500 mt-1">— ${s.source}</p>
+                    </div>
+                    <button onclick="removeSlide(${i})" class="text-red-500 hover:text-red-400 text-lg flex-shrink-0">✕</button>
+                </div>`;
+            });
+            list.innerHTML=html;
+        }
+
+        function saveAll(){
+            // Baca config sedia ada supaya field dari modal TV (zone, iqamahMins, dll) tidak hilang
+            const mc = localStorage.getItem('mosqueConfigV4');
+            let mainConfig = mc ? JSON.parse(mc) : {};
+            
+            // Hanya timpa field yang ada dalam admin panel
+            mainConfig.mosqueName = document.getElementById('input-name').value;
+            mainConfig.mosqueSub = document.getElementById('input-sub').value;
+            mainConfig.announcement = document.getElementById('input-ticker').value;
+            mainConfig.announceTitle = document.getElementById('input-announce-title').value;
+            mainConfig.announceDesc = document.getElementById('input-announce-desc').value;
+            mainConfig.finPeriod = document.getElementById('input-fin-period').value;
+            mainConfig.finPrev = parseFloat(document.getElementById('input-fin-prev').value)||0;
+            mainConfig.finIn = parseFloat(document.getElementById('input-fin-in').value)||0;
+            mainConfig.finOut = parseFloat(document.getElementById('input-fin-out').value)||0;
+            mainConfig.finNote = document.getElementById('input-fin-note').value;
+            
+            localStorage.setItem('mosqueConfigV4', JSON.stringify(mainConfig));
+            database.ref('mosqueData/mosqueConfigV4').set(mainConfig);
+
+            // Show toast
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(()=>toast.classList.remove('show'),3000);
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
