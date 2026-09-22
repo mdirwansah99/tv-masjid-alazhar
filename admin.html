@@ -141,11 +141,20 @@
 
         <!-- SECTION 4: INFO MASJID -->
         <div class="section-card">
-            <h2 class="text-lg font-bold text-gold mb-1">🕌 Maklumat Masjid</h2>
-            <p class="text-xs text-gray-500 mb-4">Maklumat asas yang dipaparkan di skrin TV.</p>
+            <h2 class="text-lg font-bold text-gold mb-1">🕌 Maklumat Masjid & Tema</h2>
+            <p class="text-xs text-gray-500 mb-4">Maklumat asas dan pilihan warna untuk skrin TV.</p>
             <div class="grid grid-cols-1 gap-3">
                 <div><label class="text-xs text-gray-400 mb-1 block">Nama Masjid</label><input type="text" id="input-name" class="input-field text-sm"></div>
                 <div><label class="text-xs text-gray-400 mb-1 block">Lokasi / Daerah</label><input type="text" id="input-sub" class="input-field text-sm"></div>
+                <div>
+                    <label class="text-xs text-gray-400 mb-1 block">Warna Tema Skrin</label>
+                    <select id="input-theme" class="input-field text-sm">
+                        <option value="default">Biru Klasik (Default)</option>
+                        <option value="emerald">Hijau Zamrud</option>
+                        <option value="maroon">Merah Delima</option>
+                        <option value="dark">Hitam Elegan</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -206,6 +215,7 @@
         function populateUI(){
             document.getElementById('input-name').value = appConfig.mosqueName || '';
             document.getElementById('input-sub').value = appConfig.mosqueSub || '';
+            document.getElementById('input-theme').value = appConfig.theme || 'default';
             
             // Map admin fields to appConfig fields (so they are identical in index.html)
             document.getElementById('input-ticker').value = appConfig.announcement || '';
@@ -290,6 +300,7 @@
             // Hanya timpa field yang ada dalam admin panel
             mainConfig.mosqueName = document.getElementById('input-name').value;
             mainConfig.mosqueSub = document.getElementById('input-sub').value;
+            mainConfig.theme = document.getElementById('input-theme').value;
             mainConfig.announcement = document.getElementById('input-ticker').value;
             mainConfig.announceTitle = document.getElementById('input-announce-title').value;
             mainConfig.announceDesc = document.getElementById('input-announce-desc').value;

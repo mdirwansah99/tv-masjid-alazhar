@@ -88,8 +88,47 @@ const ZONE_MAP = {
 };
 
 // ============================================================
-// 3. STATE
+// 3. THEMES & STATE
 // ============================================================
+const THEMES = {
+    "default": { // Klasik Biru Emas
+        "--color-bg": "#0a1128",
+        "--color-bg-light": "#111d3a",
+        "--color-bg-gradient-top": "#0d1a36",
+        "--color-accent": "#c9a84c",
+        "--color-accent-light": "#e8d48b",
+        "--color-accent-dark": "#8a6d2b",
+        "--color-accent-rgba": "rgba(201,168,76,0.4)"
+    },
+    "emerald": { // Hijau Zamrud
+        "--color-bg": "#022c22", // emerald-950
+        "--color-bg-light": "#064e3b", // emerald-900
+        "--color-bg-gradient-top": "#022c22",
+        "--color-accent": "#fcd34d", // amber-300
+        "--color-accent-light": "#fde68a", // amber-200
+        "--color-accent-dark": "#d97706", // amber-600
+        "--color-accent-rgba": "rgba(252,211,77,0.4)"
+    },
+    "maroon": { // Merah Delima
+        "--color-bg": "#4c0519", // rose-950
+        "--color-bg-light": "#881337", // rose-900
+        "--color-bg-gradient-top": "#4c0519",
+        "--color-accent": "#fef08a", // yellow-200
+        "--color-accent-light": "#fef9c3", // yellow-100
+        "--color-accent-dark": "#ca8a04", // yellow-600
+        "--color-accent-rgba": "rgba(254,240,138,0.4)"
+    },
+    "dark": { // Hitam Elegan
+        "--color-bg": "#000000",
+        "--color-bg-light": "#1f2937", // gray-800
+        "--color-bg-gradient-top": "#000000",
+        "--color-accent": "#e5e7eb", // gray-200
+        "--color-accent-light": "#f9fafb", // gray-50
+        "--color-accent-dark": "#9ca3af", // gray-400
+        "--color-accent-rgba": "rgba(229,231,235,0.4)"
+    }
+};
+
 let appConfig = {
     mosqueName:"MASJID AL AZHAR",
     mosqueSub:"Kampung Sepakat Jaya, Sepanggar, Kota Kinabalu",
@@ -137,6 +176,13 @@ document.addEventListener('DOMContentLoaded', () => {
 function loadSettings(){
     const s = localStorage.getItem('mosqueConfigV4');
     if(s) appConfig = {...appConfig,...JSON.parse(s)};
+    
+    // 0. Apply Theme
+    const themeName = appConfig.theme || 'default';
+    const selectedTheme = THEMES[themeName] || THEMES['default'];
+    for (const [key, value] of Object.entries(selectedTheme)) {
+        document.documentElement.style.setProperty(key, value);
+    }
     
     // 1. Text Umum
     document.getElementById('display-mosque-name').innerText = appConfig.mosqueName;
@@ -246,8 +292,8 @@ function showIlmu(i){
     container.classList.add('ilmu-fade');
 
     // Warna mengikut kategori
-    const colors = { 'HADIS SAHIH':'#c9a84c', 'AYAT AL-QURAN':'#10B981', 'MOTIVASI ISLAMI':'#60A5FA', 'DOA HARIAN':'#A78BFA', 'PENGUMUMAN MASJID':'#F59E0B' };
-    catEl.style.color = colors[item.cat] || '#c9a84c';
+    const colors = { 'HADIS SAHIH':'var(--color-accent)', 'AYAT AL-QURAN':'#10B981', 'MOTIVASI ISLAMI':'#60A5FA', 'DOA HARIAN':'#A78BFA', 'PENGUMUMAN MASJID':'#F59E0B' };
+    catEl.style.color = colors[item.cat] || 'var(--color-accent)';
     catEl.innerText = item.cat;
     contentEl.innerText = item.text;
     srcEl.innerText = `— ${item.src}`;
@@ -546,6 +592,7 @@ function initSettingsModal(){
     document.getElementById('input-name').value=appConfig.mosqueName;
     document.getElementById('input-sub').value=appConfig.mosqueSub;
     document.getElementById('input-zone').value=appConfig.zone;
+    if(document.getElementById('input-theme')) document.getElementById('input-theme').value=appConfig.theme||'default';
     document.getElementById('input-iqamah').value=appConfig.iqamahMins;
     document.getElementById('input-solat').value=appConfig.solatMins;
     document.getElementById('input-sheet').value=appConfig.sheetId;
@@ -562,10 +609,12 @@ function initSettingsModal(){
     document.getElementById('btn-settings').onclick=()=>modal.classList.add('active');
     document.getElementById('btn-cancel').onclick=()=>modal.classList.remove('active');
     document.getElementById('btn-save').onclick=()=>{
+        const themeVal = document.getElementById('input-theme') ? document.getElementById('input-theme').value : 'default';
         const cfg={
             mosqueName:document.getElementById('input-name').value,
             mosqueSub:document.getElementById('input-sub').value,
             zone:document.getElementById('input-zone').value,
+            theme:themeVal,
             iqamahMins:parseInt(document.getElementById('input-iqamah').value)||10,
             solatMins:parseInt(document.getElementById('input-solat').value)||15,
             sheetId:document.getElementById('input-sheet').value,
