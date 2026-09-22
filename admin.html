@@ -141,13 +141,25 @@
 
         <!-- SECTION 4: INFO MASJID -->
         <div class="section-card">
-            <h2 class="text-lg font-bold text-gold mb-1">🕌 Maklumat Masjid & Tema</h2>
-            <p class="text-xs text-gray-500 mb-4">Maklumat asas dan pilihan warna untuk skrin TV.</p>
+            <h2 class="text-lg font-bold text-gold mb-1">🕌 Maklumat Masjid & Tetapan</h2>
+            <p class="text-xs text-gray-500 mb-4">Maklumat asas, tetapan waktu solat dan pilihan warna untuk skrin TV.</p>
             <div class="grid grid-cols-1 gap-3">
                 <div><label class="text-xs text-gray-400 mb-1 block">Nama Masjid</label><input type="text" id="input-name" class="input-field text-sm"></div>
                 <div><label class="text-xs text-gray-400 mb-1 block">Lokasi / Daerah</label><input type="text" id="input-sub" class="input-field text-sm"></div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">⏱️ Minit Ke Iqamah</label>
+                        <input type="number" id="input-iqamah" class="input-field text-sm" placeholder="10" min="1" max="30">
+                        <p class="text-xs text-gray-600 mt-1">Countdown selepas azan (default: 10)</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">🕌 Tempoh Skrin Hitam (Minit)</label>
+                        <input type="number" id="input-solat" class="input-field text-sm" placeholder="15" min="5" max="60">
+                        <p class="text-xs text-gray-600 mt-1">Skrin gelap semasa solat (default: 15)</p>
+                    </div>
+                </div>
                 <div>
-                    <label class="text-xs text-gray-400 mb-1 block">Warna Tema Skrin</label>
+                    <label class="text-xs text-gray-400 mb-1 block">🎨 Warna Tema Skrin</label>
                     <select id="input-theme" class="input-field text-sm">
                         <option value="default">Biru Klasik (Default)</option>
                         <option value="emerald">Hijau Zamrud</option>
@@ -216,6 +228,8 @@
             document.getElementById('input-name').value = appConfig.mosqueName || '';
             document.getElementById('input-sub').value = appConfig.mosqueSub || '';
             document.getElementById('input-theme').value = appConfig.theme || 'default';
+            document.getElementById('input-iqamah').value = appConfig.iqamahMins || 10;
+            document.getElementById('input-solat').value = appConfig.solatMins || 15;
             
             // Map admin fields to appConfig fields (so they are identical in index.html)
             document.getElementById('input-ticker').value = appConfig.announcement || '';
@@ -301,6 +315,8 @@
             mainConfig.mosqueName = document.getElementById('input-name').value;
             mainConfig.mosqueSub = document.getElementById('input-sub').value;
             mainConfig.theme = document.getElementById('input-theme').value;
+            mainConfig.iqamahMins = parseInt(document.getElementById('input-iqamah').value) || 10;
+            mainConfig.solatMins = parseInt(document.getElementById('input-solat').value) || 15;
             mainConfig.announcement = document.getElementById('input-ticker').value;
             mainConfig.announceTitle = document.getElementById('input-announce-title').value;
             mainConfig.announceDesc = document.getElementById('input-announce-desc').value;
