@@ -132,7 +132,9 @@ const THEMES = {
 let appConfig = {
     mosqueName:"MASJID AL AZHAR",
     mosqueSub:"Kampung Sepakat Jaya, Sepanggar, Kota Kinabalu",
-    zone:"SBH07", iqamahMins:10, solatMins:15, sheetId:"",
+    zone:"SBH07", 
+    iqamahSubuh:20, iqamahZohor:15, iqamahAsar:15, iqamahMaghrib:10, iqamahIsyak:15, 
+    solatMins:15, sheetId:"",
     announcement:"", announceTitle:"", announceDesc:"",
     finPeriod:"", finPrev:0, finIn:0, finOut:0, finNote:""
 };
@@ -419,9 +421,16 @@ function smartEngineTick(){
         let p=prayerDates[i];
         let tMasuk=p.dateObj;
         
-        let azanMins = Math.min(3, appConfig.iqamahMins);
+        let pIqamahMins = 10;
+        if(p.name==='Subuh') pIqamahMins = appConfig.iqamahSubuh ?? 20;
+        else if(p.name==='Zohor') pIqamahMins = appConfig.iqamahZohor ?? 15;
+        else if(p.name==='Asar') pIqamahMins = appConfig.iqamahAsar ?? 15;
+        else if(p.name==='Maghrib') pIqamahMins = appConfig.iqamahMaghrib ?? 10;
+        else if(p.name==='Isyak') pIqamahMins = appConfig.iqamahIsyak ?? 15;
+        
+        let azanMins = Math.min(3, pIqamahMins);
         let tAzanEnd = new Date(tMasuk.getTime() + (azanMins * 60000));
-        let tIqEnd=new Date(tMasuk.getTime()+(appConfig.iqamahMins*60000));
+        let tIqEnd=new Date(tMasuk.getTime()+(pIqamahMins*60000));
         let tSolEnd=new Date(tIqEnd.getTime()+(appConfig.solatMins*60000));
         
         if(azanMins > 0 && now>=tMasuk && now<tAzanEnd){ state="AZAN"; activeP=p; targetD=tAzanEnd; break; }
@@ -593,7 +602,11 @@ function initSettingsModal(){
     document.getElementById('input-sub').value=appConfig.mosqueSub;
     document.getElementById('input-zone').value=appConfig.zone;
     if(document.getElementById('input-theme')) document.getElementById('input-theme').value=appConfig.theme||'default';
-    document.getElementById('input-iqamah').value=appConfig.iqamahMins;
+    if(document.getElementById('input-iqamah-subuh')) document.getElementById('input-iqamah-subuh').value = appConfig.iqamahSubuh ?? 20;
+    if(document.getElementById('input-iqamah-zohor')) document.getElementById('input-iqamah-zohor').value = appConfig.iqamahZohor ?? 15;
+    if(document.getElementById('input-iqamah-asar')) document.getElementById('input-iqamah-asar').value = appConfig.iqamahAsar ?? 15;
+    if(document.getElementById('input-iqamah-maghrib')) document.getElementById('input-iqamah-maghrib').value = appConfig.iqamahMaghrib ?? 10;
+    if(document.getElementById('input-iqamah-isyak')) document.getElementById('input-iqamah-isyak').value = appConfig.iqamahIsyak ?? 15;
     document.getElementById('input-solat').value=appConfig.solatMins;
     document.getElementById('input-sheet').value=appConfig.sheetId;
     document.getElementById('input-announce').value=appConfig.announcement||'';
@@ -615,7 +628,11 @@ function initSettingsModal(){
             mosqueSub:document.getElementById('input-sub').value,
             zone:document.getElementById('input-zone').value,
             theme:themeVal,
-            iqamahMins:parseInt(document.getElementById('input-iqamah').value)||10,
+            iqamahSubuh: document.getElementById('input-iqamah-subuh') ? parseInt(document.getElementById('input-iqamah-subuh').value) || 20 : appConfig.iqamahSubuh,
+            iqamahZohor: document.getElementById('input-iqamah-zohor') ? parseInt(document.getElementById('input-iqamah-zohor').value) || 15 : appConfig.iqamahZohor,
+            iqamahAsar: document.getElementById('input-iqamah-asar') ? parseInt(document.getElementById('input-iqamah-asar').value) || 15 : appConfig.iqamahAsar,
+            iqamahMaghrib: document.getElementById('input-iqamah-maghrib') ? parseInt(document.getElementById('input-iqamah-maghrib').value) || 10 : appConfig.iqamahMaghrib,
+            iqamahIsyak: document.getElementById('input-iqamah-isyak') ? parseInt(document.getElementById('input-iqamah-isyak').value) || 15 : appConfig.iqamahIsyak,
             solatMins:parseInt(document.getElementById('input-solat').value)||15,
             sheetId:document.getElementById('input-sheet').value,
             announcement:document.getElementById('input-announce').value,

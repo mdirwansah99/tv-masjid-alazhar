@@ -319,8 +319,17 @@
                             <option value="dark">Hitam Elegan</option>
                         </select>
                     </div>
-                    <div><label class="block text-gray-400 text-sm mb-1">Minit Ke Iqamah</label><input type="number" id="input-iqamah" class="w-full bg-navy border border-gray-700 text-white px-4 py-2 rounded-lg focus:border-gold focus:outline-none" placeholder="10"></div>
-                    <div><label class="block text-gray-400 text-sm mb-1">Tempoh Skrin Hitam (Minit)</label><input type="number" id="input-solat" class="w-full bg-navy border border-gray-700 text-white px-4 py-2 rounded-lg focus:border-gold focus:outline-none" placeholder="15"></div>
+                    <div class="col-span-2 border-t border-gray-700 pt-3 mt-1">
+                        <label class="block text-gold text-sm font-semibold mb-2">⏱️ Minit Ke Iqamah (Selepas Azan)</label>
+                        <div class="grid grid-cols-5 gap-2">
+                            <div><label class="block text-gray-400 text-xs mb-1">Subuh</label><input type="number" id="input-iqamah-subuh" class="w-full bg-navy border border-gray-700 text-white px-2 py-2 rounded focus:border-gold focus:outline-none text-center" placeholder="20"></div>
+                            <div><label class="block text-gray-400 text-xs mb-1">Zohor</label><input type="number" id="input-iqamah-zohor" class="w-full bg-navy border border-gray-700 text-white px-2 py-2 rounded focus:border-gold focus:outline-none text-center" placeholder="15"></div>
+                            <div><label class="block text-gray-400 text-xs mb-1">Asar</label><input type="number" id="input-iqamah-asar" class="w-full bg-navy border border-gray-700 text-white px-2 py-2 rounded focus:border-gold focus:outline-none text-center" placeholder="15"></div>
+                            <div><label class="block text-gray-400 text-xs mb-1">Maghrib</label><input type="number" id="input-iqamah-maghrib" class="w-full bg-navy border border-gray-700 text-white px-2 py-2 rounded focus:border-gold focus:outline-none text-center" placeholder="10"></div>
+                            <div><label class="block text-gray-400 text-xs mb-1">Isyak</label><input type="number" id="input-iqamah-isyak" class="w-full bg-navy border border-gray-700 text-white px-2 py-2 rounded focus:border-gold focus:outline-none text-center" placeholder="15"></div>
+                        </div>
+                    </div>
+                    <div class="col-span-2 border-t border-gray-700 pt-3 mt-1"><label class="block text-gray-400 text-sm mb-1">Tempoh Skrin Hitam Semasa Solat (Minit)</label><input type="number" id="input-solat" class="w-full bg-navy border border-gray-700 text-white px-4 py-2 rounded-lg focus:border-gold focus:outline-none" placeholder="15"></div>
                     <div class="col-span-2"><label class="block text-gold text-sm mb-1 font-semibold">🔗 Google Sheets ID</label><input type="text" id="input-sheet" class="w-full bg-navy border border-gray-700 text-yellow-300 px-4 py-2 rounded-lg focus:border-gold focus:outline-none" placeholder="Tampal ID sheet jika ada..."><p class="text-xs text-gray-600 mt-1">Biarkan kosong jika tidak digunakan.</p></div>
                 </div>
             </div>

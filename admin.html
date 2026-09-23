@@ -146,17 +146,19 @@
             <div class="grid grid-cols-1 gap-3">
                 <div><label class="text-xs text-gray-400 mb-1 block">Nama Masjid</label><input type="text" id="input-name" class="input-field text-sm"></div>
                 <div><label class="text-xs text-gray-400 mb-1 block">Lokasi / Daerah</label><input type="text" id="input-sub" class="input-field text-sm"></div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-xs text-gray-400 mb-1 block">⏱️ Minit Ke Iqamah</label>
-                        <input type="number" id="input-iqamah" class="input-field text-sm" placeholder="10" min="1" max="30">
-                        <p class="text-xs text-gray-600 mt-1">Countdown selepas azan (default: 10)</p>
+                <div class="border-t border-gray-700 pt-3 mt-1">
+                    <label class="text-xs text-gold font-bold mb-2 block">⏱️ Minit Ke Iqamah (Selepas Azan)</label>
+                    <div class="grid grid-cols-5 gap-2">
+                        <div><label class="text-[10px] text-gray-400 block text-center">Subuh</label><input type="number" id="input-iqamah-subuh" class="input-field text-sm text-center px-1" placeholder="20"></div>
+                        <div><label class="text-[10px] text-gray-400 block text-center">Zohor</label><input type="number" id="input-iqamah-zohor" class="input-field text-sm text-center px-1" placeholder="15"></div>
+                        <div><label class="text-[10px] text-gray-400 block text-center">Asar</label><input type="number" id="input-iqamah-asar" class="input-field text-sm text-center px-1" placeholder="15"></div>
+                        <div><label class="text-[10px] text-gray-400 block text-center">Maghrib</label><input type="number" id="input-iqamah-maghrib" class="input-field text-sm text-center px-1" placeholder="10"></div>
+                        <div><label class="text-[10px] text-gray-400 block text-center">Isyak</label><input type="number" id="input-iqamah-isyak" class="input-field text-sm text-center px-1" placeholder="15"></div>
                     </div>
-                    <div>
-                        <label class="text-xs text-gray-400 mb-1 block">🕌 Tempoh Skrin Hitam (Minit)</label>
-                        <input type="number" id="input-solat" class="input-field text-sm" placeholder="15" min="5" max="60">
-                        <p class="text-xs text-gray-600 mt-1">Skrin gelap semasa solat (default: 15)</p>
-                    </div>
+                </div>
+                <div class="mt-1">
+                    <label class="text-xs text-gray-400 mb-1 block">🕌 Tempoh Skrin Hitam Semasa Solat (Minit)</label>
+                    <input type="number" id="input-solat" class="input-field text-sm" placeholder="15" min="5" max="60">
                 </div>
                 <div>
                     <label class="text-xs text-gray-400 mb-1 block">🎨 Warna Tema Skrin</label>
@@ -228,7 +230,11 @@
             document.getElementById('input-name').value = appConfig.mosqueName || '';
             document.getElementById('input-sub').value = appConfig.mosqueSub || '';
             document.getElementById('input-theme').value = appConfig.theme || 'default';
-            document.getElementById('input-iqamah').value = appConfig.iqamahMins || 10;
+            document.getElementById('input-iqamah-subuh').value = appConfig.iqamahSubuh ?? 20;
+            document.getElementById('input-iqamah-zohor').value = appConfig.iqamahZohor ?? 15;
+            document.getElementById('input-iqamah-asar').value = appConfig.iqamahAsar ?? 15;
+            document.getElementById('input-iqamah-maghrib').value = appConfig.iqamahMaghrib ?? 10;
+            document.getElementById('input-iqamah-isyak').value = appConfig.iqamahIsyak ?? 15;
             document.getElementById('input-solat').value = appConfig.solatMins || 15;
             
             // Map admin fields to appConfig fields (so they are identical in index.html)
@@ -315,7 +321,11 @@
             mainConfig.mosqueName = document.getElementById('input-name').value;
             mainConfig.mosqueSub = document.getElementById('input-sub').value;
             mainConfig.theme = document.getElementById('input-theme').value;
-            mainConfig.iqamahMins = parseInt(document.getElementById('input-iqamah').value) || 10;
+            mainConfig.iqamahSubuh = parseInt(document.getElementById('input-iqamah-subuh').value) || 20;
+            mainConfig.iqamahZohor = parseInt(document.getElementById('input-iqamah-zohor').value) || 15;
+            mainConfig.iqamahAsar = parseInt(document.getElementById('input-iqamah-asar').value) || 15;
+            mainConfig.iqamahMaghrib = parseInt(document.getElementById('input-iqamah-maghrib').value) || 10;
+            mainConfig.iqamahIsyak = parseInt(document.getElementById('input-iqamah-isyak').value) || 15;
             mainConfig.solatMins = parseInt(document.getElementById('input-solat').value) || 15;
             mainConfig.announcement = document.getElementById('input-ticker').value;
             mainConfig.announceTitle = document.getElementById('input-announce-title').value;
