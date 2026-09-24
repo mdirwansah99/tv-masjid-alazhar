@@ -475,11 +475,11 @@ function updateUI(state, activeP, nextP, targetD, now){
         azanOverlay.classList.remove('active');
         // Next prayer text
         if(nextP){
-            if(h>0) nextText.innerText=`${nextP.name.toUpperCase()} in ${h} hr ${String(m).padStart(2,'0')} min`;
-            else nextText.innerText=`${nextP.name.toUpperCase()} in ${m} min ${String(s).padStart(2,'0')} sec`;
+            if(h>0) nextText.innerText=`${nextP.name.toUpperCase()} dalam ${h} jam ${String(m).padStart(2,'0')} minit`;
+            else nextText.innerText=`${nextP.name.toUpperCase()} dalam ${m} minit ${String(s).padStart(2,'0')} saat`;
         }
         if(iqDisplay) iqDisplay.innerText='--:--';
-        if(iqLabel) iqLabel.innerText='min';
+        if(iqLabel) iqLabel.innerText='minit';
     }
     else if(state==="AZAN"){
         solatOverlay.classList.remove('active');
@@ -533,9 +533,9 @@ function renderPrayerCards(activeP, currentState){
     const iqState=currentState==='IQAMAH'?'prayer-card prayer-card-iqamah':'prayer-card';
     c.innerHTML+=`
         <div class="${iqState}" style="border-color:rgba(201,168,76,0.4);">
-            <p class="text-xs text-gold uppercase tracking-widest mb-1">IQAMAH IN:</p>
+            <p class="text-xs text-gold uppercase tracking-widest mb-1">IQAMAH DALAM:</p>
             <p class="text-3xl font-clock font-bold text-gold" id="iqamah-display">--:--</p>
-            <p class="text-xs text-gray-500" id="iqamah-label">min</p>
+            <p class="text-xs text-gray-500" id="iqamah-label">minit</p>
         </div>`;
 }
 
