@@ -35,15 +35,21 @@
         }
 
         * { margin:0; padding:0; box-sizing:border-box; }
+        html { font-size: 16px; }
+        
+        /* Auto-scale untuk TV bersolusi rendah (contoh 720p atau browser TV yang ada toolbar) */
+        @media (max-height: 900px) { html { font-size: 14px; } }
+        @media (max-height: 768px) { html { font-size: 12px; } }
+        @media (max-height: 650px) { html { font-size: 10px; } }
+
         body { background: var(--color-bg); color: white; overflow: hidden; font-family:'Poppins',sans-serif; height:100vh; display:flex; align-items:center; justify-content:center; transition: background-color 0.5s; }
 
         /* Main frame */
         .main-frame {
             position: relative;
-            width: 94vw; height: 90vh;
+            width: 100vw; height: 100vh;
             background: linear-gradient(180deg, var(--color-bg-gradient-top) 0%, var(--color-bg) 40%, var(--color-bg-gradient-top) 100%);
-            border: 2px solid var(--color-accent-rgba);
-            border-radius: 16px;
+            border: none; /* Buang border untuk full screen sepenuhnya */
             overflow: hidden;
             transition: all 0.5s;
         }

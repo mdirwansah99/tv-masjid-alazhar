@@ -669,19 +669,47 @@ function calcBalance(){
 // ============================================================
 function initFullscreen(){
     const btn=document.getElementById('btn-fullscreen');
+    
+    function toggleFS() {
+        const doc = window.document;
+        const docEl = doc.documentElement;
+
+        const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+        const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+        if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+            if(requestFullScreen) requestFullScreen.call(docEl).catch(e=>console.warn(e));
+        } else {
+            if(cancelFullScreen) cancelFullScreen.call(doc);
+        }
+    }
+
     if(btn){
         btn.onclick=(e)=>{
             e.stopPropagation();
-            if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(e=>console.warn(e));
-            else document.exitFullscreen();
+            toggleFS();
         };
     }
-    document.addEventListener('fullscreenchange',()=>{if(btn) btn.innerText=document.fullscreenElement?'⛶':'🖵';});
+    
+    ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange'].forEach(ev => {
+        document.addEventListener(ev, ()=>{
+            if(btn) {
+                const isFS = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+                btn.innerText = isFS ? '⛶' : '🖵';
+            }
+        });
+    });
     
     // Klik/tap mana-mana untuk fullscreen (sesuai untuk remote TV)
-    document.addEventListener('click',()=>{
-        if(!document.fullscreenElement){
-            document.documentElement.requestFullscreen().catch(e=>console.warn(e));
+    document.addEventListener('click', (e) => {
+        // Jangan trigger kalau klik butang settings
+        if(e.target.closest('#btn-settings') || e.target.closest('#settings-modal')) return;
+        
+        const doc = window.document;
+        if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement){
+            const docEl = doc.documentElement;
+            const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+            if(requestFullScreen) requestFullScreen.call(docEl).catch(e=>{});
         }
     });
 }
