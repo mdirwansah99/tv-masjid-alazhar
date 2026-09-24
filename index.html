@@ -183,6 +183,19 @@
         </div>
     </div>
 
+    <!-- ILMU OVERLAY -->
+    <div id="ilmu-overlay" class="fixed inset-0 z-40 flex flex-col items-center justify-center text-center opacity-0 pointer-events-none transition-opacity duration-1000" style="background: linear-gradient(135deg, rgba(13,26,54,0.98), rgba(2,5,15,1)); border: 8px solid rgba(201,168,76,0.3);">
+        <div class="max-w-6xl w-full px-12">
+            <p class="text-3xl text-gold uppercase tracking-[0.5em] font-semibold mb-10 border-b-2 border-gold pb-4 inline-block" id="fs-ilmu-category">HADIS SAHIH</p>
+            <p class="text-5xl md:text-6xl lg:text-[4.5rem] font-arab leading-[1.6] text-white whitespace-pre-line mb-10" id="fs-ilmu-content" style="text-shadow: 0 4px 20px rgba(0,0,0,0.5);">"Memuatkan..."</p>
+            <p class="text-4xl text-goldLight italic mt-4" id="fs-ilmu-source">—</p>
+        </div>
+        <!-- Progress bar -->
+        <div class="absolute bottom-8 left-16 right-16 h-3 bg-gray-800 rounded-full overflow-hidden border border-gray-700">
+            <div id="fs-ilmu-progress" class="h-full bg-gold w-0 transition-all duration-[25000ms] ease-linear"></div>
+        </div>
+    </div>
+
     <!-- MAIN FRAME -->
     <div class="main-frame flex flex-col justify-between">
 
@@ -197,83 +210,75 @@
         <button id="btn-settings" class="absolute top-2 left-2 text-gray-700 hover:text-gold z-30 text-sm transition-colors">⚙️</button>
         <button id="btn-fullscreen" class="absolute top-2 right-2 text-gray-700 hover:text-gold z-30 text-lg transition-colors">🖵</button>
 
-        <!-- TOP: Mosque Name -->
-        <div class="text-center pt-2 relative z-10 flex flex-col items-center">
-            <p class="font-arab text-5xl text-gold mb-2" style="line-height: 1.2; text-shadow: 0 0 15px rgba(201,168,76,0.3);">﷽</p>
-            <h1 class="text-xl font-bold tracking-[0.3em] uppercase text-gold" id="display-mosque-name">MASJID AL AZHAR</h1>
-            <p class="text-xs text-gray-400 tracking-wider" id="display-mosque-sub">Kampung Sepakat Jaya, Sepanggar, Kota Kinabalu</p>
-        </div>
-
-        <!-- PANEL PENGUMUMAN KHAS (Sentiasa dipapar di ruang kiri) -->
-        <div id="announce-panel-ui" class="absolute top-28 left-8 w-[320px] p-5 rounded-xl border border-gold opacity-0 transition-opacity duration-1000 z-20 hidden shadow-2xl" style="background:linear-gradient(135deg, rgba(13,26,54,0.95), rgba(10,17,40,0.98)); border-color:rgba(201,168,76,0.4);">
-            <div class="flex items-center justify-center gap-3 mb-3 border-b border-gray-700 pb-3">
-                <span class="text-gold text-2xl">📢</span>
-                <h3 class="text-gold font-bold text-center text-base tracking-widest" id="ui-announce-title">PENGUMUMAN</h3>
-            </div>
-            <p class="text-sm text-gray-100 text-center leading-relaxed whitespace-pre-line mt-4" id="ui-announce-desc">Tiada pengumuman</p>
-        </div>
-
-        <!-- PANEL KEWANGAN (Sentiasa dipapar di ruang kanan) -->
-        <div id="finance-panel-ui" class="absolute top-28 right-8 w-64 p-4 rounded-xl border border-gold opacity-0 transition-opacity duration-1000 z-20 hidden" style="background:linear-gradient(135deg, rgba(13,26,54,0.9), rgba(10,17,40,0.95)); border-color:rgba(201,168,76,0.3);">
-            <h3 class="text-gold font-bold text-center mb-1 text-sm tracking-widest border-b border-gray-700 pb-2">TABUNG MASJID</h3>
-            <p class="text-[10px] text-gray-400 text-center mb-3 uppercase tracking-wider" id="ui-fin-period">Bulan: -</p>
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-xs text-emerald-400">📥 Masuk</span>
-                <span class="text-sm font-bold text-emerald-300" id="ui-fin-in">RM 0.00</span>
-            </div>
-            <div class="flex justify-between items-center mb-3">
-                <span class="text-xs text-red-400">📤 Keluar</span>
-                <span class="text-sm font-bold text-red-300" id="ui-fin-out">RM 0.00</span>
-            </div>
-            <div class="bg-navy rounded-lg p-2 text-center border border-gray-700">
-                <p class="text-[10px] text-gray-400 mb-1 uppercase tracking-widest">Baki Semasa</p>
-                <p class="text-xl font-clock font-bold text-gold" id="ui-fin-balance">RM 0.00</p>
-            </div>
-            <p class="text-[9px] text-gray-500 mt-2 text-center italic whitespace-pre-line" id="ui-fin-note"></p>
-        </div>
-
-        <!-- ARCH: Clock + Date -->
-        <div class="arch-frame relative z-10">
-            <!-- Clock -->
-            <div class="flex items-baseline justify-center gap-4">
-                <span class="text-[5.5rem] font-clock font-bold text-white clock-glow leading-none" id="clock-time">11:34</span>
-                <span class="text-3xl font-clock font-bold text-white clock-glow leading-none -ml-3" id="clock-sec">:00</span>
-                <span class="text-3xl font-clock font-semibold text-goldLight" id="clock-ampm">AM</span>
-                <span class="text-4xl text-gray-500 font-light mx-2">|</span>
-                <span class="text-3xl font-semibold text-white tracking-wider" id="clock-day">SELASA</span>
+        <!-- KANDUNGAN UTAMA (GRID 3 KOLUM) -->
+        <div class="relative z-10 w-full flex-grow flex flex-col justify-between pt-6 h-full">
+            
+            <!-- BAHAGIAN ATAS: Nama Masjid -->
+            <div class="text-center flex flex-col items-center shrink-0 mb-4">
+                <p class="font-arab text-6xl md:text-[5.5rem] lg:text-[7rem] text-gold" style="line-height: 1.1; text-shadow: 0 0 25px rgba(201,168,76,0.6);">﷽</p>
+                
+                <!-- Spacer buatan untuk tolak nama masjid ke bawah (ke tengah) -->
+                <div class="mt-12 lg:mt-24 mb-4">
+                    <h1 class="text-2xl md:text-3xl lg:text-5xl font-bold tracking-[0.4em] uppercase text-gold" id="display-mosque-name">MASJID AL AZHAR</h1>
+                    <p class="text-sm md:text-base lg:text-xl text-gray-300 tracking-[0.2em] mt-3" id="display-mosque-sub">Kampung Sepakat Jaya, Sepanggar, Kota Kinabalu</p>
+                </div>
             </div>
 
-            <!-- Hijri Date -->
-            <p class="text-2xl font-bold text-gold tracking-[0.2em] mt-2" id="date-hijrah">24 REJAB 1445H</p>
-            <!-- Masihi Date -->
-            <p class="text-sm text-gray-400 tracking-wider mt-1" id="date-masihi">15 Januari 2024</p>
+            <!-- BAHAGIAN TENGAH: 3 Kolum (Pengumuman - Jam - Kewangan) -->
+            <div class="grid grid-cols-12 gap-8 px-8 mt-2 items-center flex-grow">
+                
+                <!-- KIRI: Pengumuman (Col span 3) -->
+                <div class="col-span-3 h-full flex items-center justify-start">
+                    <div id="announce-panel-ui" class="w-full p-6 rounded-2xl border-2 border-gold shadow-2xl transition-opacity duration-1000 hidden" style="background:linear-gradient(135deg, rgba(13,26,54,0.95), rgba(10,17,40,0.98)); border-color:rgba(201,168,76,0.5);">
+                        <div class="flex items-center justify-center gap-4 mb-4 border-b-2 border-gray-700 pb-4">
+                            <span class="text-gold text-4xl">📢</span>
+                            <h3 class="text-gold font-bold text-center text-xl tracking-widest" id="ui-announce-title">PENGUMUMAN</h3>
+                        </div>
+                        <p class="text-xl lg:text-2xl text-gray-100 text-center leading-relaxed whitespace-pre-line mt-6" id="ui-announce-desc">Tiada pengumuman</p>
+                    </div>
+                </div>
 
-            <!-- Gold divider -->
-            <div class="w-48 h-[1px] mx-auto mt-3 bg-gradient-to-r from-transparent via-gold to-transparent opacity-50"></div>
+                <!-- TENGAH: Jam & Tarikh (Col span 6) -->
+                <div class="col-span-6 flex flex-col items-center justify-center shrink-0">
+                    <div class="flex items-baseline justify-center gap-4">
+                        <span class="text-[7rem] lg:text-[8rem] font-clock font-bold text-white clock-glow leading-none" id="clock-time">11:34</span>
+                        <span class="text-5xl font-clock font-bold text-white clock-glow leading-none -ml-3" id="clock-sec">:00</span>
+                        <span class="text-4xl font-clock font-semibold text-goldLight" id="clock-ampm">AM</span>
+                        <span class="text-5xl text-gray-500 font-light mx-4">|</span>
+                        <span class="text-5xl font-semibold text-white tracking-wider" id="clock-day">SELASA</span>
+                    </div>
 
-            <!-- PERKONGSIAN ILMU -->
-            <div class="mt-3 mb-1 transition-all duration-700" id="ilmu-container">
-                <p class="text-xs uppercase tracking-[0.3em] font-semibold mb-1" id="ilmu-category" style="color:#c9a84c;">HADIS SAHIH</p>
-                <p class="text-base font-arab leading-relaxed text-gray-200 px-8 whitespace-pre-line" id="ilmu-content">"Memuatkan..."</p>
-                <p class="text-xs text-gray-500 italic mt-1" id="ilmu-source">—</p>
+                    <p class="text-4xl font-bold text-gold tracking-[0.25em] mt-8" id="date-hijrah">24 REJAB 1445H</p>
+                    <p class="text-2xl text-gray-400 tracking-wider mt-3" id="date-masihi">15 Januari 2024</p>
+                </div>
+
+                <!-- KANAN: Kewangan (Col span 3) -->
+                <div class="col-span-3 h-full flex items-center justify-end">
+                    <div id="finance-panel-ui" class="w-full p-6 rounded-2xl border-2 border-gold shadow-2xl transition-opacity duration-1000 hidden" style="background:linear-gradient(135deg, rgba(13,26,54,0.9), rgba(10,17,40,0.95)); border-color:rgba(201,168,76,0.4);">
+                        <h3 class="text-gold font-bold text-center mb-3 text-xl tracking-widest border-b-2 border-gray-700 pb-3">TABUNG MASJID</h3>
+                        <p class="text-sm text-gray-400 text-center mb-5 uppercase tracking-wider" id="ui-fin-period">Bulan: -</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-lg text-emerald-400">📥 Masuk</span>
+                            <span class="text-2xl font-bold text-emerald-300" id="ui-fin-in">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-lg text-red-400">📤 Keluar</span>
+                            <span class="text-2xl font-bold text-red-300" id="ui-fin-out">RM 0.00</span>
+                        </div>
+                        <div class="bg-navy rounded-xl p-4 text-center border-2 border-gray-700 shadow-inner">
+                            <p class="text-sm text-gray-400 mb-2 uppercase tracking-widest">Baki Semasa</p>
+                            <p class="text-4xl font-clock font-bold text-gold" id="ui-fin-balance">RM 0.00</p>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-4 text-center italic whitespace-pre-line" id="ui-fin-note"></p>
+                    </div>
+                </div>
+
             </div>
-        </div>
 
-        <!-- PRAYER TIMES GRID (3x2) -->
-        <div class="px-8 relative z-10">
-            <div class="grid grid-cols-3 gap-4" id="prayer-cards-container">
-                <!-- Row 1 -->
-                <div class="prayer-card"><p class="text-xs text-gray-500 uppercase tracking-widest mb-1">🌙 Subuh</p><p class="text-3xl font-clock font-bold text-white">--:-- <span class="text-lg text-goldLight">AM</span></p></div>
-                <div class="prayer-card"><p class="text-xs text-gray-500 uppercase tracking-widest mb-1">☀️ Zohor</p><p class="text-3xl font-clock font-bold text-white">--:-- <span class="text-lg text-goldLight">PM</span></p></div>
-                <div class="prayer-card"><p class="text-xs text-gray-500 uppercase tracking-widest mb-1">🌤️ Asar</p><p class="text-3xl font-clock font-bold text-white">--:-- <span class="text-lg text-goldLight">PM</span></p></div>
-                <!-- Row 2 -->
-                <div class="prayer-card"><p class="text-xs text-gray-500 uppercase tracking-widest mb-1">🌅 Maghrib</p><p class="text-3xl font-clock font-bold text-white">--:-- <span class="text-lg text-goldLight">PM</span></p></div>
-                <div class="prayer-card"><p class="text-xs text-gray-500 uppercase tracking-widest mb-1">🌙 Isyak</p><p class="text-3xl font-clock font-bold text-white">--:-- <span class="text-lg text-goldLight">PM</span></p></div>
-                <!-- Iqamah -->
-                <div class="prayer-card-iqamah prayer-card">
-                    <p class="text-xs text-gold uppercase tracking-widest mb-1">IQAMAH DALAM:</p>
-                    <p class="text-3xl font-clock font-bold text-gold" id="iqamah-display">--:--</p>
-                    <p class="text-xs text-gray-500" id="iqamah-label">minit</p>
+            <!-- PRAYER TIMES GRID (6 Kolum, 1 Baris supaya besar) -->
+            <div class="px-8 mt-auto mb-6 shrink-0">
+                <div class="grid grid-cols-6 gap-3" id="prayer-cards-container">
+                    <!-- Row 1 (6 Items) -->
                 </div>
             </div>
         </div>

@@ -7,13 +7,13 @@ const BULAN_HIJRAH = ['Muharram','Safar','Rabiul Awal','Rabiul Akhir','Jamadil A
 const HARI_MELAYU = ['AHAD','ISNIN','SELASA','RABU','KHAMIS','JUMAAT','SABTU'];
 const BULAN_MASIHI = ['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'];
 
-const PRAYER_ICONS = { fajr:'🌙', dhuhr:'☀️', asr:'🌤️', maghrib:'🌅', isha:'🌙' };
+const PRAYER_ICONS = { fajr:'🌙', syuruk:'🌅', dhuhr:'☀️', asr:'🌤️', maghrib:'🌅', isha:'🌙' };
 
 // ============================================================
 // KOLEKSI PERKONGSIAN ILMU ISLAM
 // ============================================================
 const ILMU_KOLEKSI = [
-    // 10 HADIS SAHIH
+    // 15 HADIS SAHIH
     { cat:"HADIS SAHIH", text:"\"Sebaik-baik manusia ialah yang paling bermanfaat kepada manusia lain.\"", src:"HR. Ahmad, al-Tabrani" },
     { cat:"HADIS SAHIH", text:"\"Senyumanmu di hadapan saudaramu adalah sedekah.\"", src:"HR. al-Tirmidzi" },
     { cat:"HADIS SAHIH", text:"\"Barangsiapa yang beriman kepada Allah dan Hari Akhirat, maka hendaklah dia berkata baik atau diam.\"", src:"HR. al-Bukhari & Muslim" },
@@ -24,8 +24,13 @@ const ILMU_KOLEKSI = [
     { cat:"HADIS SAHIH", text:"\"Barangsiapa menempuh suatu jalan untuk mencari ilmu, maka Allah akan memudahkan baginya jalan menuju syurga.\"", src:"HR. Muslim" },
     { cat:"HADIS SAHIH", text:"\"Tiada balasan yang sesuai bagi haji yang mabrur melainkan syurga.\"", src:"HR. al-Bukhari" },
     { cat:"HADIS SAHIH", text:"\"Malu itu sebahagian daripada iman.\"", src:"HR. al-Bukhari & Muslim" },
+    { cat:"HADIS SAHIH", text:"\"Orang yang paling aku cintai dan paling dekat tempat duduknya denganku pada hari kiamat ialah orang yang paling baik akhlaknya.\"", src:"HR. al-Tirmidzi" },
+    { cat:"HADIS SAHIH", text:"\"Sesiapa yang melepaskan satu kesusahan seorang mukmin di dunia, Allah akan melepaskan kesusahannya pada hari kiamat.\"", src:"HR. Muslim" },
+    { cat:"HADIS SAHIH", text:"\"Sesungguhnya Allah tidak memandang kepada rupa paras dan harta kamu, tetapi Dia memandang kepada hati dan amalan kamu.\"", src:"HR. Muslim" },
+    { cat:"HADIS SAHIH", text:"\"Tidak akan masuk syurga orang yang memutuskan silaturrahim.\"", src:"HR. al-Bukhari & Muslim" },
+    { cat:"HADIS SAHIH", text:"\"Doa seorang Muslim untuk saudaranya secara diam-diam pasti dimakbulkan.\"", src:"HR. Muslim" },
 
-    // 10 QUOTE AL-QURAN
+    // 15 QUOTE AL-QURAN
     { cat:"AYAT AL-QURAN", text:"\"Sesungguhnya bersama kesulitan itu ada kemudahan.\"", src:"Surah al-Insyirah, 94:5" },
     { cat:"AYAT AL-QURAN", text:"\"Dan Tuhanmu berfirman: Berdoalah kepada-Ku, nescaya Aku perkenankan doa permohonanmu.\"", src:"Surah Ghafir, 40:60" },
     { cat:"AYAT AL-QURAN", text:"\"Allah tidak membebani seseorang melainkan sesuai dengan kesanggupannya.\"", src:"Surah al-Baqarah, 2:286" },
@@ -36,8 +41,13 @@ const ILMU_KOLEKSI = [
     { cat:"AYAT AL-QURAN", text:"\"Ingatlah, hanya dengan mengingati Allah hati menjadi tenang.\"", src:"Surah al-Ra'd, 13:28" },
     { cat:"AYAT AL-QURAN", text:"\"Maka nikmat Tuhan kamu yang manakah yang kamu dustakan?\"", src:"Surah ar-Rahman, 55:13" },
     { cat:"AYAT AL-QURAN", text:"\"Jangan kamu bersedih hati, sesungguhnya Allah ada bersama kita.\"", src:"Surah at-Taubah, 9:40" },
+    { cat:"AYAT AL-QURAN", text:"\"Berdoalah kepada Tuhanmu dengan merendah diri dan suara yang lembut.\"", src:"Surah al-A'raf, 7:55" },
+    { cat:"AYAT AL-QURAN", text:"\"Sesungguhnya Allah menyukai orang-orang yang bertaubat dan orang-orang yang menyucikan diri.\"", src:"Surah al-Baqarah, 2:222" },
+    { cat:"AYAT AL-QURAN", text:"\"Dan berbuat baiklah, kerana sesungguhnya Allah menyukai orang-orang yang berbuat baik.\"", src:"Surah al-Baqarah, 2:195" },
+    { cat:"AYAT AL-QURAN", text:"\"Boleh jadi kamu membenci sesuatu padahal ia amat baik bagimu, dan boleh jadi kamu menyukai sesuatu padahal ia amat buruk bagimu.\"", src:"Surah al-Baqarah, 2:216" },
+    { cat:"AYAT AL-QURAN", text:"\"Katakanlah: Hai hamba-hamba-Ku yang melampaui batas terhadap diri mereka sendiri, janganlah kamu berputus asa dari rahmat Allah.\"", src:"Surah az-Zumar, 39:53" },
 
-    // 10 MOTIVASI ISLAMI
+    // 15 MOTIVASI ISLAMI
     { cat:"MOTIVASI ISLAMI", text:"\"Tidak ada kesedihan yang kekal, selagi kita ada Allah untuk bersandar.\"", src:"Mutiara Kata" },
     { cat:"MOTIVASI ISLAMI", text:"\"Terkadang Allah mematahkan rancangan kita, untuk menyelamatkan kita daripada kemudaratan.\"", src:"Mutiara Kata" },
     { cat:"MOTIVASI ISLAMI", text:"\"Ujian yang datang bukan untuk melemahkan, tetapi untuk menjadikan iman kita lebih teguh.\"", src:"Mutiara Kata" },
@@ -47,7 +57,12 @@ const ILMU_KOLEKSI = [
     { cat:"MOTIVASI ISLAMI", text:"\"Solat bukanlah sekadar kewajipan, tetapi waktu untuk hati berehat dari kelelahan dunia.\"", src:"Mutiara Kata" },
     { cat:"MOTIVASI ISLAMI", text:"\"Jadilah pemaaf, kerana Allah itu Maha Pemaaf. Hati yang tenang bermula daripada kemaafan.\"", src:"Mutiara Kata" },
     { cat:"MOTIVASI ISLAMI", text:"\"Jangan pernah berputus asa dengan rahmat Allah, sesungguhnya Dia sentiasa mendengar doamu.\"", src:"Mutiara Kata" },
-    { cat:"MOTIVASI ISLAMI", text:"\"Dunia ini hanya persinggahan sebentar, jadikan akhirat sebagai destinasi yang kekal.\"", src:"Mutiara Kata" }
+    { cat:"MOTIVASI ISLAMI", text:"\"Dunia ini hanya persinggahan sebentar, jadikan akhirat sebagai destinasi yang kekal.\"", src:"Mutiara Kata" },
+    { cat:"MOTIVASI ISLAMI", text:"\"Air mata taubat di keheningan malam lebih bernilai daripada permata dunia.\"", src:"Mutiara Kata" },
+    { cat:"MOTIVASI ISLAMI", text:"\"Apabila kau rasa sunyi, bentangkan sejadahmu. Allah sentiasa rindu mendengar rintihanmu.\"", src:"Mutiara Kata" },
+    { cat:"MOTIVASI ISLAMI", text:"\"Jangan pandang rendah pada doa. Doa adalah senjata mukmin yang mampu mengubah takdir.\"", src:"Mutiara Kata" },
+    { cat:"MOTIVASI ISLAMI", text:"\"Bersabarlah atas ujian manusia, kerana redha Allah itu lebih besar nilainya.\"", src:"Mutiara Kata" },
+    { cat:"MOTIVASI ISLAMI", text:"\"Mulakan harimu dengan Bismillah dan syukur, nescaya Allah akan mencukupkan segalanya.\"", src:"Mutiara Kata" }
 ];
 
 // ============================================================
@@ -270,35 +285,62 @@ function getAllIlmu(){
     return all;
 }
 
+let isIlmuFullscreen = false;
+let ilmuTimer = 0;
+
 function startIlmuSlideshow(){
-    showIlmu(0);
-    setInterval(() => {
-        const all = getAllIlmu();
-        ilmuIndex = (ilmuIndex + 1) % all.length;
-        showIlmu(ilmuIndex);
-    }, 10000); // Setiap 10 saat
+    // Tiada lagi setInterval berasingan, semuanya diurus oleh smartEngineTick
+    updateIlmuContent(0);
 }
 
-function showIlmu(i){
+function updateIlmuContent(i){
     const all = getAllIlmu();
     if(all.length === 0) return;
     const item = all[i % all.length];
-    const container = document.getElementById('ilmu-container');
-    const catEl = document.getElementById('ilmu-category');
-    const contentEl = document.getElementById('ilmu-content');
-    const srcEl = document.getElementById('ilmu-source');
+    
+    const catEl = document.getElementById('fs-ilmu-category');
+    const contentEl = document.getElementById('fs-ilmu-content');
+    const srcEl = document.getElementById('fs-ilmu-source');
 
-    // Fade animation
-    container.classList.remove('ilmu-fade');
-    void container.offsetWidth;
-    container.classList.add('ilmu-fade');
+    if(!catEl) return;
 
     // Warna mengikut kategori
     const colors = { 'HADIS SAHIH':'var(--color-accent)', 'AYAT AL-QURAN':'#10B981', 'MOTIVASI ISLAMI':'#60A5FA', 'DOA HARIAN':'#A78BFA', 'PENGUMUMAN MASJID':'#F59E0B' };
     catEl.style.color = colors[item.cat] || 'var(--color-accent)';
     catEl.innerText = item.cat;
     contentEl.innerText = item.text;
-    srcEl.innerText = `— ${item.src}`;
+    srcEl.innerText = item.src;
+}
+
+function showIlmuOverlay() {
+    isIlmuFullscreen = true;
+    const overlay = document.getElementById('ilmu-overlay');
+    const progress = document.getElementById('fs-ilmu-progress');
+    if(!overlay) return;
+    
+    // Update kandungan sebelum tunjuk
+    updateIlmuContent(ilmuIndex);
+    
+    overlay.classList.remove('opacity-0', 'pointer-events-none');
+    overlay.classList.add('opacity-100');
+    
+    // Reset progress bar animation
+    progress.classList.remove('w-full', 'duration-[25000ms]');
+    progress.classList.add('w-0', 'duration-0');
+    
+    setTimeout(() => {
+        progress.classList.remove('w-0', 'duration-0');
+        progress.classList.add('w-full', 'duration-[25000ms]');
+    }, 100);
+}
+
+function hideIlmuOverlay() {
+    isIlmuFullscreen = false;
+    const overlay = document.getElementById('ilmu-overlay');
+    if(overlay) {
+        overlay.classList.add('opacity-0', 'pointer-events-none');
+        overlay.classList.remove('opacity-100');
+    }
 }
 
 function populateZoneDropdown(){
@@ -348,6 +390,7 @@ async function tryJakimDirect(zone){
             const t=d.prayerTime[0];
             dailyPrayerTimes=[
                 {id:'fajr',name:'Subuh',time:t.fajr.substring(0,5)},
+                {id:'syuruk',name:'Syuruk',time:t.syuruk.substring(0,5)},
                 {id:'dhuhr',name:'Zohor',time:t.dhuhr.substring(0,5)},
                 {id:'asr',name:'Asar',time:t.asr.substring(0,5)},
                 {id:'maghrib',name:'Maghrib',time:t.maghrib.substring(0,5)},
@@ -368,6 +411,7 @@ async function tryAladhanAPI(lat,lng){
             const t=d.data.timings;
             dailyPrayerTimes=[
                 {id:'fajr',name:'Subuh',time:t.Fajr.substring(0,5)},
+                {id:'syuruk',name:'Syuruk',time:t.Sunrise.substring(0,5)},
                 {id:'dhuhr',name:'Zohor',time:t.Dhuhr.substring(0,5)},
                 {id:'asr',name:'Asar',time:t.Asr.substring(0,5)},
                 {id:'maghrib',name:'Maghrib',time:t.Maghrib.substring(0,5)},
@@ -395,7 +439,7 @@ function setHijriFromJakim(str){
 
 function useFallbackData(){
     dailyPrayerTimes=[
-        {id:'fajr',name:'Subuh',time:'04:59'},{id:'dhuhr',name:'Zohor',time:'12:16'},
+        {id:'fajr',name:'Subuh',time:'04:59'},{id:'syuruk',name:'Syuruk',time:'06:15'},{id:'dhuhr',name:'Zohor',time:'12:16'},
         {id:'asr',name:'Asar',time:'15:16'},{id:'maghrib',name:'Maghrib',time:'18:20'},
         {id:'isha',name:'Isyak',time:'19:30'}
     ];
@@ -403,8 +447,43 @@ function useFallbackData(){
 }
 
 // ============================================================
-// 7. ENJIN PINTAR
+// 7. ENJIN PINTAR & AUDIO
 // ============================================================
+let currentEngineState = "NORMAL";
+
+function playBeepBeep() {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        if(ctx.state === 'suspended') ctx.resume();
+        
+        function beep(startTime, duration, freq) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+            
+            gain.gain.setValueAtTime(0.5, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+            
+            osc.start(startTime);
+            osc.stop(startTime + duration);
+        }
+
+        // 3 bunyi beep berturut-turut (ala digital clock)
+        beep(ctx.currentTime, 0.2, 1000);
+        beep(ctx.currentTime + 0.3, 0.2, 1000);
+        beep(ctx.currentTime + 0.6, 0.4, 1000);
+        
+    } catch(e) {
+        console.warn("Audio API error:", e);
+    }
+}
+
 function smartEngineTick(){
     if(!dailyPrayerTimes.length) return;
     const now=new Date();
@@ -444,7 +523,29 @@ function smartEngineTick(){
         }
         if(!nextP){ nextP=prayerDates[0]; let tm=new Date(prayerDates[0].dateObj); tm.setDate(tm.getDate()+1); targetD=tm; }
         else { targetD=nextP.dateObj; }
+        
+        // Logik Paparan Ilmu 
+        ilmuTimer++;
+        if (ilmuTimer === 180) { // 3 Minit
+            showIlmuOverlay();
+        } else if (ilmuTimer === 205) { // Selepas 25 saat
+            hideIlmuOverlay();
+            ilmuTimer = 0;
+            const all = getAllIlmu();
+            ilmuIndex = (ilmuIndex + 1) % all.length;
+        }
+    } else {
+        // Jika sedang azan/iqamah/solat, sembunyikan ilmu serta merta
+        if (isIlmuFullscreen) {
+            hideIlmuOverlay();
+            ilmuTimer = 0;
+        }
     }
+
+    if(state === "AZAN" && currentEngineState !== "AZAN"){
+        playBeepBeep();
+    }
+    currentEngineState = state;
 
     updateUI(state, activeP, nextP, targetD, now);
     renderPrayerCards(state==="NORMAL"?findCurrent(prayerDates,now):activeP, state);
@@ -510,33 +611,29 @@ function updateUI(state, activeP, nextP, targetD, now){
     }
 }
 
+const PRAYER_JAWI = { fajr:'صبح', syuruk:'شروق', dhuhr:'ظهر', asr:'عصر', maghrib:'مغرب', isha:'عشاء' };
+
 function renderPrayerCards(activeP, currentState){
     const c=document.getElementById('prayer-cards-container');
     c.innerHTML='';
     dailyPrayerTimes.forEach(p=>{
         const isActive=activeP&&p.id===activeP.id;
-        let cardClass='prayer-card', txtClass='text-gray-500';
-        if(isActive&&currentState==='IQAMAH'){ cardClass='prayer-card prayer-card-active'; txtClass='text-gold font-bold'; }
-        else if(isActive){ cardClass='prayer-card prayer-card-active'; txtClass='text-gold'; }
+        let cardClass='prayer-card flex flex-col justify-center', txtClass='text-gray-400';
+        if(isActive&&currentState==='IQAMAH'){ cardClass='prayer-card prayer-card-active flex flex-col justify-center'; txtClass='text-gold font-bold'; }
+        else if(isActive){ cardClass='prayer-card prayer-card-active flex flex-col justify-center'; txtClass='text-gold font-bold'; }
 
         const t12=to12h(p.time);
-        const icon=PRAYER_ICONS[p.id]||'🕐';
+        let icon=PRAYER_ICONS[p.id]||'🕐';
+        if(p.id === 'syuruk') icon = '🌅';
+        const jawi = PRAYER_JAWI[p.id] || '';
 
         c.innerHTML+=`
             <div class="${cardClass}">
-                <p class="text-xs ${txtClass} uppercase tracking-widest mb-1">${icon} ${p.name}</p>
-                <p class="text-3xl font-clock font-bold text-white">${t12.display} <span class="text-lg text-goldLight">${t12.ampm}</span></p>
+                <p class="text-base lg:text-xl ${txtClass} uppercase tracking-widest font-bold mb-1">${icon} ${p.name}</p>
+                <p class="text-3xl font-arab text-goldLight opacity-80 mb-2" style="text-shadow:0 0 10px rgba(201,168,76,0.3);">${jawi}</p>
+                <p class="text-4xl lg:text-5xl font-clock font-bold text-white tracking-wider">${t12.display} <span class="text-xl text-goldLight">${t12.ampm}</span></p>
             </div>`;
     });
-
-    // Iqamah card (ke-6)
-    const iqState=currentState==='IQAMAH'?'prayer-card prayer-card-iqamah':'prayer-card';
-    c.innerHTML+=`
-        <div class="${iqState}" style="border-color:rgba(201,168,76,0.4);">
-            <p class="text-xs text-gold uppercase tracking-widest mb-1">IQAMAH DALAM:</p>
-            <p class="text-3xl font-clock font-bold text-gold" id="iqamah-display">--:--</p>
-            <p class="text-xs text-gray-500" id="iqamah-label">minit</p>
-        </div>`;
 }
 
 // ============================================================
