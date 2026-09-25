@@ -41,17 +41,27 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { font-size: 16px; }
-        @media (max-height: 900px) { html { font-size: 14px; } }
-        @media (max-height: 768px) { html { font-size: 12px; } }
-        @media (max-height: 650px) { html { font-size: 10px; } }
+        html { font-size: 14px; }
+        /* Smooth height ramp — a wide-but-short TV (1920x920 with browser chrome)
+           needs smaller text even though the width is large. vw-only sizing made
+           the clock/date block taller than its flex row, so it spilled over the
+           prayer cards. */
+        @media (max-height: 1000px) { html { font-size: 13.5px; } }
+        @media (max-height: 920px)  { html { font-size: 13px; } }
+        @media (max-height: 820px)  { html { font-size: 12px; } }
+        @media (max-height: 740px)  { html { font-size: 11px; } }
+        @media (max-height: 660px)  { html { font-size: 10px; } }
+        @media (max-height: 580px)  { html { font-size: 9px; } }
 
         body {
             background: var(--color-bg);
             color: #fff;
             overflow: hidden;
             font-family: 'Poppins', sans-serif;
+            /* dvh tracks the real visible height in fullscreen / mobile browsers;
+               vh is kept first as a fallback for older TV browsers */
             height: 100vh;
+            height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -96,15 +106,57 @@
         .mosque-silhouette svg { width: 100%; height: auto; display: block; }
 
         /* Main frame */
+        #display-shell,
         .main-frame {
             position: relative;
             width: 100vw;
             height: 100vh;
+            height: 100dvh;
+            /* never grow past the visible area — the ticker/footer must stay on screen */
+            max-height: 100vh;
+            max-height: 100dvh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            padding: 3vmin; /* Safe area untuk TV overscan */
+            /* NOT space-between: that pushes children apart and out of frame
+               when their natural height exceeds the viewport (the ticker is
+               last in the column, so it is the first thing to disappear). */
+            justify-content: flex-start;
+            padding: 2vmin 3vmin; /* Safe area untuk TV overscan */
+            gap: 1vmin;
+        }
+
+        /* children may shrink so the ticker + footer always fit */
+        .mosque-header { flex: 0 1 auto; min-height: 0; }
+        .main-frame > main { flex: 1 1 auto; min-height: 0; }
+        .prayer-cards-wrap { flex: 0 0 auto; }
+        .bottom-ticker, .bottom-info { flex: 0 0 auto; }
+
+        /* When a TV browser enters fullscreen, the fullscreen element gets its
+           own rendering context. Put the whole display shell in that context and
+           re-declare layout there so the ticker/footer are included in fullscreen
+           instead of being painted outside/clipped by the browser. */
+        #display-shell:fullscreen,
+        #display-shell:-webkit-full-screen {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            max-height: 100vh;
+            max-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            overflow: hidden;
+            background: var(--color-bg);
+        }
+        #display-shell:fullscreen .bottom-ticker,
+        #display-shell:-webkit-full-screen .bottom-ticker,
+        #display-shell:fullscreen .bottom-info,
+        #display-shell:-webkit-full-screen .bottom-info {
+            display: flex;
+            flex: 0 0 auto;
+            visibility: visible;
+            opacity: 1;
         }
 
         /* Ornate corner frames */
@@ -194,7 +246,8 @@
         }
         .clock-main {
             font-family: 'Oswald', sans-serif;
-            font-size: clamp(5rem, 14vw, 12rem);
+            /* also cap by viewport HEIGHT so the clock cannot outgrow a short screen */
+            font-size: clamp(3rem, min(14vw, 17vh), 12rem);
             font-weight: 700;
             color: #fff;
             text-shadow: 0 0 50px rgba(212,175,55,0.25);
@@ -202,14 +255,14 @@
         }
         .clock-secs {
             font-family: 'Oswald', sans-serif;
-            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-size: clamp(1.75rem, min(6vw, 8vh), 5rem);
             font-weight: 500;
             color: rgba(255,255,255,0.9);
             margin-left: -0.5rem;
         }
         .clock-ampm {
             font-family: 'Oswald', sans-serif;
-            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            font-size: clamp(1.1rem, min(3vw, 4vh), 2.5rem);
             font-weight: 500;
             color: var(--color-accent-light);
             align-self: flex-start;
@@ -217,27 +270,43 @@
         }
         .clock-day {
             font-family: 'Cinzel', serif;
-            font-size: clamp(1.75rem, 4vw, 3.5rem);
+            font-size: clamp(1.25rem, min(4vw, 4.8vh), 3.5rem);
             font-weight: 600;
             letter-spacing: 0.15em;
             color: #fff;
         }
         .date-hijrah {
             font-family: 'Cinzel', serif;
-            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            font-size: clamp(1.1rem, min(3vw, 3.8vh), 2.5rem);
             color: var(--color-accent);
             letter-spacing: 0.25em;
             font-weight: 600;
         }
         .date-masihi {
-            font-size: clamp(1rem, 1.8vw, 1.5rem);
+            font-size: clamp(0.85rem, min(1.8vw, 2.3vh), 1.5rem);
             color: rgba(255,255,255,0.55);
             letter-spacing: 0.08em;
         }
 
+        /* The centre column must fit inside `main`. If it is taller than its
+           container the overflow is centred, so it spills BOTH ways — up over
+           the header and down over the prayer cards. Clamp it and keep it
+           inside its own box as a safety net. */
+        .main-frame > main > .col-span-6 {
+            min-height: 0;
+            max-height: 100%;
+            overflow: hidden;
+        }
+        /* tighten the gap under the clock on short screens */
+        .main-frame > main > .col-span-6 .mt-6 { margin-top: 0.75rem; }
+
         /* Side panels */
         .side-panel {
-            min-height: 220px;
+            /* shrink with the viewport instead of a hard 220px floor that
+               overflows `main` on short TV screens */
+            min-height: min(220px, 26vh);
+            max-height: 100%;
+            overflow: hidden;
             padding: 1.25rem;
         }
         .panel-title {
@@ -288,6 +357,9 @@
             padding: 0 2rem;
             margin-bottom: 1.5rem;
         }
+        /* Cards must not be overlapped by the side panels or the date block.
+           Give the row its own stacking context above the panels' z-index. */
+        .prayer-cards-wrap { position: relative; z-index: 5; }
         .prayer-card {
             background: linear-gradient(180deg, rgba(20,35,70,0.7), rgba(10,18,38,0.85));
             border: 1px solid rgba(212,175,55,0.18);
@@ -366,11 +438,17 @@
             white-space: nowrap;
             position: relative;
             z-index: 50;
+            /* the ticker must never be collapsed or pushed away by a short viewport */
+            flex: 0 0 auto;
+            min-height: 2.2rem;
+            display: flex;
+            align-items: center;
         }
         .ticker-track {
             display: inline-block;
             padding-left: 100%;
             animation: ticker 45s linear infinite;
+            will-change: transform;
         }
         .ticker-track span {
             font-size: clamp(1.1rem, 1.8vw, 1.5rem);
@@ -551,8 +629,8 @@
         </div>
     </div>
 
-    <!-- MAIN FRAME -->
-    <div class="main-frame">
+    <!-- MAIN FRAME / FULLSCREEN SHELL -->
+    <div class="main-frame" id="display-shell">
         <div class="celestial-bg"></div>
         <div class="stars"></div>
 
