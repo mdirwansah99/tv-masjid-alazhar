@@ -598,7 +598,19 @@
     <!-- SOLAT OVERLAY -->
     <div id="solat-overlay" class="fixed inset-0 z-50 flex-col items-center justify-center text-center">
         <svg class="solat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v20M8 8l4-4 4 4M8 16l4 4 4-4M2 12h20"/>
+            <!-- Dome -->
+            <path d="M12 8.5c-3 3-5 5.5-5 9.5v4h10v-4c0-4-2-6.5-5-9.5z"/>
+            <!-- Moon & Star -->
+            <path d="M12 2a3 3 0 0 0-2 4.5 3 3 0 0 1 2-4.5z"/>
+            <path d="M13.5 5l.5 -1.5 .5 1.5 1.5 .5 -1.5 .5 -.5 1.5 -.5 -1.5 -1.5 -.5z"/>
+            <!-- Left Minaret -->
+            <path d="M5 22v-9l-1-1 1-1v-4l-1-1 1-2 1 2-1 1v4l1 1-1 1v9"/>
+            <!-- Right Minaret -->
+            <path d="M19 22v-9l-1-1 1-1v-4l-1-1 1-2 1 2-1 1v4l1 1-1 1v9"/>
+            <!-- Base Line -->
+            <path d="M2 22h20"/>
+            <!-- Center Door -->
+            <path d="M10 22v-3a2 2 0 0 1 4 0v3"/>
         </svg>
         <h1 class="solat-title">SOLAT SEDANG BERLANGSUNG</h1>
         <p class="solat-line">Sila Lurus Dan Rapatkan Saf Anda</p>
@@ -607,8 +619,20 @@
 
     <!-- AZAN + IQAMAH OVERLAY -->
     <div id="azan-overlay" class="fixed inset-0 z-50 flex-col items-center justify-center text-center">
-        <svg class="azan-icon" id="azan-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 21h18M4 21V10l8-6 8 6v11M9 21v-6h6v6"/>
+        <svg class="azan-icon" id="azan-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Dome -->
+            <path d="M12 8.5c-3 3-5 5.5-5 9.5v4h10v-4c0-4-2-6.5-5-9.5z"/>
+            <!-- Moon & Star -->
+            <path d="M12 2a3 3 0 0 0-2 4.5 3 3 0 0 1 2-4.5z"/>
+            <!-- Left Minaret -->
+            <path d="M5 22v-9l-1-1 1-1v-4l-1-1 1-2 1 2-1 1v4l1 1-1 1v9"/>
+            <!-- Right Minaret -->
+            <path d="M19 22v-9l-1-1 1-1v-4l-1-1 1-2 1 2-1 1v4l1 1-1 1v9"/>
+            <!-- Base Line -->
+            <path d="M2 22h20"/>
+            <!-- Sound waves? -->
+            <path d="M21 8a6 6 0 0 1 0 8M23 6a9 9 0 0 1 0 12"/>
+            <path d="M3 8a6 6 0 0 0 0 8M1 6a9 9 0 0 0 0 12"/>
         </svg>
         <h1 class="azan-title" id="azan-title">AZAN</h1>
         <p class="azan-subtitle" id="azan-subtitle">Azan Sedang Berkumandang</p>
