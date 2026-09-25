@@ -7,7 +7,14 @@ const BULAN_HIJRAH = ['Muharram','Safar','Rabiul Awal','Rabiul Akhir','Jamadil A
 const HARI_MELAYU = ['AHAD','ISNIN','SELASA','RABU','KHAMIS','JUMAAT','SABTU'];
 const BULAN_MASIHI = ['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'];
 
-const PRAYER_ICONS = { fajr:'🌙', syuruk:'🌅', dhuhr:'☀️', asr:'🌤️', maghrib:'🌅', isha:'🌙' };
+const PRAYER_ICONS = {
+    fajr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>',
+    syuruk: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
+    dhuhr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>',
+    asr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/><circle cx="12" cy="12" r="3"/></svg>',
+    maghrib: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 2v7"/><path d="M4.22 10.22a10 10 0 0 1 15.56 0"/><path d="M7 18h10"/></svg>',
+    isha: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/><path d="M20 3l-4 4"/><path d="M17 6l-1 1"/></svg>'
+};
 
 // ============================================================
 // KOLEKSI PERKONGSIAN ILMU ISLAM
@@ -106,41 +113,49 @@ const ZONE_MAP = {
 // 3. THEMES & STATE
 // ============================================================
 const THEMES = {
-    "default": { // Klasik Biru Emas
-        "--color-bg": "#0a1128",
-        "--color-bg-light": "#111d3a",
-        "--color-bg-gradient-top": "#0d1a36",
-        "--color-accent": "#c9a84c",
-        "--color-accent-light": "#e8d48b",
-        "--color-accent-dark": "#8a6d2b",
-        "--color-accent-rgba": "rgba(201,168,76,0.4)"
+    "default": { // Premium Biru Emas
+        "--color-bg": "#070d1f",
+        "--color-bg-light": "#0f1a33",
+        "--color-bg-gradient-top": "#0b1530",
+        "--color-accent": "#d4af37",
+        "--color-accent-light": "#f0d878",
+        "--color-accent-dark": "#8f6e25",
+        "--color-accent-rgba": "rgba(212,175,55,0.4)",
+        "--glass-border": "rgba(212,175,55,0.18)",
+        "--glass-bg": "rgba(10,20,45,0.72)"
     },
     "emerald": { // Hijau Zamrud
-        "--color-bg": "#022c22", // emerald-950
-        "--color-bg-light": "#064e3b", // emerald-900
+        "--color-bg": "#022c22",
+        "--color-bg-light": "#064e3b",
         "--color-bg-gradient-top": "#022c22",
-        "--color-accent": "#fcd34d", // amber-300
-        "--color-accent-light": "#fde68a", // amber-200
-        "--color-accent-dark": "#d97706", // amber-600
-        "--color-accent-rgba": "rgba(252,211,77,0.4)"
+        "--color-accent": "#fcd34d",
+        "--color-accent-light": "#fde68a",
+        "--color-accent-dark": "#d97706",
+        "--color-accent-rgba": "rgba(252,211,77,0.4)",
+        "--glass-border": "rgba(252,211,77,0.18)",
+        "--glass-bg": "rgba(6,45,35,0.72)"
     },
     "maroon": { // Merah Delima
-        "--color-bg": "#4c0519", // rose-950
-        "--color-bg-light": "#881337", // rose-900
+        "--color-bg": "#4c0519",
+        "--color-bg-light": "#881337",
         "--color-bg-gradient-top": "#4c0519",
-        "--color-accent": "#fef08a", // yellow-200
-        "--color-accent-light": "#fef9c3", // yellow-100
-        "--color-accent-dark": "#ca8a04", // yellow-600
-        "--color-accent-rgba": "rgba(254,240,138,0.4)"
+        "--color-accent": "#fef08a",
+        "--color-accent-light": "#fef9c3",
+        "--color-accent-dark": "#ca8a04",
+        "--color-accent-rgba": "rgba(254,240,138,0.4)",
+        "--glass-border": "rgba(254,240,138,0.18)",
+        "--glass-bg": "rgba(76,5,25,0.72)"
     },
     "dark": { // Hitam Elegan
         "--color-bg": "#000000",
-        "--color-bg-light": "#1f2937", // gray-800
+        "--color-bg-light": "#1f2937",
         "--color-bg-gradient-top": "#000000",
-        "--color-accent": "#e5e7eb", // gray-200
-        "--color-accent-light": "#f9fafb", // gray-50
-        "--color-accent-dark": "#9ca3af", // gray-400
-        "--color-accent-rgba": "rgba(229,231,235,0.4)"
+        "--color-accent": "#e5e7eb",
+        "--color-accent-light": "#f9fafb",
+        "--color-accent-dark": "#9ca3af",
+        "--color-accent-rgba": "rgba(229,231,235,0.4)",
+        "--glass-border": "rgba(229,231,235,0.18)",
+        "--glass-bg": "rgba(31,41,55,0.72)"
     }
 };
 
@@ -208,8 +223,9 @@ function loadSettings(){
     document.getElementById('location-text').innerText = `Waktu Tempatan: ${zoneInfo ? zoneInfo.label.split(',')[0] : appConfig.zone}`;
     
     // 2. Ticker
+    const ticker = document.getElementById('running-text');
     if(appConfig.announcement && appConfig.announcement.trim()) {
-        document.getElementById('running-text').innerText = appConfig.announcement;
+        ticker.innerHTML = `<span>${escapeHtml(appConfig.announcement)}</span>`;
     }
     
     // 3. Paparan Kewangan
@@ -220,7 +236,7 @@ function loadSettings(){
         const finOut = parseFloat(appConfig.finOut)||0;
         const baki = prev + finIn - finOut;
         
-        document.getElementById('ui-fin-period').innerText = `Bulan: ${appConfig.finPeriod || 'Terkini'}`;
+        document.getElementById('ui-fin-period').innerText = appConfig.finPeriod || 'Terkini';
         document.getElementById('ui-fin-in').innerText = `RM ${finIn.toFixed(2)}`;
         document.getElementById('ui-fin-out').innerText = `RM ${finOut.toFixed(2)}`;
         document.getElementById('ui-fin-balance').innerText = `RM ${baki.toFixed(2)}`;
@@ -234,7 +250,6 @@ function loadSettings(){
         }
         
         finPanel.classList.remove('hidden');
-        setTimeout(()=> finPanel.classList.remove('opacity-0'), 100);
     } else {
         finPanel.classList.add('hidden');
     }
@@ -247,10 +262,15 @@ function loadSettings(){
         document.getElementById('ui-announce-title').innerText = (annTitle || 'PENGUMUMAN').toUpperCase();
         document.getElementById('ui-announce-desc').innerText = annDesc || '';
         annPanel.classList.remove('hidden');
-        setTimeout(()=> annPanel.classList.remove('opacity-0'), 100);
     } else {
         annPanel.classList.add('hidden');
     }
+}
+
+function escapeHtml(text){
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function loadAdminData(){
@@ -498,6 +518,8 @@ function smartEngineTick(){
 
     for(let i=0;i<prayerDates.length;i++){
         let p=prayerDates[i];
+        if(p.id === 'syuruk') continue; // Syuruk tiada azan/iqamah/solat
+
         let tMasuk=p.dateObj;
         
         let pIqamahMins = 10;
@@ -586,7 +608,7 @@ function updateUI(state, activeP, nextP, targetD, now){
         solatOverlay.classList.remove('active');
         azanOverlay.classList.add('active');
         // Tunjuk paparan Azan
-        document.getElementById('azan-icon').innerText = '🕌';
+        document.getElementById('azan-icon').innerHTML = AZAN_ICON_SVG;
         document.getElementById('azan-title').innerText = `AZAN ${activeP.name.toUpperCase()}`;
         document.getElementById('azan-subtitle').innerText = 'Azan Sedang Berkumandang';
         document.getElementById('azan-desc').innerText = 'Sila Jawab Azan & Hentikan Seketika Segala Aktiviti';
@@ -596,7 +618,7 @@ function updateUI(state, activeP, nextP, targetD, now){
         solatOverlay.classList.remove('active');
         azanOverlay.classList.add('active'); // KEKAL gelap!
         // Tukar kandungan ke mod Iqamah countdown
-        document.getElementById('azan-icon').innerText = '🤲';
+        document.getElementById('azan-icon').innerHTML = IQAMAH_ICON_SVG;
         document.getElementById('azan-title').innerText = `${activeP.name.toUpperCase()} — Menunggu Iqamah`;
         document.getElementById('azan-subtitle').innerText = 'Sila Bersiap Sedia Untuk Bersolat';
         document.getElementById('azan-desc').innerText = 'Luruskan & Rapatkan Saf • Matikan Telefon Bimbit';
@@ -613,25 +635,25 @@ function updateUI(state, activeP, nextP, targetD, now){
 
 const PRAYER_JAWI = { fajr:'صبح', syuruk:'شروق', dhuhr:'ظهر', asr:'عصر', maghrib:'مغرب', isha:'عشاء' };
 
+const AZAN_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M4 21V10l8-6 8 6v11M9 21v-6h6v6"/></svg>`;
+const IQAMAH_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
+
 function renderPrayerCards(activeP, currentState){
     const c=document.getElementById('prayer-cards-container');
     c.innerHTML='';
     dailyPrayerTimes.forEach(p=>{
         const isActive=activeP&&p.id===activeP.id;
-        let cardClass='prayer-card flex flex-col justify-center', txtClass='text-gray-400';
-        if(isActive&&currentState==='IQAMAH'){ cardClass='prayer-card prayer-card-active flex flex-col justify-center'; txtClass='text-gold font-bold'; }
-        else if(isActive){ cardClass='prayer-card prayer-card-active flex flex-col justify-center'; txtClass='text-gold font-bold'; }
-
-        const t12=to12h(p.time);
-        let icon=PRAYER_ICONS[p.id]||'🕐';
-        if(p.id === 'syuruk') icon = '🌅';
+        const cardClass = isActive ? 'prayer-card prayer-card-active' : 'prayer-card';
+        const iconSvg = PRAYER_ICONS[p.id] || PRAYER_ICONS.dhuhr;
         const jawi = PRAYER_JAWI[p.id] || '';
+        const t12 = to12h(p.time);
 
         c.innerHTML+=`
             <div class="${cardClass}">
-                <p class="text-base lg:text-xl ${txtClass} uppercase tracking-widest font-bold mb-1">${icon} ${p.name}</p>
-                <p class="text-3xl font-arab text-goldLight opacity-80 mb-2" style="text-shadow:0 0 10px rgba(201,168,76,0.3);">${jawi}</p>
-                <p class="text-4xl lg:text-5xl font-clock font-bold text-white tracking-wider">${t12.display} <span class="text-xl text-goldLight">${t12.ampm}</span></p>
+                <div class="prayer-icon">${iconSvg}</div>
+                <p class="prayer-name">${p.name}</p>
+                <p class="prayer-jawi">${jawi}</p>
+                <p class="prayer-time">${t12.display}<span class="prayer-ampm">${t12.ampm}</span></p>
             </div>`;
     });
 }
