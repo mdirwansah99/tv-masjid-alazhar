@@ -104,6 +104,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            padding: 3vmin; /* Safe area untuk TV overscan */
         }
 
         /* Ornate corner frames */
@@ -115,10 +116,10 @@
             opacity: 0.55;
         }
         .corner-frame svg { width: 100%; height: 100%; }
-        .corner-tl { top: 1.25rem; left: 1.25rem; }
-        .corner-tr { top: 1.25rem; right: 1.25rem; transform: scaleX(-1); }
-        .corner-bl { bottom: 1.25rem; left: 1.25rem; transform: scaleY(-1); }
-        .corner-br { bottom: 1.25rem; right: 1.25rem; transform: scale(-1, -1); }
+        .corner-tl { top: 2vmin; left: 2vmin; }
+        .corner-tr { top: 2vmin; right: 2vmin; transform: scaleX(-1); }
+        .corner-bl { bottom: 2vmin; left: 2vmin; transform: scaleY(-1); }
+        .corner-br { bottom: 2vmin; right: 2vmin; transform: scale(-1, -1); }
 
         /* Top header / mosque name */
         .mosque-header {
