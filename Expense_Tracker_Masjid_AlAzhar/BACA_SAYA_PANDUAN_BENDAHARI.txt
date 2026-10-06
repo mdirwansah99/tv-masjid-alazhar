@@ -1,0 +1,61 @@
+========================================================================
+PANDUAN PENGGUNAAN SISTEM EXPENSE TRACKER & KEWANGAN
+MASJID AL-AZHAR, KAMPUNG SEPAKAT JAYA, SEPANGGAR, SABAH
+========================================================================
+
+Tahniah! Aplikasi ini dibina khas untuk memudahkan Bendahari dan AJK Masjid
+merekod aliran tunai keluar masuk secara telus, tersusun, dan mesra audit.
+
+------------------------------------------------------------------------
+1. CARA MEMULAKAN SISTEM DI LAPTOP MASJID
+------------------------------------------------------------------------
+- Salin keseluruhan folder "Expense_Tracker_Masjid_AlAzhar" ini ke Desktop
+  atau Documents laptop masjid.
+- Untuk membuka aplikasi, hanya KLIK DUA KALI (Double Click) pada fail:
+  "Buka_Expense_Tracker.bat"
+  (atau klik terus pada fail "index.html").
+- Sistem akan terus terbuka di pelayar web (Google Chrome / Microsoft Edge).
+- Sistem ini 100% LUAR TALIAN (Offline-First). Anda TIDAK memerlukan sambungan
+  internet untuk menggunakannya.
+
+------------------------------------------------------------------------
+2. CARA MEREKOD DUIT MASUK & DUIT KELUAR
+------------------------------------------------------------------------
+- Rekod Duit Masuk (Kutipan/Infaq):
+  Tekan butang hijau "+ Duit Masuk", masukkan tarikh, kategori, jumlah RM,
+  nama penyumbang/tabung, dan tekan "Simpan Transaksi".
+
+- Rekod Duit Keluar (Perbelanjaan & Resit):
+  Tekan butang merah "- Duit Keluar", nombor baucar automatik akan dijana
+  (cth: MAA-BK-2026-0001). Masukkan kategori, jumlah RM, nama penerima/kedai.
+  Tekan butang kamera untuk memuat naik atau menangkap gambar resit fizikal.
+  Tekan "Simpan Transaksi".
+
+------------------------------------------------------------------------
+3. CARA MENCETAK BAUCAR BAYARAN & PENYATA AUDIT (A4)
+------------------------------------------------------------------------
+- Cetak Baucar Bayaran (Payment Voucher):
+  Pada jadual transaksi, klik ikon pencetak (Printer) di baris perbelanjaan.
+  Sistem akan membuka Baucar Bayaran A4 rasmi yang lengkap dengan maklumat masjid,
+  petak tandatangan (Bendahari, Pengerusi, Penerima), dan lampiran gambar resit.
+  Pilih pencetak anda atau pilih "Save as PDF".
+
+- Cetak Penyata Buku Tunai Bulanan/Tahunan:
+  Klik butang "Penyata & Cetak" di bahagian atas, pilih Bulan dan Tahun,
+  kemudian klik "Cetak Penyata Buku Tunai (A4)". Penyata lengkap dengan
+  ruang perakuan Juruaudit Dalaman sedia dicetak.
+
+------------------------------------------------------------------------
+4. KESELAMATAN & SANDARAN DATA (BACKUP)
+------------------------------------------------------------------------
+- Data disimpan selamat di dalam pelayar laptop anda.
+- Untuk mengelakkan data hilang jika laptop rosak atau dibersihkan:
+  1. Klik butang "Sandaran" di bahagian atas aplikasi.
+  2. Klik "Muat Turun Fail Sandaran (.json)".
+  3. Simpan fail tersebut di dalam Pendrive (USB) anda sebagai sandaran berkala.
+- Jika bertukar laptop pada masa hadapan, hanya guna butang "Pulihkan Rekod"
+  untuk memuatkan semula semua data anda.
+
+========================================================================
+Disediakan untuk Jawatankuasa Masjid Al-Azhar Kampung Sepakat Jaya Sepanggar
+========================================================================
