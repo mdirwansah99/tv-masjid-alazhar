@@ -1,0 +1,21 @@
+{
+  "name": "tv-masjid-display",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TV Masjid prayer-time display. Tests guard the running-text (ticker) fullscreen fix.",
+  "scripts": {
+    "serve": "python -m http.server 8899",
+    "test": "node test/test-display.js && node test/test-ticker-regression.js && node test/test-ticker-anim.js && node test/test-fullscreen-shell.js && node test/test-variants.js",
+    "test:display": "node test/test-display.js",
+    "test:ticker": "node test/test-ticker-regression.js",
+    "test:anim": "node test/test-ticker-anim.js",
+    "test:fullscreen": "node test/test-fullscreen-shell.js",
+    "test:variants": "node test/test-variants.js",
+    "test:overlap": "node test/test-overlap.js",
+    "test:sweep": "node test/test-ticker-sweep.js",
+    "test:expense": "node test/test-expense-db.js && node test/test-expense-e2e.js"
+  },
+  "dependencies": {
+    "playwright-core": "^1.63.0"
+  }
+}

@@ -1,0 +1,93 @@
+/* print.css - Format Cetakan Rasmi A4 Mesra Audit Masjid Al-Azhar */
+
+@media screen {
+  .print-only {
+    display: none !important;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+    line-height: 1.3;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Sembunyikan elemen skrin biasa */
+  .no-print,
+  #app-screen,
+  nav,
+  header,
+  button,
+  .modal-backdrop,
+  input,
+  select {
+    display: none !important;
+  }
+
+  /* Tunjukkan hanya kontena cetakan */
+  .print-only {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .print-page {
+    page-break-after: always;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .print-page:last-child {
+    page-break-after: avoid;
+  }
+
+  /* Garisan & Jadual Cetakan */
+  .table-print {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    margin-bottom: 15px;
+  }
+
+  .table-print th,
+  .table-print td {
+    border: 1px solid #1e293b !important;
+    padding: 6px 8px;
+    font-size: 10pt;
+  }
+
+  .table-print th {
+    background-color: #f1f5f9 !important;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  /* Kotak Tandatangan */
+  .signature-box {
+    border-top: 1px dashed #000000;
+    margin-top: 45px;
+    padding-top: 5px;
+    text-align: center;
+    font-size: 9.5pt;
+  }
+
+  /* Imej Resit Cetakan */
+  .receipt-print-img {
+    max-height: 380px;
+    max-width: 100%;
+    object-fit: contain;
+    border: 1px solid #cbd5e1;
+    display: block;
+    margin: 10px auto;
+  }
+}
