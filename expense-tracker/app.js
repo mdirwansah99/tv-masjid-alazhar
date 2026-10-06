@@ -2,7 +2,7 @@
  * app.js - Logik Utama Antaramuka Expense Tracker Masjid Al-Azhar
  */
 
-import {
+const {
   formatCurrency,
   generateVoucherNo,
   calculateSummary,
@@ -12,7 +12,7 @@ import {
   validateBackupPayload,
   compressReceiptImage,
   getDatabase
-} from './db.js';
+} = (typeof window !== 'undefined' ? window.MasjidDB : null) || (typeof require !== 'undefined' ? require('./db.js') : {});
 
 // Kategori Lazim Masjid
 const INCOME_CATEGORIES = [
@@ -565,7 +565,7 @@ function closeReportsModal() {
 }
 
 // Cetak Baucar Bayaran (Payment Voucher A4)
-export function openPaymentVoucherPrint(transactionId) {
+function openPaymentVoucherPrint(transactionId) {
   const tx = allTransactions.find(t => t.id === transactionId);
   if (!tx) {
     alert('Rekod transaksi tidak ditemui.');
@@ -613,7 +613,7 @@ function handlePrintCashBook() {
   openCashBookPrint(year, month);
 }
 
-export function openCashBookPrint(year, month) {
+function openCashBookPrint(year, month) {
   const monthNames = {
     '01': 'Januari', '02': 'Februari', '03': 'Mac', '04': 'April',
     '05': 'Mei', '06': 'Jun', '07': 'Julai', '08': 'Ogos',
@@ -752,5 +752,12 @@ async function handleRestoreBackup() {
   reader.readAsText(file);
 }
 
-// Eksport untuk kegunaan pengujian jika diperlukan
-export { allTransactions, renderApp };
+// Dedahkan ke window untuk rujukan global
+if (typeof window !== 'undefined') {
+  window.MasjidApp = {
+    allTransactions,
+    renderApp,
+    openPaymentVoucherPrint,
+    openCashBookPrint
+  };
+}

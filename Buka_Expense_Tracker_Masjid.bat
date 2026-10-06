@@ -5,11 +5,10 @@ echo    SISTEM PENGURUSAN KEWANGAN & EXPENSE TRACKER
 echo    MASJID AL-AZHAR, KAMPUNG SEPAKAT JAYA, SEPANGGAR
 echo =====================================================================
 echo.
-echo [1/2] Membuka pelayar web...
-start "" "http://localhost:8899/expense-tracker/index.html"
-echo [2/2] Menjalankan pelayan sistem tempatan pada port 8899...
+echo Membuka Expense Tracker di pelayar web anda...
+start "" "%~dp0expense-tracker\index.html"
 echo.
-echo Petua: Biarkan tetingkap ini terbuka semasa anda menggunakan sistem.
-echo Tutup tetingkap ini apabila anda selesai.
-echo =====================================================================
-python -m http.server 8899
+echo Berjaya dibuka! Anda boleh menggunakan sistem di pelayar web.
+echo.
+timeout /t 3 >nul
+exit

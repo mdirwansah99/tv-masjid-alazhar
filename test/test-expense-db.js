@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {
+import MasjidDB from '../expense-tracker/db.js';
+
+const {
   formatCurrency,
   generateVoucherNo,
   calculateSummary,
@@ -8,7 +10,7 @@ import {
   validateTransaction,
   createBackupPayload,
   validateBackupPayload
-} from '../expense-tracker/db.js';
+} = MasjidDB;
 
 test('formatCurrency formats RM numbers accurately with 2 decimal places', () => {
   assert.equal(formatCurrency(0), 'RM 0.00');
