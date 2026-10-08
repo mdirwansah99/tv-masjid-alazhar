@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muat Turun HaierShield APK — Penyekat Iklan TV Haier</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-green: #22c55e;
+            --accent-green-hover: #16a34a;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .shield-icon {
+            font-size: 72px;
+            margin-bottom: 15px;
+            display: inline-block;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+        }
+
+        h1 {
+            font-size: 38px;
+            margin-bottom: 12px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: var(--text-muted);
+            margin-bottom: 35px;
+            line-height: 1.5;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            background-color: var(--accent-green);
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+            padding: 22px 48px;
+            border-radius: 16px;
+            border: 4px solid #4ade80;
+            box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.5);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            margin-bottom: 25px;
+        }
+
+        .download-btn:focus,
+        .download-btn:hover {
+            background-color: var(--accent-green-hover);
+            transform: scale(1.05);
+            outline: none;
+            box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.4);
+        }
+
+        .instructions {
+            text-align: left;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .instructions h2 {
+            font-size: 22px;
+            margin-bottom: 16px;
+            color: #4ade80;
+        }
+
+        .instructions ol {
+            padding-left: 24px;
+            line-height: 1.8;
+            font-size: 18px;
+            color: var(--text-light);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .feature-card {
+            background: #0f172a;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .feature-card h3 {
+            font-size: 18px;
+            color: #38bdf8;
+            margin-bottom: 6px;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .footer {
+            margin-top: 25px;
+            font-size: 15px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="shield-icon">🛡️</div>
+    <h1>HaierShield — Penyekat Iklan TV Haier</h1>
+    <p class="subtitle">Aplikasi Android TV khusus untuk menyekat iklan pop-up dan notifikasi pada TV Haier Masjid Al-Azhar secara automatik.</p>
+
+    <!-- Tombol Muat Turun Utama -->
+    <a href="https://github.com/mdirwansah99/tv-masjid-alazhar/releases/download/haiershield-latest/HaierShield.apk" 
+       class="download-btn" id="btnDownload" autofocus>
+        <span>⬇️</span>
+        <span>MUAT TURUN HAIERSHIELD APK</span>
+    </a>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <h3>⚡ Auto-Tutup Pop-up</h3>
+            <p>Mengesan pop-up overlay Haier dan menekan butang tutup secara automatik.</p>
+        </div>
+        <div class="feature-card">
+            <h3>🌐 Penyekat DNS Tempatan</h3>
+            <p>Menyekat domain iklan tanpa perlukan pelayan luar atau capaian root.</p>
+        </div>
+        <div class="feature-card">
+            <h3>🔔 Bersih Notifikasi</h3>
+            <p>Memadam sebarang push notification iklan yang mengganggu paparan.</p>
+        </div>
+        <div class="feature-card">
+            <h3>🔄 Mula Automatik</h3>
+            <p>Perlindungan terus aktif setiap kali TV masjid dihidupkan semula.</p>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h2>Cara Pemasangan di TV Haier:</h2>
+        <ol>
+            <li>Klik butang hijau <strong>MUAT TURUN</strong> di atas untuk memuat turun fail APK ke dalam TV.</li>
+            <li>Buka <strong>Downloads</strong> atau aplikasi <strong>File Manager</strong> pada TV anda.</li>
+            <li>Pilih fail <strong>HaierShield.apk</strong> dan tekan <strong>Pasang (Install)</strong>. <em>(Jika diminta, benarkan "Install from unknown sources").</em></li>
+            <li>Buka aplikasi <strong>HaierShield</strong> dari senarai aplikasi TV anda.</li>
+            <li>Ikuti wizard ringkas: aktifkan <strong>Accessibility Service</strong> dan luluskan <strong>VPN</strong>.</li>
+            <li>Selesai! TV kini bebas daripada iklan yang mengganggu.</li>
+        </ol>
+    </div>
+
+    <p class="footer">
+        Disediakan untuk kegunaan sistem paparan TV Masjid Al-Azhar &bull; Versi 1.0.0
+    </p>
+</div>
+
+</body>
+</html>

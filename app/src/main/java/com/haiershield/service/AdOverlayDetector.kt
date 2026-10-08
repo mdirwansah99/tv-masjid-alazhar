@@ -2,10 +2,12 @@ package com.haiershield.service
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.Intent
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import com.haiershield.data.PrefsManager
+import com.haiershield.data.ShieldStatus
 import com.haiershield.data.StatsTracker
 import com.haiershield.util.AdPatterns
 
@@ -24,6 +26,7 @@ class AdOverlayDetector : AccessibilityService() {
         super.onServiceConnected()
         prefsManager = PrefsManager(this)
         statsTracker = StatsTracker(this)
+        ShieldStatus.setPopupState(true)
 
         serviceInfo = serviceInfo.apply {
             eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
@@ -34,6 +37,11 @@ class AdOverlayDetector : AccessibilityService() {
             notificationTimeout = 100
         }
         Log.i(TAG, "AdOverlayDetector connected")
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        ShieldStatus.setPopupState(false)
+        return super.onUnbind(intent)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
