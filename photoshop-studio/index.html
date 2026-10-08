@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lumina PhotoStudio Pro - Editor Grafik, Pembaca PS, PDF & Penukar Dokumen</title>
+  
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#007acc">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PhotoStudio">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" href="icon-192.png">
+
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- PDF.js library for rendering & extracting PDFs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- pdf-lib for creating and exporting multipage PDFs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.9/pdf-lib.min.js"></script>
+  <!-- PostScript Vector Parser & Renderer Engine -->
+  <script src="ps-parser.js"></script>
+</head>
+<body class="theme-ps">
+  <!-- Top App Header / Menu Bar -->
+  <header id="top-bar">
+    <div class="app-logo">
+      <span class="ps-badge">Ps</span>
+      <span class="app-title">Lumina Studio</span>
+    </div>
+
+    <!-- Dropdown Menus -->
+    <nav class="menu-bar">
+      <div class="menu-item">
+        <span>File</span>
+        <div class="dropdown-menu">
+          <button id="btn-menu-new"><span>Dokumen Baharu (New)...</span> <kbd>Ctrl+N</kbd></button>
+          <button id="btn-menu-open"><span>Buka Imej / Fail...</span> <kbd>Ctrl+O</kbd></button>
+          <button id="btn-menu-open-ps"><span>Buka Fail .PS (PostScript)...</span></button>
+          <button id="btn-menu-open-pdf"><span>Buka Dokumen PDF...</span> <kbd>Ctrl+P</kbd></button>
+          <div class="menu-divider"></div>
+          <button id="btn-menu-save-png"><span>Eksport sebagai PNG</span> <kbd>Ctrl+S</kbd></button>
+          <button id="btn-menu-save-jpg"><span>Eksport sebagai JPG</span></button>
+          <button id="btn-menu-save-webp"><span>Eksport sebagai WebP</span></button>
+          <button id="btn-menu-save-pdf"><span>Eksport sebagai Dokumen PDF</span></button>
+          <div class="menu-divider"></div>
+          <button id="btn-menu-converter"><span>Buka Penukar Dokumen...</span></button>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <span>Edit</span>
+        <div class="dropdown-menu">
+          <button id="btn-menu-undo"><span>Undo</span> <kbd>Ctrl+Z</kbd></button>
+          <button id="btn-menu-redo"><span>Redo</span> <kbd>Ctrl+Y</kbd></button>
+          <div class="menu-divider"></div>
+          <button id="btn-menu-clear"><span>Kosongkan Lapisan (Clear)</span></button>
+          <button id="btn-menu-fill"><span>Isi Warna Latar (Fill)</span></button>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <span>Image</span>
+        <div class="dropdown-menu">
+          <button id="btn-menu-resize"><span>Ubah Saiz Kanvas / Imej...</span></button>
+          <div class="menu-divider"></div>
+          <button id="btn-menu-adjust-bc"><span>Brightness & Contrast...</span></button>
+          <button id="btn-menu-adjust-hs"><span>Hue & Saturation...</span></button>
+          <button id="btn-menu-grayscale"><span>Grayscale (Hitam Putih)</span></button>
+          <button id="btn-menu-invert"><span>Invert Colors</span></button>
+          <button id="btn-menu-sepia"><span>Sepia Vintage</span></button>
+          <div class="menu-divider"></div>
+          <button id="btn-menu-flip-h"><span>Balik Mendatar (Flip Horizontal)</span></button>
+          <button id="btn-menu-flip-v"><span>Balik Menegak (Flip Vertical)</span></button>
+          <button id="btn-menu-rotate-cw"><span>Putar 90° Ikut Jam</span></button>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <span>Layer</span>
+        <div class="dropdown-menu">
+          <button id="btn-menu-new-layer"><span>Lapisan Baharu (New Layer)</span> <kbd>Ctrl+Shift+N</kbd></button>
+          <button id="btn-menu-dup-layer"><span>Salin Lapisan (Duplicate)</span> <kbd>Ctrl+J</kbd></button>
+          <button id="btn-menu-del-layer"><span>Padam Lapisan (Delete)</span> <kbd>Del</kbd></button>
+          <div class="menu-divider"></div>
+          <button id="btn-menu-merge-down"><span>Cantumkan ke Bawah (Merge Down)</span> <kbd>Ctrl+E</kbd></button>
+          <button id="btn-menu-flatten"><span>Ratakan Imej (Flatten Image)</span></button>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <span>Filter</span>
+        <div class="dropdown-menu">
+          <button id="btn-filter-blur"><span>Gaussian Blur...</span></button>
+          <button id="btn-filter-sharpen"><span>Sharpen...</span></button>
+          <button id="btn-filter-edge"><span>Find Edges</span></button>
+          <button id="btn-filter-emboss"><span>Emboss 3D</span></button>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <span>PS & PDF</span>
+        <div class="dropdown-menu">
+          <button id="btn-tab-pdf-nav"><span>Buka Tab PDF / PS Studio</span></button>
+          <button id="btn-tab-convert-nav"><span>Buka Tab Penukar Format</span></button>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <span>View</span>
+        <div class="dropdown-menu">
+          <button id="btn-view-zoomin"><span>Zoom In</span> <kbd>Ctrl++</kbd></button>
+          <button id="btn-view-zoomout"><span>Zoom Out</span> <kbd>Ctrl+-</kbd></button>
+          <button id="btn-view-fit"><span>Muat ke Skrin (Fit Screen)</span> <kbd>Ctrl+0</kbd></button>
+          <button id="btn-view-100"><span>Saiz Sebenar (100%)</span> <kbd>Ctrl+1</kbd></button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Top Right Quick Actions -->
+    <div class="top-actions">
+      <!-- Hidden file input supporting images, PDF, and PostScript .ps/.eps -->
+      <input type="file" id="general-file-input" accept="image/*,application/pdf,.ps,.eps" style="display:none">
+      <button class="btn-pwa-install" id="btn-install-pwa" title="Pasang aplikasi ke telefon pintar">📱 Pasang Aplikasi</button>
+      <button class="btn-primary" id="btn-quick-open">📂 Buka Fail (.PS / PDF / Imej)</button>
+      <button class="btn-success" id="btn-quick-export">💾 Simpan</button>
+      <button class="btn-mobile-toggle-dock" id="btn-toggle-dock" title="Buka/Tutup Panel">☰</button>
+    </div>
+  </header>
+
+  <!-- Options Bar (Dynamic per active tool) -->
+  <div id="options-bar">
+    <div class="tool-name-indicator" id="current-tool-badge">Brush Tool</div>
+
+    <!-- Options for Brush / Eraser -->
+    <div class="tool-options-group" id="opt-brush-group">
+      <label>Saiz: <input type="range" id="brush-size" min="1" max="150" value="15"><span id="brush-size-val">15px</span></label>
+      <label>Kekerasan: <input type="range" id="brush-hardness" min="0" max="100" value="80"><span id="brush-hardness-val">80%</span></label>
+      <label>Kelegapan: <input type="range" id="brush-opacity" min="5" max="100" value="100"><span id="brush-opacity-val">100%</span></label>
+    </div>
+
+    <!-- Options for Shapes -->
+    <div class="tool-options-group" id="opt-shape-group" style="display: none;">
+      <label>Bentuk: 
+        <select id="shape-type">
+          <option value="rect">Segi Empat (Rectangle)</option>
+          <option value="circle">Bulatan (Circle / Ellipse)</option>
+          <option value="line">Garis Lurus (Line)</option>
+          <option value="arrow">Anak Panah (Arrow)</option>
+          <option value="star">Bintang (Star)</option>
+        </select>
+      </label>
+      <label>Garis: <input type="number" id="shape-stroke-width" min="0" max="50" value="3" style="width:48px;">px</label>
+      <label><input type="checkbox" id="shape-fill-check" checked> Isi Warna</label>
+    </div>
+
+    <!-- Options for Text -->
+    <div class="tool-options-group" id="opt-text-group" style="display: none;">
+      <label>Fon:
+        <select id="text-font">
+          <option value="Arial, sans-serif">Arial</option>
+          <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI</option>
+          <option value="'Times New Roman', Times, serif">Times New Roman</option>
+          <option value="'Courier New', Courier, monospace">Courier New</option>
+          <option value="Impact, Haettenschweiler, sans-serif">Impact</option>
+        </select>
+      </label>
+      <label>Saiz: <input type="number" id="text-size" min="8" max="250" value="36" style="width:55px;">px</label>
+      <button class="opt-btn-toggle" id="btn-text-bold" title="Tebal (Bold)"><b>B</b></button>
+      <button class="opt-btn-toggle" id="btn-text-italic" title="Condong (Italic)"><i>I</i></button>
+    </div>
+
+    <!-- Options for Marquee / Select -->
+    <div class="tool-options-group" id="opt-select-group" style="display: none;">
+      <button class="opt-btn" id="btn-crop-selection">Potong ke Pilihan (Crop)</button>
+      <button class="opt-btn" id="btn-clear-selection">Nyahpilih</button>
+    </div>
+  </div>
+
+  <!-- Main Studio Workspace Container -->
+  <div id="main-container">
+    
+    <!-- Left Toolbar (Photoshop style) -->
+    <aside id="left-toolbar">
+      <button class="tool-btn active" data-tool="move" title="Move Tool (V)">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M10 9h4V6h3l-5-5l-5 5h3v3zm-1 1H6V7l-5 5l5 5v-3h3v-4zm11 2l-5-5v3h-3v4h3v3l5-5zm-7 3h-4v3H6l5 5l5-5h-3v-3z"/></svg>
+      </button>
+
+      <button class="tool-btn" data-tool="select" title="Rectangular Marquee (M)">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 4h4v2H4v2H2V4a2 2 0 0 1 2-2zm16 0a2 2 0 0 1 2 2v4h-2V6h-4V4h4zM4 20H2v-4h2v2h4v2H4zm16 0h-4v-2h4v-2h2v4a2 2 0 0 1-2 2zM9 4h6v2H9V4zm0 14h6v2H9v-2zm-5-9v6H2V9h2zm18 0v6h-2V9h2z"/></svg>
+      </button>
+
+      <button class="tool-btn" data-tool="brush" title="Brush Tool (B)">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20.71 4.63l-1.34-1.34a2 2 0 0 0-2.83 0L3 16.79V21h4.21L20.71 7.46a2 2 0 0 0 0-2.83zM5.13 19l8.6-8.6l1.87 1.87l-8.6 8.6H5.13V19z"/></svg>
+      </button>
+
+      <button class="tool-btn" data-tool="pencil" title="Pencil Tool (N)">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83l3.75 3.75l1.83-1.83z"/></svg>
+      </button>
+
+      <button class="tool-btn" data-tool="eraser" title="Eraser Tool (E)">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l9.19-9.19c.79-.78 2.05-.78 2.84 0l1.4 1.59zm-7.07 9.9l4.95-4.95l-1.41-1.42l-4.96 4.96l1.42 1.41z"/></svg>
+      </button>
+
+      <button class="tool-btn" data-tool="bucket" title="Paint Bucket (G)">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4c-3.72 0-6.85 2.72-7.39 6.34C1.94 10.87 0 13.21 0 16c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5c0-2.64-2.05-4.78-4.65-4.96zM19 20H6c-2.21 0-4-1.79-4-4c0-2.05 1.53-3.76 3.56-3.97l1.07-.11l.5-.95C8.08 9.14 9.94 8 12 8c2.62 0 4.88 1.86 5.39 4.43l.3 1.5l1.53.11c1.56.1 2.78 1.41 2.78 2.96c0 1.65-1.35 3-3 3z"/></svg>
+      </button>
+
+      <button class="tool-btn" data-tool="text" title="Text Tool (T)">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M5 4v3h5.5v12h3V7H19V4H5z"/></svg>
+      </button>
+
+      <button class="tool-btn" data-tool="shape" title="Custom Shapes (U)">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 3v18h18V3H3zm16 16H5V5h14v14z"/></svg>
+      </button>
+
+      <button class="tool-btn" data-tool="eyedropper" title="Eyedropper (I)">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20.71 5.63l-2.34-2.34a1 1 0 0 0-1.41 0l-3.12 3.12l-1.93-.91l-1.41 1.41l1.15 2.16l-7.44 7.44l-2.12-.51L0 18l3 3l1.9-2.09l-.51-2.12l7.44-7.44l2.16 1.15l1.41-1.41l-.91-1.93l3.12-3.13a1 1 0 0 0 0-1.4z"/></svg>
+      </button>
+
+      <button class="tool-btn" data-tool="hand" title="Hand Tool (H)">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M23 10a2 2 0 0 0-2-2a2 2 0 0 0-1.07.31A2 2 0 0 0 18 7a2 2 0 0 0-1.22.42A2 2 0 0 0 15 6a2 2 0 0 0-2 2v5.18l-1.87-1.9a2.008 2.008 0 0 0-2.83 0a2 2 0 0 0 0 2.83l6.56 6.57c2.18 2.18 5.71 2.18 7.89 0l.25-.25V10z"/></svg>
+      </button>
+
+      <button class="tool-btn" data-tool="zoom" title="Zoom Tool (Z)">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5A6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5S14 7.01 14 9.5S11.99 14 9.5 14zm.5-7H9v2H7v1h2v2h1v-2h2V9h-2z"/></svg>
+      </button>
+
+      <div class="color-picker-box">
+        <div class="color-swatch-fg" id="fg-color-box" title="Warna Latar Depan">
+          <input type="color" id="fg-color" value="#000000">
+        </div>
+        <div class="color-swatch-bg" id="bg-color-box" title="Warna Latar Belakang">
+          <input type="color" id="bg-color" value="#ffffff">
+        </div>
+        <button id="btn-swap-colors" title="Tukar Warna (X)">⇄</button>
+      </div>
+    </aside>
+
+    <!-- Canvas Central Viewport -->
+    <main id="viewport-container">
+      <div id="canvas-scroll-wrapper">
+        <div id="canvas-workspace">
+          <!-- Dynamic checkerboard background layer -->
+          <canvas id="checkerboard-canvas"></canvas>
+          <!-- Display Composite Canvas -->
+          <canvas id="main-canvas"></canvas>
+          <!-- Interactive Overlay for selections, brushes preview & bounding boxes -->
+          <canvas id="overlay-canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Bottom Floating Status Bar -->
+      <footer id="canvas-status-bar">
+        <div class="status-left">
+          <span id="stat-zoom">100%</span>
+          <span class="status-sep">|</span>
+          <span id="stat-dims">1280 × 720 px</span>
+        </div>
+        <div class="status-center">
+          <span id="stat-info">Sedia. Boleh buka fail .PS, PDF atau imej!</span>
+        </div>
+        <div class="status-right">
+          <span id="stat-coords">X: 0, Y: 0</span>
+        </div>
+      </footer>
+    </main>
+
+    <!-- Right Side Docked Panels -->
+    <aside id="right-dock">
+      <!-- Tabs Selector -->
+      <div class="dock-tabs">
+        <button class="dock-tab active" data-tab="tab-layers">Lapisan</button>
+        <button class="dock-tab" data-tab="tab-ps">Fail .PS</button>
+        <button class="dock-tab" data-tab="tab-pdf">PDF Studio</button>
+        <button class="dock-tab" data-tab="tab-convert">Penukar Dokumen</button>
+        <button class="dock-tab" data-tab="tab-adjust">Penapis</button>
+        <button class="dock-tab" data-tab="tab-history">Sejarah</button>
+      </div>
+
+      <!-- Tab Content 1: Layers System -->
+      <section class="dock-panel active" id="tab-layers">
+        <div class="panel-section-header">
+          <div class="blend-mode-wrapper">
+            <label>Mod:</label>
+            <select id="layer-blend-mode">
+              <option value="source-over">Normal</option>
+              <option value="multiply">Multiply</option>
+              <option value="screen">Screen</option>
+              <option value="overlay">Overlay</option>
+              <option value="darken">Darken</option>
+              <option value="lighten">Lighten</option>
+              <option value="color-dodge">Color Dodge</option>
+              <option value="hard-light">Hard Light</option>
+              <option value="difference">Difference</option>
+            </select>
+          </div>
+          <div class="opacity-wrapper">
+            <label>Kelegapan:</label>
+            <input type="range" id="layer-opacity" min="0" max="100" value="100">
+            <span id="layer-opacity-val">100%</span>
+          </div>
+        </div>
+
+        <div id="layers-list-container"></div>
+
+        <div class="layers-footer-toolbar">
+          <button id="btn-add-layer" title="Tambah Lapisan Baharu">+</button>
+          <button id="btn-duplicate-layer" title="Salin Lapisan Terpilih">⧉</button>
+          <button id="btn-move-layer-up" title="Naikkan Lapisan">▲</button>
+          <button id="btn-move-layer-down" title="Turunkan Lapisan">▼</button>
+          <button id="btn-merge-layer" title="Cantumkan Lapisan">🗀</button>
+          <button id="btn-delete-layer" title="Padam Lapisan" class="btn-danger">🗑</button>
+        </div>
+      </section>
+
+      <!-- Tab Content 2: PostScript .PS Studio Engine -->
+      <section class="dock-panel" id="tab-ps">
+        <div class="panel-header-title">
+          <h3>Enjin Pembaca Fail .PS (PostScript)</h3>
+          <p class="panel-subtext">Buka, tafsir kod vektor Adobe PostScript (.ps / .eps), dan tukar ke PDF atau imej terus di telefon anda.</p>
+        </div>
+
+        <div class="pdf-upload-box">
+          <input type="file" id="ps-file-input" accept=".ps,.eps,text/plain" style="display:none">
+          <button class="btn-primary btn-block" id="btn-trigger-ps-file">📂 Pilih Fail .PS dari Telefon / PC</button>
+          <span class="file-name-label" id="ps-loaded-filename">Tiada fail .ps dibuka</span>
+        </div>
+
+        <div id="ps-action-controls" style="display:none;">
+          <div class="file-details-badge" id="ps-details-badge">Format dikesan: PostScript Vector</div>
+          <button class="btn-success btn-block" id="btn-ps-insert-layer">📥 Masukkan Sebagai Lapisan</button>
+          <button class="btn-secondary btn-block" id="btn-ps-set-canvas">🖼 Ganti Saiz Kanvas Mengikut Dokumen .PS</button>
+          <button class="btn-outline btn-block" id="btn-ps-convert-to-pdf">📄 Tukar & Muat Turun Sebagai PDF</button>
+          <button class="btn-outline btn-block" id="btn-ps-convert-to-png">🖼 Tukar & Muat Turun Sebagai PNG</button>
+        </div>
+      </section>
+
+      <!-- Tab Content 3: PDF Studio Integration -->
+      <section class="dock-panel" id="tab-pdf">
+        <div class="panel-header-title">
+          <h3>Enjin PDF Bersepadu</h3>
+          <p class="panel-subtext">Buka, semak halaman, dan masukkan dokumen PDF ke kanvas lapisan.</p>
+        </div>
+
+        <div class="pdf-upload-box" id="pdf-drop-zone">
+          <input type="file" id="pdf-file-input" accept="application/pdf" style="display:none">
+          <button class="btn-secondary" id="btn-trigger-pdf-file">📄 Pilih Fail PDF</button>
+          <span class="file-name-label" id="pdf-loaded-filename">Tiada fail PDF dibuka</span>
+        </div>
+
+        <div id="pdf-navigator-wrapper" style="display: none;">
+          <div class="pdf-nav-controls">
+            <button id="btn-pdf-prev" class="btn-sm">◀ Halaman</button>
+            <span id="pdf-page-indicator">Halaman 1 / 1</span>
+            <button id="btn-pdf-next" class="btn-sm">Halaman ▶</button>
+          </div>
+
+          <div class="pdf-preview-box">
+            <canvas id="pdf-thumbnail-canvas"></canvas>
+          </div>
+
+          <div class="pdf-action-block">
+            <label>Resolusi Render:</label>
+            <select id="pdf-render-scale">
+              <option value="1.5">Standard (150 DPI)</option>
+              <option value="2.0" selected>Tinggi (Crisp Vector 200 DPI)</option>
+              <option value="3.0">Ultra HD (300 DPI)</option>
+            </select>
+
+            <button class="btn-primary btn-block" id="btn-pdf-insert-layer">📥 Masukkan Halaman Sebagai Lapisan</button>
+            <button class="btn-secondary btn-block" id="btn-pdf-set-as-canvas">🖼 Ganti Saiz Kanvas Dengan PDF</button>
+            <button class="btn-outline btn-block" id="btn-pdf-export-all-png">⚡ Eksport Semua Halaman ke PNG</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab Content 4: Document & Image Converter Hub -->
+      <section class="dock-panel" id="tab-convert">
+        <div class="panel-header-title">
+          <h3>Penukar Dokumen & Format</h3>
+          <p class="panel-subtext">Tukar sebarang fail .PS, PDF, atau imej ke pelbagai format.</p>
+        </div>
+
+        <div class="converter-box">
+          <div class="conv-input-zone">
+            <label class="conv-label">1. Pilih Fail Sumber (.PS / PDF / Gambar):</label>
+            <input type="file" id="converter-file-input" accept="image/*,application/pdf,.ps,.eps" class="file-input-custom">
+            <div id="conv-file-details" class="file-details-badge">Sedia memilih fail</div>
+          </div>
+
+          <div class="conv-options-zone">
+            <label class="conv-label">2. Format Sasaran (Target):</label>
+            <select id="conv-target-format" class="select-custom">
+              <option value="pdf">Dokumen PDF (Standard)</option>
+              <option value="png">PNG (Lossless Transparency)</option>
+              <option value="jpeg">JPEG (Gambar Mampat)</option>
+              <option value="webp">WebP (Format Web)</option>
+              <option value="svg">SVG Vector Container</option>
+            </select>
+
+            <div id="conv-quality-control" class="quality-slider-group" style="display:none;">
+              <label>Kualiti Mampatan: <span id="conv-quality-val">92%</span></label>
+              <input type="range" id="conv-quality" min="10" max="100" value="92">
+            </div>
+          </div>
+
+          <div class="conv-action-zone">
+            <button class="btn-success btn-block" id="btn-start-convert">🔄 Tukar Sekarang & Muat Turun</button>
+            <button class="btn-outline btn-block" id="btn-convert-current-canvas">🎨 Tukar Kanvas Aktif ke PDF / Imej</button>
+          </div>
+
+          <div id="conv-status-message" class="status-feedback"></div>
+        </div>
+      </section>
+
+      <!-- Tab Content 5: Adjustments & Filters -->
+      <section class="dock-panel" id="tab-adjust">
+        <div class="panel-header-title">
+          <h3>Pelarasan & Penapis Imej</h3>
+        </div>
+
+        <div class="adjust-control-group">
+          <label>Kecerahan (Brightness): <span id="adj-bright-val">0</span></label>
+          <input type="range" id="adj-brightness" min="-100" max="100" value="0">
+        </div>
+
+        <div class="adjust-control-group">
+          <label>Kontras (Contrast): <span id="adj-contrast-val">0</span></label>
+          <input type="range" id="adj-contrast" min="-100" max="100" value="0">
+        </div>
+
+        <div class="adjust-control-group">
+          <label>Ketepuan (Saturation): <span id="adj-saturate-val">100%</span></label>
+          <input type="range" id="adj-saturation" min="0" max="200" value="100">
+        </div>
+
+        <div class="adjust-control-group">
+          <label>Kabur (Blur): <span id="adj-blur-val">0px</span></label>
+          <input type="range" id="adj-blur" min="0" max="25" value="0">
+        </div>
+
+        <div class="adjust-action-buttons">
+          <button class="btn-primary" id="btn-apply-adjustments">Terapkan Pelarasan</button>
+          <button class="btn-secondary" id="btn-reset-adjustments">Set Semula</button>
+        </div>
+
+        <hr class="panel-hr">
+
+        <div class="filter-quick-grid">
+          <button class="btn-filter-quick" id="btn-quick-grayscale">Grayscale</button>
+          <button class="btn-filter-quick" id="btn-quick-sepia">Sepia</button>
+          <button class="btn-filter-quick" id="btn-quick-invert">Invert</button>
+          <button class="btn-filter-quick" id="btn-quick-sharpen">Sharpen</button>
+        </div>
+      </section>
+
+      <!-- Tab Content 6: History -->
+      <section class="dock-panel" id="tab-history">
+        <div class="panel-header-title">
+          <h3>Sejarah Tindakan (History)</h3>
+        </div>
+        <ul id="history-steps-list"></ul>
+      </section>
+    </aside>
+  </div>
+
+  <!-- Modal: New Canvas Document -->
+  <div class="modal-backdrop" id="modal-new-doc" style="display:none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Cipta Dokumen Baharu</h3>
+        <button class="modal-close" id="btn-close-new-doc">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>Pratetap Saiz:</label>
+          <select id="preset-size-select">
+            <option value="custom">Tersuai (Custom)</option>
+            <option value="1920x1080" selected>Full HD (1920 × 1080)</option>
+            <option value="1280x720">HD 720p (1280 × 720)</option>
+            <option value="1080x1080">Instagram Square (1080 × 1080)</option>
+            <option value="1080x1920">Mobile Screen (1080 × 1920)</option>
+            <option value="2480x3508">Kertas A4 (2480 × 3508)</option>
+          </select>
+        </div>
+        <div class="form-row-2col">
+          <div>
+            <label>Lebar (px):</label>
+            <input type="number" id="new-doc-width" value="1920" min="64" max="8000">
+          </div>
+          <div>
+            <label>Tinggi (px):</label>
+            <input type="number" id="new-doc-height" value="1080" min="64" max="8000">
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Latar Belakang:</label>
+          <select id="new-doc-bg">
+            <option value="white">Putih (White)</option>
+            <option value="transparent">Lutsinar (Transparent)</option>
+            <option value="black">Hitam (Black)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-new-doc">Batal</button>
+        <button class="btn-primary" id="btn-confirm-new-doc">Cipta Dokumen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Resize Canvas / Image -->
+  <div class="modal-backdrop" id="modal-resize" style="display:none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Ubah Saiz Kanvas / Imej</h3>
+        <button class="modal-close" id="btn-close-resize">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row-2col">
+          <div>
+            <label>Lebar Baharu (px):</label>
+            <input type="number" id="resize-width" value="1920" min="50" max="8000">
+          </div>
+          <div>
+            <label>Tinggi Baharu (px):</label>
+            <input type="number" id="resize-height" value="1080" min="50" max="8000">
+          </div>
+        </div>
+        <div class="form-row">
+          <label><input type="checkbox" id="resize-aspect-ratio" checked> Kekalkan Nisbah Aspek</label>
+        </div>
+        <div class="form-row">
+          <label><input type="checkbox" id="resize-scale-content" checked> Skalakan Kandungan Lapisan</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-resize">Batal</button>
+        <button class="btn-primary" id="btn-confirm-resize">Gunakan Saiz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Mobile PWA Install Guidance -->
+  <div class="modal-backdrop" id="modal-pwa-guide" style="display:none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Pasang Aplikasi di Telefon Pintar</h3>
+        <button class="modal-close" id="btn-close-pwa-guide">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:12px; line-height:1.6; color:#ccc;">
+          Untuk memasang <b>Lumina PhotoStudio</b> di telefon anda:
+        </p>
+        <ol style="font-size:12px; line-height:1.8; color:#ddd; padding-left:20px; margin-top:8px;">
+          <li><b>Android (Chrome):</b> Tekan menu tiga titik (⋮) di atas kanan pelayar, pilih <b>"Install app"</b> atau <b>"Add to Home screen"</b>.</li>
+          <li><b>iPhone (Safari):</b> Tekan butang Kongsi (Share / kotak bertanda panah atas), skrol ke bawah dan pilih <b>"Add to Home Screen"</b>.</li>
+        </ol>
+        <p style="font-size:11px; color:#31c8ff; margin-top:10px;">
+          ✓ Aplikasi akan dipasang terus ke skrin telefon anda seperti aplikasi rasmi dan boleh digunakan secara luar talian (offline).
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" id="btn-got-it-pwa">Faham & Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
