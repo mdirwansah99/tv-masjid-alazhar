@@ -2,8 +2,6 @@
 <resources>
     <style name="Theme.HaierShield" parent="@style/Theme.Leanback">
         <item name="android:windowBackground">@color/background_dark</item>
-        <item name="colorPrimary">@color/active_green</item>
-        <item name="colorAccent">@color/accent_blue</item>
         <item name="android:colorPrimary">@color/active_green</item>
         <item name="android:colorAccent">@color/accent_blue</item>
     </style>
