@@ -11,6 +11,7 @@ import com.haiershield.HaierShieldApp
 import com.haiershield.R
 import com.haiershield.data.BlocklistManager
 import com.haiershield.data.PrefsManager
+import com.haiershield.data.ShieldStatus
 import com.haiershield.data.StatsTracker
 import com.haiershield.ui.MainActivity
 import com.haiershield.util.DnsPacketParser
@@ -62,6 +63,7 @@ class DnsBlockerVpn : VpnService() {
 
     override fun onRevoke() {
         Log.w(TAG, "VPN permission revoked")
+        ShieldStatus.setVpnState(ShieldStatus.VpnState.DISCONNECTED)
         stopVpn()
         super.onRevoke()
     }
@@ -82,16 +84,19 @@ class DnsBlockerVpn : VpnService() {
 
             if (vpnInterface == null) {
                 Log.e(TAG, "Failed to establish VPN")
+                ShieldStatus.setVpnState(ShieldStatus.VpnState.DISCONNECTED)
                 stopSelf()
                 return
             }
 
             isRunning.set(true)
+            ShieldStatus.setVpnState(ShieldStatus.VpnState.CONNECTED)
             vpnThread = Thread(::runVpnLoop, "HaierShield-VPN")
             vpnThread?.start()
             Log.i(TAG, "VPN started successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Error starting VPN", e)
+            ShieldStatus.setVpnState(ShieldStatus.VpnState.DISCONNECTED)
             stopSelf()
         }
     }
@@ -117,24 +122,52 @@ class DnsBlockerVpn : VpnService() {
         } catch (e: InterruptedException) {
             Log.i(TAG, "VPN thread interrupted")
         } catch (e: Exception) {
-            Log.e(TAG, "Error in VPN loop", e)
+            if (isRunning.get()) {
+                Log.e(TAG, "VPN loop error, attempting reconnect", e)
+                ShieldStatus.setVpnState(ShieldStatus.VpnState.RECONNECTING)
+                reconnect()
+            }
         } finally {
             try { input.close() } catch (_: Exception) {}
             try { output.close() } catch (_: Exception) {}
         }
     }
 
+    private fun reconnect() {
+        var delay = 1000L
+        val maxDelay = 30000L
+        while (isRunning.get()) {
+            try {
+                Thread.sleep(delay)
+                stopVpnInterface()
+                startVpn()
+                if (vpnInterface != null) {
+                    Log.i(TAG, "Reconnected successfully")
+                    return
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Reconnect attempt failed", e)
+            }
+            delay = (delay * 2).coerceAtMost(maxDelay)
+        }
+    }
+
+    private fun stopVpnInterface() {
+        try { vpnInterface?.close() } catch (_: Exception) {}
+        vpnInterface = null
+    }
+
     private fun handlePacket(data: ByteArray, length: Int, output: FileOutputStream) {
         if (length < 28) return
         val protocol = data[9].toInt() and 0xFF
-        if (protocol != 17) return // not UDP
+        if (protocol != 17) return
 
         val ipHeaderLength = (data[0].toInt() and 0x0F) * 4
         if (length < ipHeaderLength + 8) return
 
         val destPort = ((data[ipHeaderLength + 2].toInt() and 0xFF) shl 8) or
                 (data[ipHeaderLength + 3].toInt() and 0xFF)
-        if (destPort != 53) return // not DNS
+        if (destPort != 53) return
 
         val udpHeaderLength = 8
         val dnsOffset = ipHeaderLength + udpHeaderLength
@@ -168,8 +201,8 @@ class DnsBlockerVpn : VpnService() {
             val response = ByteArray(totalLength)
 
             System.arraycopy(originalPacket, 0, response, 0, ipHeaderLength)
-            System.arraycopy(originalPacket, 12, response, 16, 4) // src -> dst
-            System.arraycopy(originalPacket, 16, response, 12, 4) // dst -> src
+            System.arraycopy(originalPacket, 12, response, 16, 4)
+            System.arraycopy(originalPacket, 16, response, 12, 4)
 
             response[2] = (totalLength shr 8).toByte()
             response[3] = totalLength.toByte()
@@ -251,12 +284,8 @@ class DnsBlockerVpn : VpnService() {
         isRunning.set(false)
         vpnThread?.interrupt()
         vpnThread = null
-        try {
-            vpnInterface?.close()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error closing VPN interface", e)
-        }
-        vpnInterface = null
+        stopVpnInterface()
+        ShieldStatus.setVpnState(ShieldStatus.VpnState.DISCONNECTED)
         stopForeground(true)
         Log.i(TAG, "VPN stopped")
     }
