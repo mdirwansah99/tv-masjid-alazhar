@@ -174,15 +174,15 @@ class DashboardFragment : Fragment() {
             when (state) {
                 ShieldStatus.OverallState.ACTIVE -> {
                     statusTv.text = getString(R.string.status_active)
-                    statusTv.setTextColor(resources.getColor(R.color.active_green, null))
+                    statusTv.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.active_green))
                 }
                 ShieldStatus.OverallState.PARTIAL -> {
                     statusTv.text = getString(R.string.status_partial)
-                    statusTv.setTextColor(resources.getColor(R.color.warning_amber, null))
+                    statusTv.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.warning_amber))
                 }
                 ShieldStatus.OverallState.INACTIVE -> {
                     statusTv.text = getString(R.string.status_inactive)
-                    statusTv.setTextColor(resources.getColor(R.color.inactive_grey, null))
+                    statusTv.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.inactive_grey))
                 }
                 null -> {}
             }
@@ -191,7 +191,7 @@ class DashboardFragment : Fragment() {
         ShieldStatus.vpnState.observe(viewLifecycleOwner) { vpnState ->
             if (vpnState == ShieldStatus.VpnState.RECONNECTING) {
                 statusTv.text = getString(R.string.vpn_reconnecting)
-                statusTv.setTextColor(resources.getColor(R.color.warning_amber, null))
+                statusTv.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.warning_amber))
             }
         }
     }

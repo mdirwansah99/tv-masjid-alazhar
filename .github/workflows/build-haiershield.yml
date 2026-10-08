@@ -7,8 +7,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   build:
@@ -23,14 +21,8 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
-        cache: 'gradle'
 
-    - name: Pasang Gradle
-      uses: gradle/actions/setup-gradle@v3
-      with:
-        gradle-version: '8.2'
-
-    - name: Pastikan Kebenaran Eksekusi gradlew
+    - name: Kebenaran Eksekusi gradlew
       run: chmod +x gradlew
 
     - name: Bina Debug APK
@@ -59,9 +51,9 @@ jobs:
 
           **Muat Turun & Pasang Terus pada TV:**
           1. Buka pelayar web (Browser) pada TV Haier masjid anda.
-          2. Masukkan pautan:
+          2. Buka pautan:
              `https://github.com/mdirwansah99/tv-masjid-alazhar/releases/download/haiershield-latest/HaierShield.apk`
-          3. Pasang APK dan ikuti arahan setup (aktifkan Kebenaran Kebolehcapaian & VPN).
+          3. Pasang fail APK dan ikuti tetapan (aktifkan Accessibility Service & VPN).
 
           **Ciri-ciri Utama:**
           - ⚡ **Auto-Tutup Pop-up Iklan Haier** (Accessibility Service)
