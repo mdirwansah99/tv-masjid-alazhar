@@ -28,51 +28,45 @@ jobs:
         chmod +x gradlew
 
     - name: Bina Debug APK
-      id: gradle_build
       run: |
+        set -o pipefail
         ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee build.log
 
-    - name: Ringkasan Log ke GitHub Summary
+    - name: Papar Log Jika Gagal
+      if: failure()
+      run: |
+        echo "=== 50 BARIS TERAKHIR LOG BINAAN ==="
+        tail -n 50 build.log
+
+    - name: Sediakan Folder Edaran
       if: always()
       run: |
-        echo "### Log Binaan Gradle" >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        tail -n 80 build.log >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-
-    - name: Salin APK untuk Edaran
-      run: |
         mkdir -p dist
-        find app/build/outputs/ -name "*.apk" -exec cp {} dist/HaierShield.apk \;
-        ls -la dist/
+        if [ -d "app/build/outputs" ]; then
+          find app/build/outputs/ -name "*.apk" -exec cp {} dist/HaierShield.apk \;
+        fi
+        cp build.log dist/build_log.txt
 
-    - name: Muat Naik Artifak APK
+    - name: Muat Naik Artifak
+      if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: HaierShield-APK
-        path: dist/HaierShield.apk
+        name: HaierShield-Build-Files
+        path: dist/
         retention-days: 30
 
-    - name: Cipta / Kemaskini GitHub Release
+    - name: Terbitkan ke GitHub Release
+      if: always()
       uses: softprops/action-gh-release@v2
-      if: github.ref == 'refs/heads/main'
       with:
         tag_name: haiershield-latest
         name: "HaierShield Android TV APK (Versi Terkini)"
         body: |
           ### 🛡️ HaierShield — Penyekat Iklan TV Haier Android
 
-          **Muat Turun & Pasang Terus pada TV:**
-          1. Buka pelayar web (Browser) pada TV Haier masjid anda.
-          2. Masukkan pautan:
-             `https://github.com/mdirwansah99/tv-masjid-alazhar/releases/download/haiershield-latest/HaierShield.apk`
-          3. Pasang APK dan ikuti arahan setup (aktifkan Kebenaran Kebolehcapaian & VPN).
-
-          **Ciri-ciri Utama:**
-          - ⚡ **Auto-Tutup Pop-up Iklan Haier** (Accessibility Service)
-          - 🌐 **Penyekat Domain Iklan Tempatan** (Local DNS VPN)
-          - 🔔 **Pembersih Notifikasi Iklan** (Notification Listener)
-          - 🔄 **Mula Automatik Semula Apabila TV Dihidupkan** (Boot Receiver)
-        files: dist/HaierShield.apk
+          **Muat Turun APK Terus ke TV:**
+          Muat turun fail `HaierShield.apk` di bawah dan pasang pada TV anda.
+        files: |
+          dist/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
