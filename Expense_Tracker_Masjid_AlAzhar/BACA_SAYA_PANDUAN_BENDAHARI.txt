@@ -46,15 +46,38 @@ merekod aliran tunai keluar masuk secara telus, tersusun, dan mesra audit.
   ruang perakuan Juruaudit Dalaman sedia dicetak.
 
 ------------------------------------------------------------------------
-4. KESELAMATAN & SANDARAN DATA (BACKUP)
+4. KESELAMATAN PIN & KAWALAN AKSES KHAS
 ------------------------------------------------------------------------
-- Data disimpan selamat di dalam pelayar laptop anda.
-- Untuk mengelakkan data hilang jika laptop rosak atau dibersihkan:
+- Aplikasi dilindungi dengan PIN keselamatan 6-digit agar hanya Bendahari
+  dan Pengerusi Masjid sahaja yang boleh melihat atau mengemaskini akaun.
+- PIN Lalai (Default): 123456
+- Anda boleh menukar PIN pada bila-bila masa melalui butang "Awan" ->
+  "Tukar PIN Keselamatan Aplikasi".
+- Tanda (tick) "Ingat telefon ini" supaya anda tidak perlu memasukkan PIN
+  setiap kali aplikasi dibuka pada telefon atau laptop peribadi anda.
+- Tekan butang "Kunci" bila selesai untuk mengunci semula sistem.
+
+------------------------------------------------------------------------
+5. CARA PENGGUNAAN DI TELEFON PINTAR (BENDAHARI & PENGERUSI)
+------------------------------------------------------------------------
+- Buka pautan aplikasi di pelayar telefon (Chrome di Android atau Safari di iPhone).
+- Pasang sebagai aplikasi telefon (PWA):
+  * Android: Tekan menu titik tiga (⋮) -> Pilih "Add to Home screen" / "Pasang Aplikasi".
+  * iPhone: Tekan butang kongsi (Share icon) -> Pilih "Add to Home Screen".
+- Ikon "Kewangan Al-Azhar" akan muncul di skrin utama telefon anda seperti aplikasi biasa!
+- Bendahari boleh terus tangkap gambar resit dan rekod duit keluar terus dari telefon.
+- Melalui butang "Awan", anda boleh mengaktifkan penyegerakan Firebase supaya
+  setiap rekod yang dimasukkan Bendahari di telefon akan terus muncul di telefon
+  Pengerusi dan di laptop masjid secara masa-nyata.
+
+------------------------------------------------------------------------
+6. SANDARAN DATA (BACKUP)
+------------------------------------------------------------------------
+- Untuk mengelakkan data hilang jika telefon atau laptop rosak:
   1. Klik butang "Sandaran" di bahagian atas aplikasi.
   2. Klik "Muat Turun Fail Sandaran (.json)".
-  3. Simpan fail tersebut di dalam Pendrive (USB) anda sebagai sandaran berkala.
-- Jika bertukar laptop pada masa hadapan, hanya guna butang "Pulihkan Rekod"
-  untuk memuatkan semula semua data anda.
+  3. Simpan fail tersebut di tempat selamat (Google Drive / Pendrive).
+- Untuk memuatkan semula data lama, gunakan butang "Pulihkan Rekod".
 
 ========================================================================
 Disediakan untuk Jawatankuasa Masjid Al-Azhar Kampung Sepakat Jaya Sepanggar
