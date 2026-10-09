@@ -15,6 +15,20 @@ const {
   numberToWordsMY
 } = (typeof window !== 'undefined' ? window.MasjidDB : null) || (typeof require !== 'undefined' ? require('./db.js') : {});
 
+const {
+  getStoredPin,
+  setStoredPin,
+  verifyPin,
+  isDeviceUnlocked,
+  setDeviceUnlocked,
+  validateCloudConfig,
+  getCloudConfig,
+  saveCloudConfig,
+  isCloudEnabled,
+  fetchCloudTransactions,
+  pushTransactionToCloud
+} = (typeof window !== 'undefined' ? window.MasjidCloud : null) || (typeof require !== 'undefined' ? require('./cloud.js') : {});
+
 // Kategori Lazim Masjid
 const INCOME_CATEGORIES = [
   'Infaq Jumaat',
@@ -55,7 +69,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   initIcons();
   await initDatabase();
   setupEventListeners();
+  checkSecurityPinLock();
+  setupPinKeypad();
   renderApp();
+  if (isCloudEnabled && isCloudEnabled()) {
+    syncWithCloudSilently();
+  }
 });
 
 function initIcons() {
@@ -184,6 +203,13 @@ function setupEventListeners() {
   // Sandaran & Pulihkan Data
   document.getElementById('btn-export-backup')?.addEventListener('click', handleExportBackup);
   document.getElementById('btn-do-restore')?.addEventListener('click', handleRestoreBackup);
+
+  // Penyegerakan Awan & PIN Keselamatan
+  document.getElementById('btn-open-cloud')?.addEventListener('click', openCloudSettingsModal);
+  document.getElementById('modal-cloud-close')?.addEventListener('click', closeCloudSettingsModal);
+  document.getElementById('btn-cloud-modal-done')?.addEventListener('click', closeCloudSettingsModal);
+  document.getElementById('btn-save-cloud-config')?.addEventListener('click', handleSaveCloudConfig);
+  document.getElementById('btn-submit-change-pin')?.addEventListener('click', handleChangePinSubmit);
 }
 
 // ----------------------------------------------------
@@ -386,6 +412,9 @@ async function handleTransactionSubmit(e) {
 
     closeTransactionModal();
     renderApp();
+    if (typeof pushTxToCloudIfEnabled === 'function') {
+      pushTxToCloudIfEnabled(data);
+    }
   } catch (err) {
     alert('Ralat menyimpan transaksi: ' + err.message);
   }
@@ -776,6 +805,9 @@ async function handleVoucherBuilderSubmit(e) {
 
     closeVoucherBuilderModal();
     renderApp();
+    if (typeof pushTxToCloudIfEnabled === 'function') {
+      pushTxToCloudIfEnabled(data);
+    }
 
     // 2. Terus buka templat cetakan rasmi sedia print dan sign
     renderAndPrintVoucher(data, false);
@@ -1026,6 +1058,258 @@ async function handleRestoreBackup() {
   reader.readAsText(file);
 }
 
+// ----------------------------------------------------
+// KESELAMATAN PIN & KAWALAN PERANTI (MOBILE & DESKTOP)
+// ----------------------------------------------------
+function checkSecurityPinLock() {
+  const pinScreen = document.getElementById('screen-pin-lock');
+  if (!pinScreen) return;
+
+  if (typeof isDeviceUnlocked === 'function' && isDeviceUnlocked()) {
+    pinScreen.classList.add('hidden');
+  } else {
+    pinScreen.classList.remove('hidden');
+    const input = document.getElementById('pin-input-screen');
+    if (input) {
+      input.value = '';
+      setTimeout(() => input.focus(), 100);
+    }
+  }
+}
+
+function handleUnlockApp() {
+  const pinInput = document.getElementById('pin-input-screen');
+  const errorMsg = document.getElementById('pin-screen-error');
+  const rememberCheckbox = document.getElementById('pin-remember-device');
+  const val = (pinInput?.value || '').trim();
+
+  if (typeof verifyPin === 'function' && verifyPin(val)) {
+    if (errorMsg) errorMsg.classList.add('hidden');
+    if (rememberCheckbox?.checked && typeof setDeviceUnlocked === 'function') {
+      setDeviceUnlocked(true);
+    }
+    const pinScreen = document.getElementById('screen-pin-lock');
+    if (pinScreen) pinScreen.classList.add('hidden');
+
+    // Segerak terus jika awan diaktifkan
+    if (typeof isCloudEnabled === 'function' && isCloudEnabled()) {
+      syncWithCloudSilently();
+    }
+  } else {
+    if (errorMsg) {
+      errorMsg.textContent = 'Kod PIN salah. Sila masukkan PIN yang sah.';
+      errorMsg.classList.remove('hidden');
+    }
+    if (pinInput) {
+      pinInput.value = '';
+      pinInput.focus();
+    }
+  }
+}
+
+function handleLockApp() {
+  if (typeof setDeviceUnlocked === 'function') {
+    setDeviceUnlocked(false);
+  }
+  const pinScreen = document.getElementById('screen-pin-lock');
+  const pinInput = document.getElementById('pin-input-screen');
+  const errorMsg = document.getElementById('pin-screen-error');
+  if (errorMsg) errorMsg.classList.add('hidden');
+  if (pinInput) pinInput.value = '';
+  if (pinScreen) {
+    pinScreen.classList.remove('hidden');
+    setTimeout(() => pinInput?.focus(), 100);
+  }
+}
+
+function setupPinKeypad() {
+  const pinInput = document.getElementById('pin-input-screen');
+  document.querySelectorAll('.pin-key').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!pinInput) return;
+      const key = btn.getAttribute('data-key');
+      if (key === 'clear') {
+        pinInput.value = '';
+      } else if (key === 'backspace') {
+        pinInput.value = pinInput.value.slice(0, -1);
+      } else if (key !== null) {
+        if (pinInput.value.length < 8) {
+          pinInput.value += key;
+        }
+      }
+      if (pinInput.value.length === 6) {
+        handleUnlockApp();
+      }
+    });
+  });
+
+  pinInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      handleUnlockApp();
+    }
+  });
+
+  document.getElementById('btn-submit-screen-pin')?.addEventListener('click', handleUnlockApp);
+  document.getElementById('btn-lock-app')?.addEventListener('click', handleLockApp);
+}
+
+// ----------------------------------------------------
+// PENGURUSAN TETAPAN AWAN (FIREBASE & SYNC)
+// ----------------------------------------------------
+function openCloudSettingsModal() {
+  const modal = document.getElementById('modal-cloud-settings');
+  if (!modal) return;
+
+  const cfg = (typeof getCloudConfig === 'function' ? getCloudConfig() : null) || {};
+  const toggle = document.getElementById('cloud-toggle-enable');
+  const projectIdInput = document.getElementById('cloud-input-project-id');
+  const apiKeyInput = document.getElementById('cloud-input-api-key');
+
+  if (toggle) toggle.checked = !!cfg.enabled;
+  if (projectIdInput) projectIdInput.value = cfg.projectId || '';
+  if (apiKeyInput) apiKeyInput.value = cfg.apiKey || '';
+
+  const connected = typeof isCloudEnabled === 'function' && isCloudEnabled();
+  updateCloudBadgeUI(connected);
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function closeCloudSettingsModal() {
+  const modal = document.getElementById('modal-cloud-settings');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+}
+
+function updateCloudBadgeUI(connected) {
+  const badge = document.getElementById('cloud-status-badge');
+  if (!badge) return;
+  if (connected) {
+    badge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800';
+    badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Disambung ke Awan';
+  } else {
+    badge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700';
+    badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span> Belum Disambung';
+  }
+}
+
+async function handleSaveCloudConfig() {
+  const toggle = document.getElementById('cloud-toggle-enable');
+  const projectId = document.getElementById('cloud-input-project-id')?.value.trim() || '';
+  const apiKey = document.getElementById('cloud-input-api-key')?.value.trim() || '';
+
+  const config = {
+    enabled: !!toggle?.checked,
+    projectId,
+    apiKey
+  };
+
+  if (config.enabled && typeof validateCloudConfig === 'function') {
+    const val = validateCloudConfig(config);
+    if (!val.isValid) {
+      alert('Sila lengkapkan tetapan: ' + val.message);
+      return;
+    }
+  }
+
+  if (typeof saveCloudConfig === 'function') {
+    saveCloudConfig(config);
+  }
+
+  if (config.enabled) {
+    const btn = document.getElementById('btn-save-cloud-config');
+    try {
+      if (btn) btn.disabled = true;
+      const count = await syncWithCloudSilently();
+      updateCloudBadgeUI(true);
+      alert(`Sambungan Berjaya! Diselaraskan dengan ${count || 0} rekod dari awan.`);
+    } catch (err) {
+      updateCloudBadgeUI(false);
+      alert('Gagal menyambung ke Firebase Firestore: ' + err.message);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  } else {
+    updateCloudBadgeUI(false);
+    alert('Penyegerakan awan telah disimpan (mod luar talian aktif).');
+  }
+}
+
+function handleChangePinSubmit() {
+  const currentPin = document.getElementById('pin-input-current')?.value.trim();
+  const newPin = document.getElementById('pin-input-new')?.value.trim();
+  const statusEl = document.getElementById('pin-change-status');
+
+  if (typeof verifyPin === 'function' && !verifyPin(currentPin)) {
+    if (statusEl) {
+      statusEl.textContent = 'PIN semasa salah!';
+      statusEl.className = 'text-xs font-semibold text-rose-600';
+    }
+    return;
+  }
+
+  if (!newPin || newPin.length < 4) {
+    if (statusEl) {
+      statusEl.textContent = 'PIN baharu mesti sekurang-kurangnya 4 digit!';
+      statusEl.className = 'text-xs font-semibold text-rose-600';
+    }
+    return;
+  }
+
+  if (typeof setStoredPin === 'function') {
+    setStoredPin(newPin);
+  }
+
+  if (statusEl) {
+    statusEl.textContent = 'PIN berjaya ditukar!';
+    statusEl.className = 'text-xs font-semibold text-emerald-600';
+  }
+  const currInput = document.getElementById('pin-input-current');
+  const newInput = document.getElementById('pin-input-new');
+  if (currInput) currInput.value = '';
+  if (newInput) newInput.value = '';
+}
+
+async function syncWithCloudSilently() {
+  if (typeof isCloudEnabled !== 'function' || !isCloudEnabled()) return 0;
+  try {
+    const config = getCloudConfig();
+    const cloudDocs = await fetchCloudTransactions(config);
+    if (!cloudDocs || !cloudDocs.length) return 0;
+
+    if (db) {
+      for (const doc of cloudDocs) {
+        if (!doc.voucherNo) continue;
+        const existing = await db.transactions.where('voucherNo').equals(doc.voucherNo).first();
+        if (existing) {
+          await db.transactions.update(existing.id, doc);
+        } else {
+          await db.transactions.add(doc);
+        }
+      }
+      allTransactions = await db.transactions.orderBy('date').reverse().toArray();
+      renderApp();
+    }
+    return cloudDocs.length;
+  } catch (err) {
+    console.warn('Penyegerakan awan latar belakang gagal:', err.message);
+    return 0;
+  }
+}
+
+async function pushTxToCloudIfEnabled(tx) {
+  if (typeof isCloudEnabled !== 'function' || !isCloudEnabled()) return;
+  try {
+    const config = getCloudConfig();
+    await pushTransactionToCloud(tx, config);
+  } catch (err) {
+    console.warn('Gagal menghantar rekod ke awan:', err.message);
+  }
+}
+
 // Dedahkan ke window untuk rujukan global
 if (typeof window !== 'undefined') {
   window.MasjidApp = {
@@ -1034,6 +1318,10 @@ if (typeof window !== 'undefined') {
     openPaymentVoucherPrint,
     openCashBookPrint,
     openVoucherBuilderModal,
-    renderAndPrintVoucher
+    renderAndPrintVoucher,
+    handleUnlockApp,
+    handleLockApp,
+    openCloudSettingsModal,
+    closeCloudSettingsModal
   };
 }

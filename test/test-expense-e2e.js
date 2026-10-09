@@ -75,6 +75,41 @@ function createLocalServer() {
     await page.goto(url, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(1000);
 
+    // Semakan 0: Keselamatan & Kunci PIN
+    console.log('Menguji sistem kunci keselamatan PIN...');
+    const pinScreen = page.locator('#screen-pin-lock');
+    const isPinVisible = await pinScreen.isVisible();
+    if (!isPinVisible) {
+      throw new Error('Skrin PIN tidak dipaparkan secara automatik');
+    }
+
+    // Uji PIN salah
+    await page.fill('#pin-input-screen', '000000');
+    await page.click('#btn-submit-screen-pin');
+    await page.waitForTimeout(300);
+    const pinErr = await page.locator('#pin-screen-error').isVisible();
+    if (!pinErr) {
+      throw new Error('Mesej ralat PIN salah tidak muncul');
+    }
+
+    // Masukkan PIN lalai sah (123456)
+    await page.fill('#pin-input-screen', '123456');
+    await page.click('#btn-submit-screen-pin');
+    await page.waitForTimeout(500);
+
+    const isPinStillVisible = await pinScreen.isVisible();
+    if (isPinStillVisible) {
+      throw new Error('Skrin PIN masih aktif selepas PIN sah dimasukkan');
+    }
+    console.log('✓ Semakan Keselamatan: Kunci PIN 6-digit & buka kunci disahkan berjaya.');
+
+    // Semakan Modal Tetapan Awan
+    await page.click('#btn-open-cloud');
+    await page.waitForSelector('#modal-cloud-settings:not(.hidden)');
+    await page.click('#modal-cloud-close');
+    await page.waitForTimeout(300);
+    console.log('✓ Semakan Awan: Modal tetapan awan & PIN disahkan berfungsi.');
+
     // Semakan 1: Tajuk dan Header Masjid Al-Azhar
     const headerTitle = await page.locator('header h1').innerText();
     if (!headerTitle.includes('Masjid Al-Azhar')) {
