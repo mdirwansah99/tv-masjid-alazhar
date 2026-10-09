@@ -11,7 +11,8 @@ const {
   createBackupPayload,
   validateBackupPayload,
   compressReceiptImage,
-  getDatabase
+  getDatabase,
+  numberToWordsMY
 } = (typeof window !== 'undefined' ? window.MasjidDB : null) || (typeof require !== 'undefined' ? require('./db.js') : {});
 
 // Kategori Lazim Masjid
@@ -46,6 +47,8 @@ let db = null;
 let allTransactions = [];
 let currentReceiptImage = null;
 let currentReceiptFileName = '';
+let currentVbReceiptImage = null;
+let currentVbReceiptFileName = '';
 
 // PENDENGAR ACARA DOM (INIT)
 document.addEventListener('DOMContentLoaded', async () => {
@@ -135,8 +138,18 @@ function setupEventListeners() {
   // Butang Utama Buka Modal
   document.getElementById('btn-add-income')?.addEventListener('click', () => openTransactionModal('INCOME'));
   document.getElementById('btn-add-expense')?.addEventListener('click', () => openTransactionModal('EXPENSE'));
+  document.getElementById('btn-open-voucher')?.addEventListener('click', openVoucherBuilderModal);
   document.getElementById('btn-open-reports')?.addEventListener('click', openReportsModal);
   document.getElementById('btn-open-backup')?.addEventListener('click', openBackupModal);
+
+  // Baucar Bayaran Modal Listeners
+  document.getElementById('modal-voucher-close')?.addEventListener('click', closeVoucherBuilderModal);
+  document.getElementById('modal-voucher-cancel')?.addEventListener('click', closeVoucherBuilderModal);
+  document.getElementById('vb-btn-add-item')?.addEventListener('click', () => addVoucherItemRow());
+  document.getElementById('vb-receipt-file')?.addEventListener('change', handleVoucherReceiptFileSelect);
+  document.getElementById('vb-btn-remove-receipt')?.addEventListener('click', removeVoucherReceiptImage);
+  document.getElementById('btn-print-blank-voucher')?.addEventListener('click', handlePrintBlankVoucher);
+  document.getElementById('form-voucher-builder')?.addEventListener('submit', handleVoucherBuilderSubmit);
 
   // Penapis & Carian
   document.getElementById('filter-search')?.addEventListener('input', renderApp);
@@ -564,44 +577,305 @@ function closeReportsModal() {
   modal.classList.remove('flex');
 }
 
-// Cetak Baucar Bayaran (Payment Voucher A4)
-function openPaymentVoucherPrint(transactionId) {
-  const tx = allTransactions.find(t => t.id === transactionId);
-  if (!tx) {
-    alert('Rekod transaksi tidak ditemui.');
+// ----------------------------------------------------
+// PENJANA BAUCAR BAYARAN KHUSUS (PAYMENT VOUCHER BUILDER)
+// ----------------------------------------------------
+function openVoucherBuilderModal() {
+  const modal = document.getElementById('modal-voucher-builder');
+  const form = document.getElementById('form-voucher-builder');
+  form.reset();
+  currentVbReceiptImage = null;
+  currentVbReceiptFileName = '';
+  updateVbReceiptPreviewUI();
+
+  // Isi Pilihan Kategori Perbelanjaan
+  const catSelect = document.getElementById('vb-category');
+  catSelect.innerHTML = '';
+  EXPENSE_CATEGORIES.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    catSelect.appendChild(opt);
+  });
+
+  // Auto Jana No Baucar
+  const year = new Date().getFullYear();
+  const countExpense = allTransactions.filter(t => t.type === 'EXPENSE' && t.date?.startsWith(String(year))).length;
+  document.getElementById('vb-voucher-no').value = generateVoucherNo('EXPENSE', year, countExpense + 1);
+
+  // Tarikh hari ini
+  document.getElementById('vb-date').value = new Date().toISOString().split('T')[0];
+
+  // Sediakan bekas baris butiran
+  const container = document.getElementById('vb-items-container');
+  container.innerHTML = '';
+  addVoucherItemRow('', ''); // Baris pertama
+
+  recalcVoucherTotals();
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  initIcons();
+}
+
+function closeVoucherBuilderModal() {
+  const modal = document.getElementById('modal-voucher-builder');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+}
+
+function addVoucherItemRow(desc = '', amount = '') {
+  const container = document.getElementById('vb-items-container');
+  const row = document.createElement('div');
+  row.className = 'flex items-center gap-2 vb-item-row';
+  row.innerHTML = `
+    <input type="text" placeholder="Butiran item perbelanjaan..." value="${desc}" class="flex-1 px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 vb-item-desc" required>
+    <div class="relative w-32">
+      <span class="absolute left-2.5 top-2 text-xs font-bold text-slate-400">RM</span>
+      <input type="number" step="0.01" min="0" placeholder="0.00" value="${amount}" class="w-full pl-8 pr-2.5 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold text-slate-800 text-right vb-item-amt" required>
+    </div>
+    <button type="button" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition vb-btn-del-item" title="Padam baris">
+      <i data-lucide="trash-2" class="w-4 h-4"></i>
+    </button>
+  `;
+
+  row.querySelector('.vb-item-amt').addEventListener('input', recalcVoucherTotals);
+  row.querySelector('.vb-btn-del-item').addEventListener('click', () => {
+    const totalRows = container.querySelectorAll('.vb-item-row').length;
+    if (totalRows > 1) {
+      row.remove();
+      recalcVoucherTotals();
+    } else {
+      row.querySelector('.vb-item-desc').value = '';
+      row.querySelector('.vb-item-amt').value = '';
+      recalcVoucherTotals();
+    }
+  });
+
+  container.appendChild(row);
+  initIcons();
+}
+
+function recalcVoucherTotals() {
+  const container = document.getElementById('vb-items-container');
+  const amtInputs = container.querySelectorAll('.vb-item-amt');
+  let totalCents = 0;
+
+  amtInputs.forEach(input => {
+    const val = parseFloat(input.value) || 0;
+    totalCents += Math.round(val * 100);
+  });
+
+  const total = totalCents / 100;
+  document.getElementById('vb-total-display').textContent = formatCurrency(total);
+  document.getElementById('vb-amount-words').textContent = numberToWordsMY(total);
+  return total;
+}
+
+async function handleVoucherReceiptFileSelect(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  try {
+    const filenameLabel = document.getElementById('vb-receipt-filename');
+    filenameLabel.textContent = 'Memampatkan gambar...';
+
+    const compressed = await compressReceiptImage(file, 1200, 0.75);
+    currentVbReceiptImage = compressed;
+    currentVbReceiptFileName = file.name;
+    updateVbReceiptPreviewUI();
+  } catch (err) {
+    alert('Ralat memproses imej resit: ' + err.message);
+  }
+}
+
+function removeVoucherReceiptImage() {
+  currentVbReceiptImage = null;
+  currentVbReceiptFileName = '';
+  document.getElementById('vb-receipt-file').value = '';
+  updateVbReceiptPreviewUI();
+}
+
+function updateVbReceiptPreviewUI() {
+  const container = document.getElementById('vb-receipt-preview-container');
+  const img = document.getElementById('vb-receipt-preview-img');
+  const filenameLabel = document.getElementById('vb-receipt-filename');
+
+  if (currentVbReceiptImage) {
+    img.src = currentVbReceiptImage;
+    container.classList.remove('hidden');
+    filenameLabel.textContent = currentVbReceiptFileName || 'Resit Dilampirkan';
+  } else {
+    img.src = '';
+    container.classList.add('hidden');
+    filenameLabel.textContent = 'Tiada fail dipilih';
+  }
+  initIcons();
+}
+
+async function handleVoucherBuilderSubmit(e) {
+  e.preventDefault();
+
+  const voucherNo = document.getElementById('vb-voucher-no').value.trim();
+  const date = document.getElementById('vb-date').value;
+  const payee = document.getElementById('vb-payee').value.trim();
+  const idNo = document.getElementById('vb-id-no').value.trim();
+  const paymentMethod = document.getElementById('vb-method').value;
+  const category = document.getElementById('vb-category').value;
+
+  const container = document.getElementById('vb-items-container');
+  const rows = container.querySelectorAll('.vb-item-row');
+  const items = [];
+  let totalCents = 0;
+
+  rows.forEach(row => {
+    const desc = row.querySelector('.vb-item-desc').value.trim();
+    const amt = parseFloat(row.querySelector('.vb-item-amt').value) || 0;
+    if (desc && amt > 0) {
+      items.push({ desc, amount: amt });
+      totalCents += Math.round(amt * 100);
+    }
+  });
+
+  const totalAmount = totalCents / 100;
+
+  if (totalAmount <= 0 || items.length === 0) {
+    alert('Sila masukkan sekurang-kurangnya satu item bayaran dengan jumlah melebihi RM 0.00.');
     return;
   }
 
-  // Isi Data Baucar
-  document.getElementById('pv-voucher').textContent = tx.voucherNo || '-';
-  document.getElementById('pv-date').textContent = tx.date;
-  document.getElementById('pv-payee').textContent = tx.payeeOrPayer || 'Tidak Dinyatakan';
-  document.getElementById('pv-method').textContent = tx.paymentMethod || 'Tunai';
-  document.getElementById('pv-category').textContent = tx.category;
-  document.getElementById('pv-description').textContent = tx.description || `Bayaran untuk ${tx.category}`;
-  document.getElementById('pv-amount').textContent = formatCurrency(tx.amount);
-  document.getElementById('pv-total-amount').textContent = formatCurrency(tx.amount);
+  const combinedDesc = items.map(it => it.desc).join(', ');
+  const payeeWithId = idNo ? `${payee} (No. K/P: ${idNo})` : payee;
+
+  const data = {
+    date,
+    type: 'EXPENSE',
+    category,
+    amount: totalAmount,
+    voucherNo,
+    payeeOrPayer: payeeWithId,
+    idNo,
+    paymentMethod,
+    description: combinedDesc,
+    items,
+    receiptImage: currentVbReceiptImage,
+    receiptFileName: currentVbReceiptFileName,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  try {
+    // 1. Simpan terus dalam rekod fail / pangkalan data
+    if (db) {
+      await db.transactions.add(data);
+      allTransactions = await db.transactions.orderBy('date').reverse().toArray();
+    } else {
+      data.id = Date.now();
+      allTransactions.unshift(data);
+    }
+
+    closeVoucherBuilderModal();
+    renderApp();
+
+    // 2. Terus buka templat cetakan rasmi sedia print dan sign
+    renderAndPrintVoucher(data, false);
+  } catch (err) {
+    alert('Ralat menyimpan baucar bayaran: ' + err.message);
+  }
+}
+
+function handlePrintBlankVoucher() {
+  closeVoucherBuilderModal();
+  renderAndPrintVoucher({}, true);
+}
+
+// ----------------------------------------------------
+// ENJIN CETAKAN BAUCAR BAYARAN & BUKU TUNAI
+// ----------------------------------------------------
+function renderAndPrintVoucher(data = {}, isBlank = false) {
+  const tbody = document.getElementById('pv-items-tbody');
+  tbody.innerHTML = '';
 
   const receiptSection = document.getElementById('pv-receipt-attachment');
   const receiptImg = document.getElementById('pv-receipt-image');
 
-  if (tx.receiptImage) {
-    receiptImg.src = tx.receiptImage;
-    receiptSection.classList.remove('hidden');
-  } else {
+  if (isBlank) {
+    document.getElementById('pv-voucher').textContent = 'MAA-BK-______-_____';
+    document.getElementById('pv-date').textContent = '_____ / _____ / 2026';
+    document.getElementById('pv-payee').textContent = '....................................................................................';
+    document.getElementById('pv-id-no').textContent = '..................................................';
+    document.getElementById('pv-method').textContent = '[  ] Tunai    [  ] Pindahan Bank    [  ] Cek';
+    document.getElementById('pv-category').textContent = '..................................................';
+
+    for (let i = 1; i <= 4; i++) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="text-center py-3.5">${i}</td>
+        <td class="py-3.5 text-slate-300">........................................................................................................................</td>
+        <td class="text-right py-3.5 text-slate-300">RM ......................</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById('pv-total-amount').textContent = 'RM ......................';
+    document.getElementById('pv-amount-in-words').textContent = 'Ringgit Malaysia: ...................................................................................................................................';
+    document.getElementById('pv-sign-recipient').textContent = '......................................................';
+    document.getElementById('pv-sign-recipient-id').textContent = 'No. K/P: .......................................';
+
     receiptImg.src = '';
     receiptSection.classList.add('hidden');
+  } else {
+    document.getElementById('pv-voucher').textContent = data.voucherNo || '-';
+    document.getElementById('pv-date').textContent = data.date || '-';
+    document.getElementById('pv-payee').textContent = data.payeeOrPayer || 'Tidak Dinyatakan';
+    document.getElementById('pv-id-no').textContent = data.idNo || '-';
+    document.getElementById('pv-method').textContent = data.paymentMethod || 'Tunai';
+    document.getElementById('pv-category').textContent = data.category || '-';
+
+    const items = data.items && data.items.length > 0 ? data.items : [
+      { desc: data.description || `Bayaran untuk ${data.category}`, amount: data.amount }
+    ];
+
+    items.forEach((item, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="text-center py-3">${idx + 1}</td>
+        <td class="py-3">${item.desc}</td>
+        <td class="text-right font-bold py-3">${formatCurrency(item.amount)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('pv-total-amount').textContent = formatCurrency(data.amount);
+    document.getElementById('pv-amount-in-words').textContent = numberToWordsMY(data.amount);
+    document.getElementById('pv-sign-recipient').textContent = data.payeeOrPayer || '......................................................';
+    document.getElementById('pv-sign-recipient-id').textContent = data.idNo ? `No. K/P: ${data.idNo}` : 'No. K/P: .......................................';
+
+    if (data.receiptImage) {
+      receiptImg.src = data.receiptImage;
+      receiptSection.classList.remove('hidden');
+    } else {
+      receiptImg.src = '';
+      receiptSection.classList.add('hidden');
+    }
   }
 
-  // Sediakan paparan cetak
   const voucherPrint = document.getElementById('print-voucher-view');
   const cashbookPrint = document.getElementById('print-cashbook-view');
 
   voucherPrint.classList.remove('hidden');
   cashbookPrint.classList.add('hidden');
 
-  // Cetak
   window.print();
+}
+
+function openPaymentVoucherPrint(transactionId) {
+  const tx = allTransactions.find(t => t.id === transactionId);
+  if (!tx) {
+    alert('Rekod transaksi tidak ditemui.');
+    return;
+  }
+  renderAndPrintVoucher(tx, false);
 }
 
 // Cetak Penyata Buku Tunai (Cash Book A4)
@@ -758,6 +1032,8 @@ if (typeof window !== 'undefined') {
     allTransactions,
     renderApp,
     openPaymentVoucherPrint,
-    openCashBookPrint
+    openCashBookPrint,
+    openVoucherBuilderModal,
+    renderAndPrintVoucher
   };
 }

@@ -9,7 +9,8 @@ const {
   filterTransactions,
   validateTransaction,
   createBackupPayload,
-  validateBackupPayload
+  validateBackupPayload,
+  numberToWordsMY
 } = MasjidDB;
 
 test('formatCurrency formats RM numbers accurately with 2 decimal places', () => {
@@ -92,4 +93,12 @@ test('createBackupPayload and validateBackupPayload maintain full data integrity
 
   const invalid = validateBackupPayload({ someRandom: 'data' });
   assert.equal(invalid.isValid, false);
+});
+
+test('numberToWordsMY converts Ringgit amounts accurately to Malay words', () => {
+  assert.equal(numberToWordsMY(0), 'Ringgit Malaysia: Kosong Sahaja');
+  assert.equal(numberToWordsMY(50), 'Ringgit Malaysia: Lima Puluh Sahaja');
+  assert.equal(numberToWordsMY(250), 'Ringgit Malaysia: Dua Ratus Lima Puluh Sahaja');
+  assert.equal(numberToWordsMY(1500.50), 'Ringgit Malaysia: Satu Ribu Lima Ratus Dan Sen Lima Puluh Sahaja');
+  assert.equal(numberToWordsMY(420.05), 'Ringgit Malaysia: Empat Ratus Dua Puluh Dan Sen Lima Sahaja');
 });

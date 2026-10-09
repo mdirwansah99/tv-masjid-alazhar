@@ -137,6 +137,56 @@ function createLocalServer() {
     await page.waitForTimeout(600);
     console.log(`✓ Semakan 4: Duit Keluar ${voucherVal} berjaya direkodkan.`);
 
+    // Semakan 4b: Menguji Penjana Baucar Bayaran (Payment Voucher Builder)
+    console.log('Menguji Penjana Baucar Bayaran khusus (Isi, Simpan & Cetak)...');
+    await page.click('#btn-open-voucher');
+    await page.waitForSelector('#modal-voucher-builder:not(.hidden)');
+
+    await page.fill('#vb-payee', 'Syarikat Pembekal Karpet Al-Haram');
+    await page.fill('#vb-id-no', '990203-12-6789');
+
+    // Isi baris item pertama
+    const firstDesc = page.locator('.vb-item-desc').first();
+    const firstAmt = page.locator('.vb-item-amt').first();
+    await firstDesc.fill('Pembersihan vakum karpet ruang solat utama');
+    await firstAmt.fill('250.00');
+
+    // Tambah baris item kedua
+    await page.click('#vb-btn-add-item');
+    const secondDesc = page.locator('.vb-item-desc').nth(1);
+    const secondAmt = page.locator('.vb-item-amt').nth(1);
+    await secondDesc.fill('Semburan pewangi & anti-bakteria saf');
+    await secondAmt.fill('50.00');
+
+    await page.waitForTimeout(300);
+    const wordsText = await page.locator('#vb-amount-words').innerText();
+    if (!wordsText.includes('Tiga Ratus')) {
+      throw new Error(`Ringgit dalam perkataan salah: ${wordsText}`);
+    }
+    console.log(`✓ Semakan 4b (Perkataan): ${wordsText}`);
+
+    // Hantar borang penjana baucar (Simpan terus dalam rekod & cetak)
+    await page.click('#vb-btn-save-print');
+    await page.waitForTimeout(600);
+
+    const pvPrintText = await page.locator('#print-voucher-view').innerText();
+    if (!pvPrintText.includes('Syarikat Pembekal Karpet') || !pvPrintText.includes('Tiga Ratus')) {
+      throw new Error('Baucar bayaran tidak dicetak dengan maklumat terkini.');
+    }
+    console.log('✓ Semakan 4b (Simpan & Cetak Baucar): Rekod disimpan ke fail sistem dan sedia cetak & tandatangan.');
+
+    // Semakan 4c: Menguji Cetakan Templat Baucar Kosong (Blank Voucher)
+    await page.click('#btn-open-voucher');
+    await page.waitForSelector('#modal-voucher-builder:not(.hidden)');
+    await page.click('#btn-print-blank-voucher');
+    await page.waitForTimeout(500);
+
+    const blankPrintText = await page.locator('#print-voucher-view').innerText();
+    if (!blankPrintText.includes('MAA-BK-______-_____')) {
+      throw new Error('Templat baucar kosong gagal dijana.');
+    }
+    console.log('✓ Semakan 4c (Templat Kosong): Berjaya menjana templat baucar kosong sedia print manual.');
+
     // Semakan 5: Semak Jadual & Buka Paparan Cetak Baucar Bayaran A4
     console.log('Menguji fungsi cetakan Baucar Bayaran (Payment Voucher A4)...');
     const firstPrintBtn = page.locator('.btn-print-voucher').first();

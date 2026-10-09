@@ -23,6 +23,63 @@
     });
   }
 
+  // 1b. PENUKARAN JUMLAH KE PERKATAAN BAHASA MELAYU (RINGGIT & SEN)
+  function numberToWordsMY(amount) {
+    const num = Number(amount) || 0;
+    const whole = Math.floor(num);
+    const cents = Math.round((num - whole) * 100);
+
+    const units = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Lapan', 'Sembilan'];
+
+    function convertChunk(n) {
+      if (n === 0) return '';
+      if (n < 10) return units[n];
+      if (n === 10) return 'Sepuluh';
+      if (n === 11) return 'Sebelas';
+      if (n < 20) return units[n - 10] + ' Belas';
+      if (n < 100) {
+        const tens = Math.floor(n / 10);
+        const rem = n % 10;
+        return units[tens] + ' Puluh' + (rem ? ' ' + units[rem] : '');
+      }
+      if (n < 1000) {
+        const hundreds = Math.floor(n / 100);
+        const rem = n % 100;
+        const hStr = hundreds === 1 ? 'Seratus' : units[hundreds] + ' Ratus';
+        return hStr + (rem ? ' ' + convertChunk(rem) : '');
+      }
+      return '';
+    }
+
+    function convertNumber(n) {
+      if (n === 0) return 'Kosong';
+      let res = '';
+      const millions = Math.floor(n / 1000000);
+      const thousands = Math.floor((n % 1000000) / 1000);
+      const remainder = n % 1000;
+
+      if (millions > 0) {
+        res += (millions === 1 ? 'Sejuta' : convertChunk(millions) + ' Juta');
+      }
+      if (thousands > 0) {
+        if (res) res += ' ';
+        res += (thousands === 1 && !millions ? 'Satu Ribu' : (thousands === 1 ? 'Seribu' : convertChunk(thousands) + ' Ribu'));
+      }
+      if (remainder > 0) {
+        if (res) res += ' ';
+        res += convertChunk(remainder);
+      }
+      return res;
+    }
+
+    let words = 'Ringgit Malaysia: ' + convertNumber(whole);
+    if (cents > 0) {
+      words += ' Dan Sen ' + convertNumber(cents);
+    }
+    words += ' Sahaja';
+    return words;
+  }
+
   // 2. PENJANAAN NOMBOR BAUCAR (VOUCHER NUMBER)
   // EXPENSE -> MAA-BK-2026-0001 (Baucar Keluar)
   // INCOME  -> MAA-BM-2026-0001 (Baucar Masuk / Resit Penerimaan)
@@ -200,6 +257,7 @@
     createBackupPayload,
     validateBackupPayload,
     compressReceiptImage,
-    getDatabase
+    getDatabase,
+    numberToWordsMY
   };
 });
