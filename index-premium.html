@@ -42,9 +42,14 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { font-size: 16px; }
-        @media (max-height: 900px) { html { font-size: 14px; } }
-        @media (max-height: 768px) { html { font-size: 12px; } }
-        @media (max-height: 650px) { html { font-size: 10px; } }
+        /* Smooth height ramp — a wide-but-short TV (1920x920 with browser chrome)
+           needs smaller text even though the width is large. */
+        @media (max-height: 1000px) { html { font-size: 15px; } }
+        @media (max-height: 920px)  { html { font-size: 14px; } }
+        @media (max-height: 820px)  { html { font-size: 13px; } }
+        @media (max-height: 740px)  { html { font-size: 12px; } }
+        @media (max-height: 660px)  { html { font-size: 11px; } }
+        @media (max-height: 580px)  { html { font-size: 10px; } }
 
         body {
             background: var(--color-bg);
@@ -100,11 +105,25 @@
             position: relative;
             width: 100vw;
             height: 100vh;
+            height: 100dvh;
+            /* never grow past the visible area — the ticker/footer must stay on screen */
+            max-height: 100dvh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            /* NOT space-between: it pushes children apart and out of frame when
+               their natural height exceeds the viewport, and the ticker is last
+               in the column so it is the first thing to disappear. */
+            justify-content: flex-start;
+            padding: 2vmin 3vmin;
+            gap: 1vmin;
         }
+
+        /* children may shrink so the ticker + footer always fit */
+        .mosque-header { flex: 0 1 auto; min-height: 0; }
+        .main-frame > main { flex: 1 1 auto; min-height: 0; }
+        .prayer-cards-wrap { flex: 0 0 auto; }
+        .bottom-ticker, .bottom-info { flex: 0 0 auto; }
 
         /* Ornate corner frames */
         .corner-frame {

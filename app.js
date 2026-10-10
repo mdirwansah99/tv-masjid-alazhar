@@ -174,6 +174,8 @@ let dailyPrayerTimes = [];
 // 4. INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
+    initAntiAdShield();
+    initTvWakeLock();
     loadSettings();
     loadAdminData();
     populateZoneDropdown();
@@ -788,19 +790,27 @@ function calcBalance(){
 // ============================================================
 function initFullscreen(){
     const btn=document.getElementById('btn-fullscreen');
+    const shell=document.getElementById('display-shell') || document.querySelector('.main-frame') || document.documentElement;
     
-    function toggleFS() {
-        const doc = window.document;
-        const docEl = doc.documentElement;
+    function isFullscreen(){
+        return document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+    }
 
-        const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-        const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
-
-        if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
-            if(requestFullScreen) requestFullScreen.call(docEl).catch(e=>console.warn(e));
-        } else {
-            if(cancelFullScreen) cancelFullScreen.call(doc);
+    function requestShellFullscreen(){
+        const requestFullScreen = shell.requestFullscreen || shell.mozRequestFullScreen || shell.webkitRequestFullScreen || shell.msRequestFullscreen;
+        if(requestFullScreen){
+            return requestFullScreen.call(shell).catch(e=>console.warn('Fullscreen:', e));
         }
+    }
+
+    function exitFullscreen(){
+        const cancelFullScreen = document.exitFullscreen || document.mozCancelFullScreen || document.webkitExitFullscreen || document.msExitFullscreen;
+        if(cancelFullScreen) return cancelFullScreen.call(document);
+    }
+
+    function toggleFS() {
+        if(!isFullscreen()) requestShellFullscreen();
+        else exitFullscreen();
     }
 
     if(btn){
@@ -812,23 +822,137 @@ function initFullscreen(){
     
     ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange'].forEach(ev => {
         document.addEventListener(ev, ()=>{
-            if(btn) {
-                const isFS = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-                btn.innerText = isFS ? '⛶' : '🖵';
-            }
+            const active = isFullscreen();
+            document.body.classList.toggle('is-fullscreen', !!active);
+            if(btn) btn.innerText = active ? '⛶' : '🖵';
         });
     });
     
     // Klik/tap mana-mana untuk fullscreen (sesuai untuk remote TV)
     document.addEventListener('click', (e) => {
-        // Jangan trigger kalau klik butang settings
-        if(e.target.closest('#btn-settings') || e.target.closest('#settings-modal')) return;
-        
-        const doc = window.document;
-        if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement){
-            const docEl = doc.documentElement;
-            const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-            if(requestFullScreen) requestFullScreen.call(docEl).catch(e=>{});
-        }
+        // Jangan trigger kalau klik butang/settings/modal/form
+        if(e.target.closest('#btn-settings') || e.target.closest('#settings-modal') || e.target.closest('input,textarea,select,button')) return;
+        if(!isFullscreen()) requestShellFullscreen();
     });
 }
+
+// ============================================================
+// 13. PERISAI ANTI-IKLAN & SEKATAN POPUP TV
+// ============================================================
+function initAntiAdShield() {
+    // 1. Sekat popup & dialog luar daripada mengganggu skrin TV
+    try {
+        window.open = function() {
+            console.warn("[AntiAd] Blocked unauthorized window.open popup");
+            return null;
+        };
+        window.alert = function() { console.warn("[AntiAd] Suppressed alert dialog"); };
+        window.confirm = function() { console.warn("[AntiAd] Suppressed confirm dialog"); return false; };
+        window.prompt = function() { console.warn("[AntiAd] Suppressed prompt dialog"); return null; };
+    } catch(e) {}
+
+    // 2. Halang redirect / navigation luar yang tidak diingini
+    document.addEventListener('click', (e) => {
+        const a = e.target.closest('a');
+        if (a && a.getAttribute('href') && !a.getAttribute('href').startsWith('#') && !a.getAttribute('href').startsWith('javascript:')) {
+            e.preventDefault();
+            console.warn("[AntiAd] Blocked external navigation link:", a.getAttribute('href'));
+        }
+    }, true);
+
+    // 3. Monitor DOM secara langsung jika ada browser TV atau webview menyuntik iklan/iframe asing
+    try {
+        const adObserver = new MutationObserver((mutations) => {
+            for (const m of mutations) {
+                for (const node of m.addedNodes) {
+                    if (node && node.nodeType === 1) { // Element node
+                        const tag = (node.tagName || '').toLowerCase();
+                        const id = (node.id || '').toLowerCase();
+                        const cls = (typeof node.className === 'string' ? node.className : '').toLowerCase();
+
+                        // Benarkan elemen rasmi aplikasi kita sahaja
+                        const isAppEl = node.closest && (
+                            node.closest('#display-shell') ||
+                            node.closest('#settings-modal') ||
+                            node.closest('#solat-overlay') ||
+                            node.closest('#azan-overlay') ||
+                            node.closest('#ilmu-overlay') ||
+                            node.closest('#tv-wake-lock-video')
+                        );
+
+                        if (!isAppEl && (
+                            tag === 'iframe' ||
+                            id.includes('ad-') || id.includes('banner') || id.startsWith('ad') ||
+                            cls.includes('ad-') || cls.includes('banner') || cls.includes('sponsor') || cls.includes('popup-ad')
+                        )) {
+                            console.warn("[AntiAd] Removed injected element from TV browser:", tag, id, cls);
+                            try { node.remove(); } catch(err){}
+                        }
+                    }
+                }
+            }
+        });
+        adObserver.observe(document.documentElement, { childList: true, subtree: true });
+    } catch(e) {}
+}
+
+// ============================================================
+// 14. SISTEM KEKAL AKTIF TV (ANTI-SLEEP / SCREEN WAKE LOCK)
+// ============================================================
+let wakeLockSentinel = null;
+
+async function requestScreenWakeLock() {
+    try {
+        if ('wakeLock' in navigator && typeof navigator.wakeLock.request === 'function') {
+            wakeLockSentinel = await navigator.wakeLock.request('screen');
+            wakeLockSentinel.addEventListener('release', () => {
+                wakeLockSentinel = null;
+                // Re-request jika dilepaskan oleh sistem operasi
+                setTimeout(requestScreenWakeLock, 2000);
+            });
+            console.log("☀️ Screen Wake Lock aktif (TV tidak akan sleep)");
+        }
+    } catch (err) {
+        console.warn("[WakeLock] API note:", err.message);
+    }
+}
+
+function initTvWakeLock() {
+    // 1. Cuba standard Screen Wake Lock API
+    requestScreenWakeLock();
+
+    // 2. Dapatkan semula Wake Lock setiap kali browser kembali visible
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            requestScreenWakeLock();
+        }
+    });
+
+    // 3. Fallback Khusus Smart TV (NoSleep Video Loop Trick)
+    // Banyak browser Android TV tidak benarkan sleep jika ada video HTML5 sedang berjalan
+    const v = document.getElementById('tv-wake-lock-video');
+    if (v) {
+        const startVideo = () => {
+            v.play().catch(() => {
+                // Jika browser TV sekat autoplay, aktifkan serta-merta pada interaksi pertama
+                const onInteract = () => {
+                    v.play().catch(()=>{});
+                    ['click', 'touchstart', 'keydown'].forEach(ev => window.removeEventListener(ev, onInteract));
+                };
+                ['click', 'touchstart', 'keydown'].forEach(ev => window.addEventListener(ev, onInteract, { once: true }));
+            });
+        };
+        startVideo();
+    }
+
+    // 4. Heartbeat keep-alive berkala (setiap 30 saat)
+    setInterval(() => {
+        if (!wakeLockSentinel && 'wakeLock' in navigator && document.visibilityState === 'visible') {
+            requestScreenWakeLock();
+        }
+        if (v && v.paused) {
+            v.play().catch(()=>{});
+        }
+    }, 30000);
+}
+

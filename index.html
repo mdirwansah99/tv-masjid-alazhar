@@ -304,40 +304,40 @@
         .side-panel {
             /* shrink with the viewport instead of a hard 220px floor that
                overflows `main` on short TV screens */
-            min-height: min(220px, 26vh);
+            min-height: min(200px, 24vh);
             max-height: 100%;
             overflow: hidden;
-            padding: 1.25rem;
+            padding: 1rem 1.15rem;
         }
         .panel-title {
             font-family: 'Cinzel', serif;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 700;
             color: var(--color-accent);
             letter-spacing: 0.12em;
             text-align: center;
-            padding-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
             border-bottom: 1px solid rgba(212,175,55,0.25);
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
 
         /* Finance panel */
-        .fin-row { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; }
-        .fin-label { font-size: 0.95rem; color: rgba(255,255,255,0.7); }
-        .fin-value { font-family: 'Oswald', sans-serif; font-size: 1.35rem; font-weight: 600; }
+        .fin-row { display: flex; justify-content: space-between; align-items: center; padding: 0.25rem 0; }
+        .fin-label { font-size: 0.9rem; color: rgba(255,255,255,0.7); }
+        .fin-value { font-family: 'Oswald', sans-serif; font-size: 1.25rem; font-weight: 600; }
         .fin-in { color: #6ee7b7; }
         .fin-out { color: #fca5a5; }
         .fin-balance-box {
-            margin-top: 0.75rem;
-            padding: 0.9rem;
+            margin-top: 0.5rem;
+            padding: 0.65rem 0.8rem;
             border-radius: 0.75rem;
             text-align: center;
             background: rgba(0,0,0,0.25);
             border: 1px solid rgba(212,175,55,0.2);
         }
-        .fin-balance-label { font-size: 0.75rem; color: rgba(255,255,255,0.55); letter-spacing: 0.1em; text-transform: uppercase; }
-        .fin-balance-value { font-family: 'Oswald', sans-serif; font-size: 2rem; font-weight: 700; color: var(--color-accent-light); }
-        .fin-period { font-size: 0.8rem; color: rgba(255,255,255,0.5); text-align: center; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        .fin-balance-label { font-size: 0.72rem; color: rgba(255,255,255,0.55); letter-spacing: 0.1em; text-transform: uppercase; }
+        .fin-balance-value { font-family: 'Oswald', sans-serif; font-size: 1.75rem; font-weight: 700; color: var(--color-accent-light); }
+        .fin-period { font-size: 0.75rem; color: rgba(255,255,255,0.5); text-align: center; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.08em; }
 
         /* Announcement panel */
         .announce-icon {
@@ -591,9 +591,33 @@
         .control-btn svg { width: 1.1rem; height: 1.1rem; }
         #btn-settings { left: 1rem; }
         #btn-fullscreen { right: 1rem; }
+
+        /* ============================================================
+           PERISAI ANTI-IKLAN & POPUP TV
+           ============================================================ */
+        iframe:not([src*="google"]):not([src*="youtube"]),
+        div[class*="ad-"], div[class*="ads-"], div[id*="ad-"], div[id*="ads-"],
+        div[class*="banner"], div[id*="banner"],
+        .ad, .ads, .ad-banner, .advertisement, [id^="google_ads"], [id*="google_ads"],
+        .popup-ad, .tv-ad, #ad-container, [class*="sponsor"], [id*="sponsor"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            position: absolute !important;
+            top: -9999px !important;
+            z-index: -9999 !important;
+        }
     </style>
 </head>
 <body>
+
+    <!-- TV WAKE-LOCK KEEP-ALIVE VIDEO (NoSleep trick for Smart TV) -->
+    <video id="tv-wake-lock-video" playsinline loop muted autoplay style="position:fixed;width:1px;height:1px;top:-20px;left:-20px;opacity:0.001;pointer-events:none;z-index:-1;">
+        <source src="data:video/mp4;base64,AAAAHGZ0eXBtcDQyAAAAAG1wNDJpc29tYXZjMQAAADFtb292AAAAbG12aGQAAAAA11P79tdT+/YAAAPoAAAAKAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAN10cmFrAAAAXHRraGQAAAAH11P79tdT+/YAAAABAAAAAAAACgAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" type="video/mp4">
+    </video>
 
     <!-- SOLAT OVERLAY -->
     <div id="solat-overlay" class="fixed inset-0 z-50 flex-col items-center justify-center text-center">
@@ -696,7 +720,7 @@
         <!-- CENTER CONTENT -->
         <main class="relative z-10 flex-grow grid grid-cols-12 gap-6 px-8 py-4 items-center">
             <!-- Left: Announcements -->
-            <div class="col-span-3 h-full flex items-center">
+            <div class="col-span-3 h-full flex items-center justify-center transform -translate-y-4 lg:-translate-y-6">
                 <div id="announce-panel-ui" class="glass-panel side-panel w-full hidden">
                     <div class="panel-title" id="ui-announce-title">PENGUMUMAN</div>
                     <svg class="announce-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -723,7 +747,7 @@
             </div>
 
             <!-- Right: Finance -->
-            <div class="col-span-3 h-full flex items-center">
+            <div class="col-span-3 h-full flex items-center justify-center transform -translate-y-4 lg:-translate-y-6">
                 <div id="finance-panel-ui" class="glass-panel side-panel w-full hidden">
                     <div class="panel-title">TABUNG MASJID</div>
                     <p class="fin-period" id="ui-fin-period">Bulan: -</p>
