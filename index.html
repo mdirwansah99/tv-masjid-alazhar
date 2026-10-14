@@ -89,6 +89,9 @@
             background-size: 120% 120%, 150% 150%, 180% 180%, 200% 200%, 220% 220%;
             opacity: 0.8;
             animation: twinkle 12s ease-in-out infinite alternate;
+            will-change: opacity;
+            transform: translateZ(0);
+            backface-visibility: hidden;
         }
         @keyframes twinkle { 0% { opacity: 0.55; } 100% { opacity: 0.95; } }
 
@@ -227,13 +230,13 @@
         .header-divider::after { right: 20%; }
 
         /* Glass panel */
+        /* Glass panel — Solid high-opacity surface to prevent TV GPU compositor stutter */
         .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(10, 20, 42, 0.94);
             border: 1px solid var(--glass-border);
             border-radius: 1.25rem;
             box-shadow: 0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+            contain: paint;
         }
 
         /* Center clock */
@@ -252,6 +255,8 @@
             color: #fff;
             text-shadow: 0 0 50px rgba(212,175,55,0.25);
             letter-spacing: 0.03em;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
         }
         .clock-secs {
             font-family: 'Oswald', sans-serif;
@@ -259,6 +264,11 @@
             font-weight: 500;
             color: rgba(255,255,255,0.9);
             margin-left: -0.5rem;
+            display: inline-block;
+            min-width: clamp(2.5rem, 6vw, 5.5rem);
+            text-align: left;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
         }
         .clock-ampm {
             font-family: 'Oswald', sans-serif;
@@ -356,10 +366,11 @@
         .prayer-cards-wrap {
             padding: 0 2rem;
             margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 5;
+            contain: layout paint;
+            min-height: clamp(100px, 14vh, 150px);
         }
-        /* Cards must not be overlapped by the side panels or the date block.
-           Give the row its own stacking context above the panels' z-index. */
-        .prayer-cards-wrap { position: relative; z-index: 5; }
         .prayer-card {
             background: linear-gradient(180deg, rgba(20,35,70,0.7), rgba(10,18,38,0.85));
             border: 1px solid rgba(212,175,55,0.18);
@@ -370,6 +381,7 @@
             overflow: hidden;
             transition: all 0.4s ease;
             box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            contain: paint;
         }
         .prayer-card::before {
             content: '';
@@ -426,6 +438,8 @@
             font-weight: 700;
             color: #fff;
             letter-spacing: 0.02em;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
         }
         .prayer-ampm { font-size: 0.85rem; color: var(--color-accent-light); vertical-align: super; margin-left: 0.15rem; }
 
@@ -443,12 +457,16 @@
             min-height: 2.2rem;
             display: flex;
             align-items: center;
+            contain: layout paint;
         }
         .ticker-track {
             display: inline-block;
             padding-left: 100%;
             animation: ticker 45s linear infinite;
             will-change: transform;
+            transform: translate3d(0,0,0);
+            backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
         }
         .ticker-track span {
             font-size: clamp(1.1rem, 1.8vw, 1.5rem);
@@ -613,11 +631,6 @@
     </style>
 </head>
 <body>
-
-    <!-- TV WAKE-LOCK KEEP-ALIVE VIDEO (NoSleep trick for Smart TV) -->
-    <video id="tv-wake-lock-video" playsinline loop muted autoplay style="position:fixed;width:1px;height:1px;top:-20px;left:-20px;opacity:0.001;pointer-events:none;z-index:-1;">
-        <source src="data:video/mp4;base64,AAAAHGZ0eXBtcDQyAAAAAG1wNDJpc29tYXZjMQAAADFtb292AAAAbG12aGQAAAAA11P79tdT+/YAAAPoAAAAKAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAN10cmFrAAAAXHRraGQAAAAH11P79tdT+/YAAAABAAAAAAAACgAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" type="video/mp4">
-    </video>
 
     <!-- SOLAT OVERLAY -->
     <div id="solat-overlay" class="fixed inset-0 z-50 flex-col items-center justify-center text-center">

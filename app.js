@@ -640,17 +640,30 @@ const PRAYER_JAWI = { fajr:'صبح', syuruk:'شروق', dhuhr:'ظهر', asr:'ع�
 const AZAN_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M4 21V10l8-6 8 6v11M9 21v-6h6v6"/></svg>`;
 const IQAMAH_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
 
+let lastRenderedActiveId = null;
+let lastRenderedState = null;
+
 function renderPrayerCards(activeP, currentState){
-    const c=document.getElementById('prayer-cards-container');
-    c.innerHTML='';
+    const c = document.getElementById('prayer-cards-container');
+    if(!c) return;
+
+    const activeId = activeP ? activeP.id : null;
+    // Elak hapus & bina semula DOM setiap saat jika tiada perubahan kad aktif
+    if(activeId === lastRenderedActiveId && currentState === lastRenderedState && c.children.length === dailyPrayerTimes.length){
+        return;
+    }
+    lastRenderedActiveId = activeId;
+    lastRenderedState = currentState;
+
+    let html = '';
     dailyPrayerTimes.forEach(p=>{
-        const isActive=activeP&&p.id===activeP.id;
+        const isActive = activeP && p.id === activeP.id;
         const cardClass = isActive ? 'prayer-card prayer-card-active' : 'prayer-card';
         const iconSvg = PRAYER_ICONS[p.id] || PRAYER_ICONS.dhuhr;
         const jawi = PRAYER_JAWI[p.id] || '';
         const t12 = to12h(p.time);
 
-        c.innerHTML+=`
+        html += `
             <div class="${cardClass}">
                 <div class="prayer-icon">${iconSvg}</div>
                 <p class="prayer-name">${p.name}</p>
@@ -658,6 +671,7 @@ function renderPrayerCards(activeP, currentState){
                 <p class="prayer-time">${t12.display}<span class="prayer-ampm">${t12.ampm}</span></p>
             </div>`;
     });
+    c.innerHTML = html;
 }
 
 // ============================================================
@@ -840,7 +854,7 @@ function initFullscreen(){
 // 13. PERISAI ANTI-IKLAN & SEKATAN POPUP TV
 // ============================================================
 function initAntiAdShield() {
-    // 1. Sekat popup & dialog luar daripada mengganggu skrin TV
+    // 1. Sekat sebarang cubaan buka popup & tab luar oleh pelayar TV
     try {
         window.open = function() {
             console.warn("[AntiAd] Blocked unauthorized window.open popup");
@@ -851,7 +865,7 @@ function initAntiAdShield() {
         window.prompt = function() { console.warn("[AntiAd] Suppressed prompt dialog"); return null; };
     } catch(e) {}
 
-    // 2. Halang redirect / navigation luar yang tidak diingini
+    // 2. Halang klik pautan luar yang tidak diingini
     document.addEventListener('click', (e) => {
         const a = e.target.closest('a');
         if (a && a.getAttribute('href') && !a.getAttribute('href').startsWith('#') && !a.getAttribute('href').startsWith('javascript:')) {
@@ -860,40 +874,16 @@ function initAntiAdShield() {
         }
     }, true);
 
-    // 3. Monitor DOM secara langsung jika ada browser TV atau webview menyuntik iklan/iframe asing
-    try {
-        const adObserver = new MutationObserver((mutations) => {
-            for (const m of mutations) {
-                for (const node of m.addedNodes) {
-                    if (node && node.nodeType === 1) { // Element node
-                        const tag = (node.tagName || '').toLowerCase();
-                        const id = (node.id || '').toLowerCase();
-                        const cls = (typeof node.className === 'string' ? node.className : '').toLowerCase();
-
-                        // Benarkan elemen rasmi aplikasi kita sahaja
-                        const isAppEl = node.closest && (
-                            node.closest('#display-shell') ||
-                            node.closest('#settings-modal') ||
-                            node.closest('#solat-overlay') ||
-                            node.closest('#azan-overlay') ||
-                            node.closest('#ilmu-overlay') ||
-                            node.closest('#tv-wake-lock-video')
-                        );
-
-                        if (!isAppEl && (
-                            tag === 'iframe' ||
-                            id.includes('ad-') || id.includes('banner') || id.startsWith('ad') ||
-                            cls.includes('ad-') || cls.includes('banner') || cls.includes('sponsor') || cls.includes('popup-ad')
-                        )) {
-                            console.warn("[AntiAd] Removed injected element from TV browser:", tag, id, cls);
-                            try { node.remove(); } catch(err){}
-                        }
-                    }
-                }
-            }
-        });
-        adObserver.observe(document.documentElement, { childList: true, subtree: true });
-    } catch(e) {}
+    // 3. Imbasan ringan untuk membuang elemen popup iklan luar dari body
+    function scanAndRemoveAds() {
+        try {
+            const badNodes = document.querySelectorAll('iframe:not([src*="google"]):not([src*="youtube"]), .popup-ad, .tv-ad, #ad-container, [id^="google_ads"]');
+            badNodes.forEach(node => {
+                try { node.remove(); } catch(err){}
+            });
+        } catch(e){}
+    }
+    setInterval(scanAndRemoveAds, 5000);
 }
 
 // ============================================================
@@ -908,7 +898,7 @@ async function requestScreenWakeLock() {
             wakeLockSentinel.addEventListener('release', () => {
                 wakeLockSentinel = null;
                 // Re-request jika dilepaskan oleh sistem operasi
-                setTimeout(requestScreenWakeLock, 2000);
+                setTimeout(requestScreenWakeLock, 3000);
             });
             console.log("☀️ Screen Wake Lock aktif (TV tidak akan sleep)");
         }
@@ -918,7 +908,7 @@ async function requestScreenWakeLock() {
 }
 
 function initTvWakeLock() {
-    // 1. Cuba standard Screen Wake Lock API
+    // 1. Kunci skrin menggunakan standard Screen Wake Lock API
     requestScreenWakeLock();
 
     // 2. Dapatkan semula Wake Lock setiap kali browser kembali visible
@@ -928,30 +918,10 @@ function initTvWakeLock() {
         }
     });
 
-    // 3. Fallback Khusus Smart TV (NoSleep Video Loop Trick)
-    // Banyak browser Android TV tidak benarkan sleep jika ada video HTML5 sedang berjalan
-    const v = document.getElementById('tv-wake-lock-video');
-    if (v) {
-        const startVideo = () => {
-            v.play().catch(() => {
-                // Jika browser TV sekat autoplay, aktifkan serta-merta pada interaksi pertama
-                const onInteract = () => {
-                    v.play().catch(()=>{});
-                    ['click', 'touchstart', 'keydown'].forEach(ev => window.removeEventListener(ev, onInteract));
-                };
-                ['click', 'touchstart', 'keydown'].forEach(ev => window.addEventListener(ev, onInteract, { once: true }));
-            });
-        };
-        startVideo();
-    }
-
-    // 4. Heartbeat keep-alive berkala (setiap 30 saat)
+    // 3. Heartbeat keep-alive berkala (setiap 30 saat)
     setInterval(() => {
         if (!wakeLockSentinel && 'wakeLock' in navigator && document.visibilityState === 'visible') {
             requestScreenWakeLock();
-        }
-        if (v && v.paused) {
-            v.play().catch(()=>{});
         }
     }, 30000);
 }
