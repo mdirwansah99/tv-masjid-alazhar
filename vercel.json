@@ -1,0 +1,10 @@
+{
+  "rewrites": [
+    { "source": "/kewangan", "destination": "/expense-tracker/index.html" },
+    { "source": "/kewangan/", "destination": "/expense-tracker/index.html" },
+    { "source": "/akaun", "destination": "/expense-tracker/index.html" },
+    { "source": "/akaun/", "destination": "/expense-tracker/index.html" },
+    { "source": "/duit", "destination": "/expense-tracker/index.html" },
+    { "source": "/duit/", "destination": "/expense-tracker/index.html" }
+  ]
+}
