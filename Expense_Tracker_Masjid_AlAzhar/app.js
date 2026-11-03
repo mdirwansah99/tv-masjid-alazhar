@@ -205,6 +205,13 @@ function setupEventListeners() {
   document.getElementById('btn-open-reports')?.addEventListener('click', openReportsModal);
   document.getElementById('btn-open-backup')?.addEventListener('click', openBackupModal);
 
+  // Butang Kemas Kini Baki pada Kad Ringkasan
+  document.querySelectorAll('.btn-card-edit-balance').forEach(btn => {
+    btn.addEventListener('click', openOpeningBalanceModal);
+  });
+  document.getElementById('btn-card-open-transfer')?.addEventListener('click', openTransferModal);
+  document.getElementById('btn-reset-demo-data')?.addEventListener('click', handleResetDemoData);
+
   // Modal Pindahan Dana Listeners
   document.getElementById('modal-transfer-close')?.addEventListener('click', closeTransferModal);
   document.getElementById('modal-transfer-cancel')?.addEventListener('click', closeTransferModal);
@@ -566,6 +573,17 @@ function renderApp() {
         ? `<span class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-300 font-semibold ml-1">🤝 Khairat</span>`
         : `<span class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200 font-semibold ml-1">Am</span>`;
 
+      tr.className = 'hover:bg-emerald-50/50 transition cursor-pointer';
+      tr.title = 'Sentuh / klik untuk sunting rekod ini';
+      tr.addEventListener('click', (e) => {
+        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
+        if (isTransfer) {
+          renderAndPrintTransferVoucher(tx);
+        } else {
+          openTransactionModal(tx.type, tx);
+        }
+      });
+
       tr.innerHTML = `
         <td class="py-3 px-4 font-medium whitespace-nowrap text-slate-800">${tx.date}</td>
         <td class="py-3 px-4 font-mono font-semibold text-xs whitespace-nowrap text-slate-700">${tx.voucherNo || '-'}</td>
@@ -596,20 +614,23 @@ function renderApp() {
         <td class="py-3 px-4 text-center whitespace-nowrap">
           <div class="inline-flex items-center gap-1.5">
             ${isTransfer ? `
-              <button type="button" class="btn-print-transfer p-1.5 text-slate-500 hover:text-sky-700 hover:bg-sky-50 rounded-lg transition" data-id="${tx.id}" title="Cetak Baucar Pindahan Dana A4">
-                <i data-lucide="printer" class="w-4 h-4"></i>
+              <button type="button" class="btn-print-transfer px-2 py-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200/80 rounded-lg text-xs font-semibold flex items-center gap-1 transition" data-id="${tx.id}" title="Cetak Baucar Pindahan Dana A4">
+                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                <span class="text-[11px]">Slip</span>
               </button>
             ` : (!isIncome ? `
-              <button type="button" class="btn-print-voucher p-1.5 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition" data-id="${tx.id}" title="Cetak Baucar Bayaran A4">
-                <i data-lucide="printer" class="w-4 h-4"></i>
+              <button type="button" class="btn-print-voucher px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 rounded-lg text-xs font-semibold flex items-center gap-1 transition" data-id="${tx.id}" title="Cetak Baucar Bayaran A4">
+                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                <span class="text-[11px]">Baucar</span>
               </button>
             ` : '')}
             ${!isTransfer ? `
-              <button type="button" class="btn-edit-tx p-1.5 text-slate-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition" data-id="${tx.id}" title="Sunting Rekod">
-                <i data-lucide="edit-3" class="w-4 h-4"></i>
+              <button type="button" class="btn-edit-tx px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 rounded-lg text-xs font-semibold flex items-center gap-1 transition" data-id="${tx.id}" title="Sunting Rekod">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                <span class="text-[11px]">Sunting</span>
               </button>
             ` : ''}
-            <button type="button" class="btn-delete-tx p-1.5 text-slate-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition" data-id="${tx.id}" title="Padam Rekod">
+            <button type="button" class="btn-delete-tx p-1.5 text-slate-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition" data-id="${tx.id}" title="Padam Rekod">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>
@@ -1694,18 +1715,34 @@ function openOpeningBalanceModal() {
   const bankInput = document.getElementById('ob-bank');
   const khairatInput = document.getElementById('ob-khairat');
 
-  if (dateInput && !dateInput.value) {
+  if (dateInput) {
     dateInput.value = new Date().toISOString().split('T')[0];
   }
 
   const summary = calculateSummary(allTransactions);
-  if (cashInput && !cashInput.value && summary.cashBalance > 0) cashInput.value = summary.cashBalance;
-  if (bankInput && !bankInput.value && summary.bankBalance > 0) bankInput.value = summary.bankBalance;
-  if (khairatInput && !khairatInput.value && summary.khairatBalance > 0) khairatInput.value = summary.khairatBalance;
+  if (cashInput) cashInput.value = summary.cashBalance > 0 ? summary.cashBalance.toFixed(2) : '0.00';
+  if (bankInput) bankInput.value = summary.bankBalance > 0 ? summary.bankBalance.toFixed(2) : '0.00';
+  if (khairatInput) khairatInput.value = summary.khairatBalance > 0 ? summary.khairatBalance.toFixed(2) : '0.00';
 
   modal?.classList.remove('hidden');
   modal?.classList.add('flex');
   initIcons();
+}
+
+async function handleResetDemoData() {
+  const confirmed = confirm('Adakah anda pasti mahu memadamkan data transaksi contoh dan memulakan akaun bersih masjid?');
+  if (!confirmed) return;
+
+  try {
+    await db.transactions.clear();
+    allTransactions = [];
+    closeOpeningBalanceModal();
+    await renderApp();
+    alert('Semua data contoh telah dikosongkan. Sila masukkan baki permulaan masjid anda sekarang.');
+    openOpeningBalanceModal();
+  } catch (err) {
+    alert('Ralat memadamkan data: ' + err.message);
+  }
 }
 
 function closeOpeningBalanceModal() {
