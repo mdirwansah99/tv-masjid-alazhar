@@ -8,6 +8,8 @@ const {
   calculateSummary,
   filterTransactions,
   validateTransaction,
+  resolveAccount,
+  resolveFund,
   createBackupPayload,
   validateBackupPayload,
   compressReceiptImage,
@@ -114,6 +116,8 @@ async function seedInitialData() {
       amount: 1850.50,
       payeeOrPayer: 'Tabung Jumaat Jemaah',
       paymentMethod: 'Tunai',
+      account: 'CASH',
+      fund: 'GENERAL',
       description: 'Kutipan tabung solat Jumaat minggu pertama',
       receiptImage: null,
       receiptFileName: '',
@@ -127,6 +131,8 @@ async function seedInitialData() {
       amount: 420.00,
       payeeOrPayer: 'Sabah Electricity Sdn Bhd (SESB)',
       paymentMethod: 'Pindahan Bank (Online)',
+      account: 'BANK',
+      fund: 'GENERAL',
       description: 'Bayaran bil elektrik masjid bulan September',
       receiptImage: null,
       receiptFileName: '',
@@ -140,7 +146,43 @@ async function seedInitialData() {
       amount: 250.00,
       payeeOrPayer: 'Kedai Servis Audio Sepanggar',
       paymentMethod: 'Tunai',
+      account: 'CASH',
+      fund: 'GENERAL',
       description: 'Gantian mikrofon tanpa wayar dan servis mixer azan',
+      receiptImage: null,
+      receiptFileName: '',
+      createdAt: new Date().toISOString()
+    },
+    {
+      voucherNo: `MAA-BM-${currentYear}-0002`,
+      date: `${currentYear}-10-06`,
+      type: 'INCOME',
+      category: 'Tabung Kebajikan & Khairat',
+      amount: 800.00,
+      payeeOrPayer: 'Kutipan Yuran & Infaq Khairat Jemaah',
+      paymentMethod: 'Pindahan Bank (Online)',
+      account: 'BANK',
+      fund: 'KHAIRAT',
+      description: 'Kutipan yuran tahunan dan derma khas Tabung Khairat Kematian',
+      receiptImage: null,
+      receiptFileName: '',
+      createdAt: new Date().toISOString()
+    },
+    {
+      voucherNo: `MAA-BP-${currentYear}-0001`,
+      date: `${currentYear}-10-07`,
+      type: 'TRANSFER',
+      category: 'Pindahan Dana Kontra',
+      amount: 500.00,
+      fromAccount: 'CASH',
+      toAccount: 'BANK',
+      fromFund: 'GENERAL',
+      toFund: 'GENERAL',
+      account: 'BANK',
+      fund: 'GENERAL',
+      payeeOrPayer: 'Pindahan: Tunai ➔ Bank',
+      paymentMethod: 'Pindahan Kontra',
+      description: 'Deposit sebahagian kutipan tunai Jumaat ke akaun CDM Bank Islam Sepanggar',
       receiptImage: null,
       receiptFileName: '',
       createdAt: new Date().toISOString()
@@ -157,9 +199,23 @@ function setupEventListeners() {
   // Butang Utama Buka Modal
   document.getElementById('btn-add-income')?.addEventListener('click', () => openTransactionModal('INCOME'));
   document.getElementById('btn-add-expense')?.addEventListener('click', () => openTransactionModal('EXPENSE'));
+  document.getElementById('btn-open-transfer')?.addEventListener('click', openTransferModal);
+  document.getElementById('btn-open-opening-balance')?.addEventListener('click', openOpeningBalanceModal);
   document.getElementById('btn-open-voucher')?.addEventListener('click', openVoucherBuilderModal);
   document.getElementById('btn-open-reports')?.addEventListener('click', openReportsModal);
   document.getElementById('btn-open-backup')?.addEventListener('click', openBackupModal);
+
+  // Modal Pindahan Dana Listeners
+  document.getElementById('modal-transfer-close')?.addEventListener('click', closeTransferModal);
+  document.getElementById('modal-transfer-cancel')?.addEventListener('click', closeTransferModal);
+  document.getElementById('transfer-receipt-file')?.addEventListener('change', handleTransferReceiptFileSelect);
+  document.getElementById('btn-remove-transfer-receipt')?.addEventListener('click', removeTransferReceiptImage);
+  document.getElementById('form-transfer')?.addEventListener('submit', handleTransferSubmit);
+
+  // Modal Baki Awal Listeners
+  document.getElementById('modal-ob-close')?.addEventListener('click', closeOpeningBalanceModal);
+  document.getElementById('modal-ob-cancel')?.addEventListener('click', closeOpeningBalanceModal);
+  document.getElementById('form-opening-balance')?.addEventListener('submit', handleOpeningBalanceSubmit);
 
   // Baucar Bayaran Modal Listeners
   document.getElementById('modal-voucher-close')?.addEventListener('click', closeVoucherBuilderModal);
@@ -175,6 +231,8 @@ function setupEventListeners() {
   document.getElementById('filter-year')?.addEventListener('change', renderApp);
   document.getElementById('filter-month')?.addEventListener('change', renderApp);
   document.getElementById('filter-type')?.addEventListener('change', renderApp);
+  document.getElementById('filter-account')?.addEventListener('change', renderApp);
+  document.getElementById('filter-fund')?.addEventListener('change', renderApp);
 
   // Toggle Jenis dalam Borang Modal
   document.getElementById('toggle-type-income')?.addEventListener('click', () => setModalType('INCOME'));
@@ -236,6 +294,10 @@ function openTransactionModal(type = 'INCOME', editItem = null) {
     document.getElementById('tx-amount').value = editItem.amount;
     document.getElementById('tx-payee').value = editItem.payeeOrPayer || '';
     document.getElementById('tx-payment-method').value = editItem.paymentMethod || 'Tunai';
+    const accEl = document.getElementById('tx-account');
+    const fundEl = document.getElementById('tx-fund');
+    if (accEl) accEl.value = resolveAccount(editItem);
+    if (fundEl) fundEl.value = resolveFund(editItem);
     document.getElementById('tx-desc').value = editItem.description || '';
     
     if (editItem.receiptImage) {
@@ -248,6 +310,10 @@ function openTransactionModal(type = 'INCOME', editItem = null) {
     idInput.value = '';
     const today = new Date().toISOString().split('T')[0];
     dateInput.value = today;
+    const accEl = document.getElementById('tx-account');
+    const fundEl = document.getElementById('tx-fund');
+    if (accEl) accEl.value = type === 'INCOME' ? 'CASH' : 'BANK';
+    if (fundEl) fundEl.value = 'GENERAL';
     setModalType(type, true);
   }
 
@@ -367,6 +433,8 @@ async function handleTransactionSubmit(e) {
   const amount = parseFloat(document.getElementById('tx-amount').value);
   const payeeOrPayer = document.getElementById('tx-payee').value.trim();
   const paymentMethod = document.getElementById('tx-payment-method').value;
+  const account = document.getElementById('tx-account')?.value || (paymentMethod === 'Tunai' ? 'CASH' : 'BANK');
+  const fund = document.getElementById('tx-fund')?.value || 'GENERAL';
   const description = document.getElementById('tx-desc').value.trim();
 
   const data = {
@@ -377,6 +445,8 @@ async function handleTransactionSubmit(e) {
     voucherNo,
     payeeOrPayer,
     paymentMethod,
+    account,
+    fund,
     description,
     receiptImage: currentReceiptImage,
     receiptFileName: currentReceiptFileName,
@@ -428,56 +498,90 @@ function renderApp() {
   const year = document.getElementById('filter-year')?.value;
   const month = document.getElementById('filter-month')?.value;
   const type = document.getElementById('filter-type')?.value;
+  const account = document.getElementById('filter-account')?.value;
+  const fund = document.getElementById('filter-fund')?.value;
 
-  const filtered = filterTransactions(allTransactions, { search, year, month, type });
+  const filtered = filterTransactions(allTransactions, { search, year, month, type, account, fund });
 
-  // Kemaskini Metrik
+  // Kemaskini Metrik (4 Kad Utama & Statistik Semasa)
   const summary = calculateSummary(allTransactions);
-  document.getElementById('stat-net-balance').textContent = formatCurrency(summary.netBalance);
-  document.getElementById('stat-total-income').textContent = formatCurrency(summary.totalIncome);
-  document.getElementById('stat-total-expense').textContent = formatCurrency(summary.totalExpense);
+  const cashEl = document.getElementById('stat-cash-balance');
+  const bankEl = document.getElementById('stat-bank-balance');
+  const khairatEl = document.getElementById('stat-khairat-balance');
+  const netEl = document.getElementById('stat-net-balance');
+  const genEl = document.getElementById('stat-general-balance');
+  const incomeEl = document.getElementById('stat-total-income');
+  const expenseEl = document.getElementById('stat-total-expense');
+
+  if (cashEl) cashEl.textContent = formatCurrency(summary.cashBalance);
+  if (bankEl) bankEl.textContent = formatCurrency(summary.bankBalance);
+  if (khairatEl) khairatEl.textContent = formatCurrency(summary.khairatBalance);
+  if (netEl) netEl.textContent = formatCurrency(summary.netBalance);
+  if (genEl) genEl.textContent = formatCurrency(summary.generalBalance);
+  if (incomeEl) incomeEl.textContent = formatCurrency(summary.totalIncome);
+  if (expenseEl) expenseEl.textContent = formatCurrency(summary.totalExpense);
 
   const receiptCount = allTransactions.filter(t => !!t.receiptImage).length;
-  document.getElementById('stat-receipt-count').textContent = `${receiptCount} Resit`;
+  const rcEl = document.getElementById('stat-receipt-count');
+  if (rcEl) rcEl.textContent = `${receiptCount} Fail`;
 
   // Kemaskini Jadual
   const tbody = document.getElementById('transaction-table-body');
   const emptyState = document.getElementById('empty-state');
   const showingCount = document.getElementById('tx-showing-count');
 
-  showingCount.textContent = filtered.length;
+  if (showingCount) showingCount.textContent = filtered.length;
+  if (!tbody) return;
   tbody.innerHTML = '';
 
   if (filtered.length === 0) {
-    emptyState.classList.remove('hidden');
+    emptyState?.classList.remove('hidden');
   } else {
-    emptyState.classList.add('hidden');
+    emptyState?.classList.add('hidden');
 
     filtered.forEach(tx => {
       const tr = document.createElement('tr');
       tr.className = 'hover:bg-slate-50/80 transition-colors';
 
-      const isIncome = tx.type === 'INCOME';
-      const badgeClass = isIncome ? 'badge-income' : 'badge-expense';
-      const typeLabel = isIncome ? 'Masuk' : 'Keluar';
+      const isTransfer = tx.type === 'TRANSFER';
+      const isIncome = tx.type === 'INCOME' || tx.type === 'OPENING_BALANCE';
+      const acc = resolveAccount(tx);
+      const fnd = resolveFund(tx);
+
+      let badgeHtml = '';
+      if (isTransfer) {
+        badgeHtml = `<span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 border border-sky-300">⇄ Pindahan Kontra</span>`;
+      } else if (tx.type === 'OPENING_BALANCE' || tx.category?.includes('Baki Awal')) {
+        badgeHtml = `<span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">⚙️ Baki Awal</span>`;
+      } else {
+        const badgeClass = isIncome ? 'badge-income' : 'badge-expense';
+        badgeHtml = `<span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${badgeClass}">${tx.category}</span>`;
+      }
+
+      const accBadge = acc === 'CASH'
+        ? `<span class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">Tunai</span>`
+        : `<span class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-200 font-semibold">Bank</span>`;
+
+      const fundBadge = fnd === 'KHAIRAT'
+        ? `<span class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-300 font-semibold ml-1">🤝 Khairat</span>`
+        : `<span class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200 font-semibold ml-1">Am</span>`;
 
       tr.innerHTML = `
         <td class="py-3 px-4 font-medium whitespace-nowrap text-slate-800">${tx.date}</td>
         <td class="py-3 px-4 font-mono font-semibold text-xs whitespace-nowrap text-slate-700">${tx.voucherNo || '-'}</td>
         <td class="py-3 px-4">
-          <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${badgeClass}">
-            ${tx.category}
-          </span>
+          <div>${badgeHtml}</div>
+          <div class="mt-1">${accBadge} ${fundBadge}</div>
         </td>
         <td class="py-3 px-4">
           <div class="font-medium text-slate-900">${tx.payeeOrPayer || '-'}</div>
           <div class="text-xs text-slate-500 mt-0.5">${tx.description || tx.paymentMethod || ''}</div>
         </td>
-        <td class="py-3 px-4 text-right font-bold text-teal-600 whitespace-nowrap">
-          ${isIncome ? formatCurrency(tx.amount) : '-'}
+        <td class="py-3 px-4 text-right font-bold whitespace-nowrap ${isTransfer ? 'text-sky-700' : 'text-teal-600'}">
+          ${isIncome || isTransfer ? formatCurrency(tx.amount) : '-'}
         </td>
-        <td class="py-3 px-4 text-right font-bold text-rose-600 whitespace-nowrap">
-          ${!isIncome ? formatCurrency(tx.amount) : '-'}
+        <td class="py-3 px-4 text-right font-bold whitespace-nowrap ${isTransfer ? 'text-sky-700' : 'text-rose-600'}">
+          ${!isIncome || isTransfer ? formatCurrency(tx.amount) : '-'}
         </td>
         <td class="py-3 px-4 text-center">
           ${tx.receiptImage ? `
@@ -491,14 +595,20 @@ function renderApp() {
         </td>
         <td class="py-3 px-4 text-center whitespace-nowrap">
           <div class="inline-flex items-center gap-1.5">
-            ${!isIncome ? `
+            ${isTransfer ? `
+              <button type="button" class="btn-print-transfer p-1.5 text-slate-500 hover:text-sky-700 hover:bg-sky-50 rounded-lg transition" data-id="${tx.id}" title="Cetak Baucar Pindahan Dana A4">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+              </button>
+            ` : (!isIncome ? `
               <button type="button" class="btn-print-voucher p-1.5 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition" data-id="${tx.id}" title="Cetak Baucar Bayaran A4">
                 <i data-lucide="printer" class="w-4 h-4"></i>
               </button>
+            ` : '')}
+            ${!isTransfer ? `
+              <button type="button" class="btn-edit-tx p-1.5 text-slate-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition" data-id="${tx.id}" title="Sunting Rekod">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
+              </button>
             ` : ''}
-            <button type="button" class="btn-edit-tx p-1.5 text-slate-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition" data-id="${tx.id}" title="Sunting Rekod">
-              <i data-lucide="edit-3" class="w-4 h-4"></i>
-            </button>
             <button type="button" class="btn-delete-tx p-1.5 text-slate-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition" data-id="${tx.id}" title="Padam Rekod">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
@@ -521,6 +631,14 @@ function renderApp() {
       btn.addEventListener('click', () => {
         const id = Number(btn.getAttribute('data-id'));
         openPaymentVoucherPrint(id);
+      });
+    });
+
+    tbody.querySelectorAll('.btn-print-transfer').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.getAttribute('data-id'));
+        const tx = allTransactions.find(t => t.id === id);
+        if (tx) renderAndPrintTransferVoucher(tx);
       });
     });
 
@@ -750,6 +868,8 @@ async function handleVoucherBuilderSubmit(e) {
   const payee = document.getElementById('vb-payee').value.trim();
   const idNo = document.getElementById('vb-id-no').value.trim();
   const paymentMethod = document.getElementById('vb-method').value;
+  const account = document.getElementById('vb-account')?.value || (paymentMethod === 'Tunai' ? 'CASH' : 'BANK');
+  const fund = document.getElementById('vb-fund')?.value || 'GENERAL';
   const category = document.getElementById('vb-category').value;
 
   const container = document.getElementById('vb-items-container');
@@ -785,6 +905,8 @@ async function handleVoucherBuilderSubmit(e) {
     payeeOrPayer: payeeWithId,
     idNo,
     paymentMethod,
+    account,
+    fund,
     description: combinedDesc,
     items,
     receiptImage: currentVbReceiptImage,
@@ -894,9 +1016,11 @@ function renderAndPrintVoucher(data = {}, isBlank = false) {
 
   const voucherPrint = document.getElementById('print-voucher-view');
   const cashbookPrint = document.getElementById('print-cashbook-view');
+  const transferPrint = document.getElementById('print-transfer-view');
 
-  voucherPrint.classList.remove('hidden');
-  cashbookPrint.classList.add('hidden');
+  voucherPrint?.classList.remove('hidden');
+  cashbookPrint?.classList.add('hidden');
+  transferPrint?.classList.add('hidden');
 
   window.print();
 }
@@ -910,16 +1034,17 @@ function openPaymentVoucherPrint(transactionId) {
   renderAndPrintVoucher(tx, false);
 }
 
-// Cetak Penyata Buku Tunai (Cash Book A4)
+// Cetak Penyata Buku Tunai 2-Lajur (Cash Book A4)
 function handlePrintCashBook() {
-  const year = document.getElementById('report-year').value;
-  const month = document.getElementById('report-month').value;
+  const year = document.getElementById('report-year')?.value;
+  const month = document.getElementById('report-month')?.value;
+  const fundScope = document.getElementById('report-fund')?.value || 'ALL';
 
   closeReportsModal();
-  openCashBookPrint(year, month);
+  openCashBookPrint(year, month, fundScope);
 }
 
-function openCashBookPrint(year, month) {
+function openCashBookPrint(year, month, fundScope = 'ALL') {
   const monthNames = {
     '01': 'Januari', '02': 'Februari', '03': 'Mac', '04': 'April',
     '05': 'Mei', '06': 'Jun', '07': 'Julai', '08': 'Ogos',
@@ -932,53 +1057,116 @@ function openCashBookPrint(year, month) {
     day: 'numeric', month: 'long', year: 'numeric'
   });
 
-  // Tapis data mengikut tempoh dan susun mengikut tarikh menaik (Ascending) untuk Buku Tunai
-  const filtered = filterTransactions(allTransactions, { year, month })
+  const subtitleEl = document.getElementById('cb-fund-subtitle');
+  if (subtitleEl) {
+    if (fundScope === 'KHAIRAT') subtitleEl.textContent = 'PENYATA KHAS TABUNG KHAIRAT KEMATIAN';
+    else if (fundScope === 'GENERAL') subtitleEl.textContent = 'PENYATA TABUNG AM MASJID';
+    else subtitleEl.textContent = 'SEMUA DANA (BUKU TUNAI 2-LAJUR: TUNAI & BANK)';
+  }
+
+  // Tapis data mengikut tempoh dan skop tabung, susun menaik (Ascending)
+  let filtered = filterTransactions(allTransactions, { year, month })
     .slice()
     .sort((a, b) => a.date.localeCompare(b.date));
+
+  if (fundScope && fundScope !== 'ALL') {
+    filtered = filtered.filter(item => resolveFund(item) === fundScope);
+  }
 
   const tbody = document.getElementById('cb-table-body');
   tbody.innerHTML = '';
 
   let runningBalanceCents = 0;
-  let totalIncomeCents = 0;
-  let totalExpenseCents = 0;
+  let sumCashInCents = 0;
+  let sumBankInCents = 0;
+  let sumCashOutCents = 0;
+  let sumBankOutCents = 0;
 
   filtered.forEach(item => {
-    const isIncome = item.type === 'INCOME';
     const amountCents = Math.round(Number(item.amount) * 100);
+    const acc = resolveAccount(item);
+    const fund = resolveFund(item);
 
-    if (isIncome) {
-      totalIncomeCents += amountCents;
+    let cashIn = 0;
+    let bankIn = 0;
+    let cashOut = 0;
+    let bankOut = 0;
+
+    if (item.type === 'INCOME' || item.type === 'OPENING_BALANCE') {
+      if (acc === 'CASH') {
+        cashIn = item.amount;
+        sumCashInCents += amountCents;
+      } else {
+        bankIn = item.amount;
+        sumBankInCents += amountCents;
+      }
       runningBalanceCents += amountCents;
-    } else {
-      totalExpenseCents += amountCents;
+    } else if (item.type === 'EXPENSE') {
+      if (acc === 'CASH') {
+        cashOut = item.amount;
+        sumCashOutCents += amountCents;
+      } else {
+        bankOut = item.amount;
+        sumBankOutCents += amountCents;
+      }
       runningBalanceCents -= amountCents;
+    } else if (item.type === 'TRANSFER') {
+      // Pindahan Kontra
+      if (item.fromAccount === 'CASH') {
+        cashOut = item.amount;
+        sumCashOutCents += amountCents;
+      } else {
+        bankOut = item.amount;
+        sumBankOutCents += amountCents;
+      }
+
+      if (item.toAccount === 'CASH') {
+        cashIn = item.amount;
+        sumCashInCents += amountCents;
+      } else {
+        bankIn = item.amount;
+        sumBankInCents += amountCents;
+      }
     }
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${item.date}</td>
+      <td class="whitespace-nowrap">${item.date}</td>
       <td class="font-mono text-xs">${item.voucherNo || '-'}</td>
-      <td>${item.category}</td>
-      <td>${item.payeeOrPayer ? `<strong>${item.payeeOrPayer}</strong> - ` : ''}${item.description || ''}</td>
-      <td class="text-right">${isIncome ? formatCurrency(item.amount) : '-'}</td>
-      <td class="text-right">${!isIncome ? formatCurrency(item.amount) : '-'}</td>
-      <td class="text-right font-bold">${formatCurrency(runningBalanceCents / 100)}</td>
+      <td class="text-xs font-semibold ${fund === 'KHAIRAT' ? 'text-amber-800' : 'text-slate-600'}">${fund === 'KHAIRAT' ? 'Khairat' : 'Am'}</td>
+      <td>
+        <div class="font-medium">${item.payeeOrPayer ? `<strong>${item.payeeOrPayer}</strong>` : (item.category || '-')}</div>
+        <div class="text-[10px] text-slate-500">${item.description || ''}</div>
+      </td>
+      <td class="text-right ${cashIn > 0 ? 'font-semibold text-teal-700' : 'text-slate-300'}">${cashIn > 0 ? formatCurrency(cashIn) : '-'}</td>
+      <td class="text-right ${bankIn > 0 ? 'font-semibold text-sky-700' : 'text-slate-300'}">${bankIn > 0 ? formatCurrency(bankIn) : '-'}</td>
+      <td class="text-right ${cashOut > 0 ? 'font-semibold text-rose-700' : 'text-slate-300'}">${cashOut > 0 ? formatCurrency(cashOut) : '-'}</td>
+      <td class="text-right ${bankOut > 0 ? 'font-semibold text-rose-700' : 'text-slate-300'}">${bankOut > 0 ? formatCurrency(bankOut) : '-'}</td>
+      <td class="text-right font-bold text-slate-900">${formatCurrency(runningBalanceCents / 100)}</td>
     `;
     tbody.appendChild(tr);
   });
 
-  document.getElementById('cb-sum-income').textContent = formatCurrency(totalIncomeCents / 100);
-  document.getElementById('cb-sum-expense').textContent = formatCurrency(totalExpenseCents / 100);
-  document.getElementById('cb-sum-balance').textContent = formatCurrency(runningBalanceCents / 100);
+  const sumCashInEl = document.getElementById('cb-sum-cash-in');
+  const sumBankInEl = document.getElementById('cb-sum-bank-in');
+  const sumCashOutEl = document.getElementById('cb-sum-cash-out');
+  const sumBankOutEl = document.getElementById('cb-sum-bank-out');
+  const sumBalanceEl = document.getElementById('cb-sum-balance');
+
+  if (sumCashInEl) sumCashInEl.textContent = formatCurrency(sumCashInCents / 100);
+  if (sumBankInEl) sumBankInEl.textContent = formatCurrency(sumBankInCents / 100);
+  if (sumCashOutEl) sumCashOutEl.textContent = formatCurrency(sumCashOutCents / 100);
+  if (sumBankOutEl) sumBankOutEl.textContent = formatCurrency(sumBankOutCents / 100);
+  if (sumBalanceEl) sumBalanceEl.textContent = formatCurrency(runningBalanceCents / 100);
 
   // Sediakan paparan cetak
   const voucherPrint = document.getElementById('print-voucher-view');
   const cashbookPrint = document.getElementById('print-cashbook-view');
+  const transferPrint = document.getElementById('print-transfer-view');
 
-  voucherPrint.classList.add('hidden');
-  cashbookPrint.classList.remove('hidden');
+  voucherPrint?.classList.add('hidden');
+  transferPrint?.classList.add('hidden');
+  cashbookPrint?.classList.remove('hidden');
 
   window.print();
 }
@@ -1310,6 +1498,318 @@ async function pushTxToCloudIfEnabled(tx) {
   }
 }
 
+// ----------------------------------------------------
+// PENGURUSAN PINDAHAN DANA (TRANSFER / KONTRA)
+// ----------------------------------------------------
+let currentTransferReceiptImage = null;
+let currentTransferReceiptFileName = '';
+
+function openTransferModal() {
+  const modal = document.getElementById('modal-transfer');
+  const form = document.getElementById('form-transfer');
+  form?.reset();
+
+  currentTransferReceiptImage = null;
+  currentTransferReceiptFileName = '';
+  updateTransferReceiptPreviewUI();
+
+  const currentYear = new Date().getFullYear();
+  const dateInput = document.getElementById('transfer-date');
+  const voucherInput = document.getElementById('transfer-voucher');
+
+  if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+  if (voucherInput) {
+    const seq = allTransactions.filter(t => t.type === 'TRANSFER').length + 1;
+    voucherInput.value = generateVoucherNo('TRANSFER', currentYear, seq);
+  }
+
+  modal?.classList.remove('hidden');
+  modal?.classList.add('flex');
+  initIcons();
+}
+
+function closeTransferModal() {
+  const modal = document.getElementById('modal-transfer');
+  modal?.classList.add('hidden');
+  modal?.classList.remove('flex');
+}
+
+async function handleTransferReceiptFileSelect(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  try {
+    const filenameLabel = document.getElementById('transfer-receipt-filename');
+    if (filenameLabel) filenameLabel.textContent = 'Memampatkan slip...';
+    currentTransferReceiptImage = await compressReceiptImage(file, 1200, 0.75);
+    currentTransferReceiptFileName = file.name;
+    updateTransferReceiptPreviewUI();
+  } catch (err) {
+    alert('Ralat memproses imej slip: ' + err.message);
+  }
+}
+
+function removeTransferReceiptImage() {
+  currentTransferReceiptImage = null;
+  currentTransferReceiptFileName = '';
+  const fileInput = document.getElementById('transfer-receipt-file');
+  if (fileInput) fileInput.value = '';
+  updateTransferReceiptPreviewUI();
+}
+
+function updateTransferReceiptPreviewUI() {
+  const container = document.getElementById('transfer-preview-container');
+  const img = document.getElementById('transfer-preview-img');
+  const filenameLabel = document.getElementById('transfer-receipt-filename');
+
+  if (!container || !img || !filenameLabel) return;
+
+  if (currentTransferReceiptImage) {
+    img.src = currentTransferReceiptImage;
+    container.classList.remove('hidden');
+    filenameLabel.textContent = currentTransferReceiptFileName || 'Slip Dilampirkan';
+  } else {
+    img.src = '';
+    container.classList.add('hidden');
+    filenameLabel.textContent = 'Tiada fail dipilih';
+  }
+  initIcons();
+}
+
+async function handleTransferSubmit(e) {
+  e.preventDefault();
+  const date = document.getElementById('transfer-date').value;
+  const voucherNo = document.getElementById('transfer-voucher').value.trim();
+  const fromAccount = document.getElementById('transfer-from-account').value;
+  const toAccount = document.getElementById('transfer-to-account').value;
+  const fromFund = document.getElementById('transfer-from-fund').value;
+  const toFund = document.getElementById('transfer-to-fund').value;
+  const amount = parseFloat(document.getElementById('transfer-amount').value);
+  const description = document.getElementById('transfer-desc').value.trim();
+
+  const fromLabel = fromAccount === 'CASH' ? 'Tunai' : 'Bank';
+  const toLabel = toAccount === 'CASH' ? 'Tunai' : 'Bank';
+
+  const data = {
+    date,
+    type: 'TRANSFER',
+    category: 'Pindahan Dana Kontra',
+    amount,
+    voucherNo,
+    fromAccount,
+    toAccount,
+    fromFund,
+    toFund,
+    account: toAccount,
+    fund: toFund,
+    payeeOrPayer: `Pindahan: ${fromLabel} ➔ ${toLabel}`,
+    paymentMethod: 'Pindahan Kontra',
+    description: description || `Pindahan dana kontra antara akaun masjid (${fromLabel} ke ${toLabel})`,
+    receiptImage: currentTransferReceiptImage,
+    receiptFileName: currentTransferReceiptFileName,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  const validation = validateTransaction(data);
+  if (!validation.isValid) {
+    alert('Sila lengkapkan maklumat:\n- ' + validation.errors.join('\n- '));
+    return;
+  }
+
+  try {
+    if (db) {
+      await db.transactions.add(data);
+      allTransactions = await db.transactions.orderBy('date').reverse().toArray();
+    } else {
+      data.id = Date.now();
+      allTransactions.unshift(data);
+    }
+
+    closeTransferModal();
+    renderApp();
+
+    if (typeof pushTxToCloudIfEnabled === 'function') {
+      pushTxToCloudIfEnabled(data);
+    }
+
+    if (confirm('Pindahan kontra berjaya disimpan!\nAdakah anda ingin mencetak Baucar Pindahan Dana sekarang?')) {
+      renderAndPrintTransferVoucher(data);
+    }
+  } catch (err) {
+    alert('Ralat menyimpan pindahan: ' + err.message);
+  }
+}
+
+function renderAndPrintTransferVoucher(data = {}) {
+  const pFrom = document.getElementById('ptv-from');
+  const pTo = document.getElementById('ptv-to');
+  const pFunds = document.getElementById('ptv-funds');
+  const pVoucher = document.getElementById('ptv-voucher');
+  const pDate = document.getElementById('ptv-date');
+  const pDesc = document.getElementById('ptv-description');
+  const pAmount = document.getElementById('ptv-amount');
+  const pTotal = document.getElementById('ptv-total-amount');
+  const pWords = document.getElementById('ptv-amount-in-words');
+  const receiptImg = document.getElementById('ptv-receipt-image');
+  const receiptSec = document.getElementById('ptv-receipt-attachment');
+
+  const fromAccLabel = data.fromAccount === 'CASH' ? 'Tunai di Tangan (Peti Besi)' : 'Akaun Bank Masjid';
+  const toAccLabel = data.toAccount === 'CASH' ? 'Tunai di Tangan (Peti Besi)' : 'Akaun Bank Masjid';
+  const fromFundLabel = data.fromFund === 'KHAIRAT' ? 'Tabung Khairat' : 'Tabung Am';
+  const toFundLabel = data.toFund === 'KHAIRAT' ? 'Tabung Khairat' : 'Tabung Am';
+
+  if (pFrom) pFrom.textContent = fromAccLabel;
+  if (pTo) pTo.textContent = toAccLabel;
+  if (pFunds) pFunds.textContent = `${fromFundLabel} ➔ ${toFundLabel}`;
+  if (pVoucher) pVoucher.textContent = data.voucherNo || '-';
+  if (pDate) pDate.textContent = data.date || '-';
+  if (pDesc) pDesc.textContent = data.description || 'Pindahan Dana Kontra Antara Akaun Masjid';
+  if (pAmount) pAmount.textContent = formatCurrency(data.amount || 0);
+  if (pTotal) pTotal.textContent = formatCurrency(data.amount || 0);
+  if (pWords) pWords.textContent = numberToWordsMY(data.amount || 0);
+
+  if (data.receiptImage) {
+    if (receiptImg) receiptImg.src = data.receiptImage;
+    if (receiptSec) receiptSec.classList.remove('hidden');
+  } else {
+    if (receiptImg) receiptImg.src = '';
+    if (receiptSec) receiptSec.classList.add('hidden');
+  }
+
+  document.getElementById('print-voucher-view')?.classList.add('hidden');
+  document.getElementById('print-cashbook-view')?.classList.add('hidden');
+  document.getElementById('print-transfer-view')?.classList.remove('hidden');
+
+  window.print();
+}
+
+// ----------------------------------------------------
+// PENGURUSAN BAKI AWAL (OPENING BALANCE)
+// ----------------------------------------------------
+function openOpeningBalanceModal() {
+  const modal = document.getElementById('modal-opening-balance');
+  const dateInput = document.getElementById('ob-date');
+  const cashInput = document.getElementById('ob-cash');
+  const bankInput = document.getElementById('ob-bank');
+  const khairatInput = document.getElementById('ob-khairat');
+
+  if (dateInput && !dateInput.value) {
+    dateInput.value = new Date().toISOString().split('T')[0];
+  }
+
+  const summary = calculateSummary(allTransactions);
+  if (cashInput && !cashInput.value && summary.cashBalance > 0) cashInput.value = summary.cashBalance;
+  if (bankInput && !bankInput.value && summary.bankBalance > 0) bankInput.value = summary.bankBalance;
+  if (khairatInput && !khairatInput.value && summary.khairatBalance > 0) khairatInput.value = summary.khairatBalance;
+
+  modal?.classList.remove('hidden');
+  modal?.classList.add('flex');
+  initIcons();
+}
+
+function closeOpeningBalanceModal() {
+  const modal = document.getElementById('modal-opening-balance');
+  modal?.classList.add('hidden');
+  modal?.classList.remove('flex');
+}
+
+async function handleOpeningBalanceSubmit(e) {
+  e.preventDefault();
+  const date = document.getElementById('ob-date').value;
+  const cashAmt = parseFloat(document.getElementById('ob-cash').value) || 0;
+  const bankAmt = parseFloat(document.getElementById('ob-bank').value) || 0;
+  const khairatAmt = parseFloat(document.getElementById('ob-khairat').value) || 0;
+  const notes = document.getElementById('ob-notes').value.trim();
+
+  const currentYear = date ? new Date(date).getFullYear() : new Date().getFullYear();
+  const createdRecords = [];
+
+  if (cashAmt > 0) {
+    createdRecords.push({
+      date,
+      type: 'INCOME',
+      category: 'Baki Awal / Bawa Ke Hadapan',
+      amount: cashAmt,
+      voucherNo: generateVoucherNo('INCOME', currentYear, Math.floor(Math.random() * 800) + 9000),
+      payeeOrPayer: 'Baki Bawa Ke Hadapan (Tunai di Tangan)',
+      paymentMethod: 'Tunai',
+      account: 'CASH',
+      fund: 'GENERAL',
+      description: notes || 'Baki awal pegangan tunai di tangan masjid',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+  }
+
+  const bankGeneralAmt = Math.max(0, bankAmt - khairatAmt);
+  if (bankGeneralAmt > 0) {
+    createdRecords.push({
+      date,
+      type: 'INCOME',
+      category: 'Baki Awal / Bawa Ke Hadapan',
+      amount: bankGeneralAmt,
+      voucherNo: generateVoucherNo('INCOME', currentYear, Math.floor(Math.random() * 800) + 9000),
+      payeeOrPayer: 'Baki Bawa Ke Hadapan (Bank - Tabung Am)',
+      paymentMethod: 'Pindahan Bank (Online)',
+      account: 'BANK',
+      fund: 'GENERAL',
+      description: notes || 'Baki awal akaun bank masjid (Tabung Am)',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+  }
+
+  if (khairatAmt > 0) {
+    createdRecords.push({
+      date,
+      type: 'INCOME',
+      category: 'Baki Awal / Bawa Ke Hadapan',
+      amount: khairatAmt,
+      voucherNo: generateVoucherNo('INCOME', currentYear, Math.floor(Math.random() * 800) + 9000),
+      payeeOrPayer: 'Baki Bawa Ke Hadapan (Tabung Khairat)',
+      paymentMethod: 'Pindahan Bank (Online)',
+      account: 'BANK',
+      fund: 'KHAIRAT',
+      description: notes || 'Baki awal hak milik Tabung Khairat Kematian',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+  }
+
+  if (createdRecords.length === 0) {
+    alert('Sila masukkan sekurang-kurangnya satu jumlah baki (Tunai atau Bank).');
+    return;
+  }
+
+  try {
+    if (db) {
+      for (const rec of createdRecords) {
+        await db.transactions.add(rec);
+      }
+      allTransactions = await db.transactions.orderBy('date').reverse().toArray();
+    } else {
+      for (const rec of createdRecords) {
+        rec.id = Date.now() + Math.random();
+        allTransactions.unshift(rec);
+      }
+    }
+
+    closeOpeningBalanceModal();
+    renderApp();
+
+    for (const rec of createdRecords) {
+      if (typeof pushTxToCloudIfEnabled === 'function') {
+        pushTxToCloudIfEnabled(rec);
+      }
+    }
+
+    alert(`Berjaya menetapkan Baki Awal:\n- Tunai: ${formatCurrency(cashAmt)}\n- Bank: ${formatCurrency(bankAmt)}\n(Termasuk Khairat: ${formatCurrency(khairatAmt)})`);
+  } catch (err) {
+    alert('Ralat menetapkan baki awal: ' + err.message);
+  }
+}
+
 // Dedahkan ke window untuk rujukan global
 if (typeof window !== 'undefined') {
   window.MasjidApp = {
@@ -1319,6 +1819,11 @@ if (typeof window !== 'undefined') {
     openCashBookPrint,
     openVoucherBuilderModal,
     renderAndPrintVoucher,
+    openTransferModal,
+    closeTransferModal,
+    renderAndPrintTransferVoucher,
+    openOpeningBalanceModal,
+    closeOpeningBalanceModal,
     handleUnlockApp,
     handleLockApp,
     openCloudSettingsModal,

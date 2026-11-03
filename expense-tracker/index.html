@@ -56,9 +56,17 @@
               <i data-lucide="minus-circle" class="w-4 h-4"></i>
               <span>- Duit Keluar</span>
             </button>
+            <button id="btn-open-transfer" class="inline-flex items-center gap-2 px-3.5 py-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white rounded-lg font-semibold text-sm shadow-sm transition" title="Pindah Tunai ke Bank / Bank ke Tunai">
+              <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+              <span>⇄ Pindahan Dana</span>
+            </button>
             <button id="btn-open-voucher" class="inline-flex items-center gap-2 px-3.5 py-2 bg-amber-400 hover:bg-amber-500 active:bg-amber-600 text-slate-900 rounded-lg font-bold text-sm shadow-sm transition">
               <i data-lucide="file-check-2" class="w-4 h-4 text-slate-900"></i>
               <span>Baucar Bayaran</span>
+            </button>
+            <button id="btn-open-opening-balance" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white/15 hover:bg-white/25 active:bg-white/30 text-white border border-white/20 rounded-lg font-semibold text-sm transition" title="Tetapkan Baki Awal Sedia Ada">
+              <i data-lucide="settings-2" class="w-4 h-4 text-amber-300"></i>
+              <span class="hidden sm:inline">Baki Awal</span>
             </button>
             <button id="btn-open-reports" class="inline-flex items-center gap-2 px-3.5 py-2 bg-white/15 hover:bg-white/25 active:bg-white/30 text-white border border-white/20 rounded-lg font-semibold text-sm transition">
               <i data-lucide="printer" class="w-4 h-4 text-emerald-200"></i>
@@ -85,65 +93,107 @@
     <!-- KANDUNGAN UTAMA -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 flex-1 w-full space-y-6">
 
-      <!-- KAD RINGKASAN KEWANGAN -->
+      <!-- KAD RINGKASAN KEWANGAN (4 KAD UTAMA) -->
       <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        <!-- Baki Semasa -->
-        <div class="card-stat bg-white rounded-2xl p-5 border border-emerald-100 shadow-sm relative overflow-hidden">
+        <!-- Kad 1: Pegangan Tunai di Tangan -->
+        <div class="card-stat bg-white rounded-2xl p-5 border border-emerald-200/80 shadow-sm relative overflow-hidden">
           <div class="absolute right-0 top-0 translate-x-2 -translate-y-2 opacity-5 pointer-events-none">
-            <i data-lucide="wallet" class="w-28 h-28 text-emerald-900"></i>
+            <i data-lucide="banknote" class="w-28 h-28 text-emerald-900"></i>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-600">Baki Tunai Semasa</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-800">Pegangan Tunai (Cash)</span>
             <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <i data-lucide="wallet" class="w-4 h-4"></i>
+              <i data-lucide="banknote" class="w-4 h-4"></i>
             </span>
           </div>
-          <div id="stat-net-balance" class="text-2xl sm:text-3xl font-extrabold text-emerald-700 mt-2">RM 0.00</div>
-          <p class="text-xs text-slate-600 mt-1">Baki keseluruhan dalam tangan & akaun</p>
+          <div id="stat-cash-balance" class="text-2xl sm:text-3xl font-extrabold text-emerald-700 mt-2 font-mono">RM 0.00</div>
+          <p class="text-xs text-slate-500 mt-1">Duit fizikal dalam tangan & peti besi</p>
         </div>
 
-        <!-- Jumlah Duit Masuk -->
-        <div class="card-stat bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <!-- Kad 2: Baki Duit di Bank -->
+        <div class="card-stat bg-white rounded-2xl p-5 border border-sky-200/80 shadow-sm relative overflow-hidden">
+          <div class="absolute right-0 top-0 translate-x-2 -translate-y-2 opacity-5 pointer-events-none">
+            <i data-lucide="landmark" class="w-28 h-28 text-sky-900"></i>
+          </div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-600">Jumlah Duit Masuk</span>
-            <span class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
-              <i data-lucide="arrow-down-left" class="w-4 h-4"></i>
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-800">Duit di Bank (Bank)</span>
+            <span class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
+              <i data-lucide="landmark" class="w-4 h-4"></i>
             </span>
           </div>
-          <div id="stat-total-income" class="text-2xl font-bold text-teal-600 mt-2">RM 0.00</div>
-          <p class="text-xs text-slate-600 mt-1">Infaq, tabung, sedekah & sumbangan</p>
+          <div id="stat-bank-balance" class="text-2xl sm:text-3xl font-extrabold text-sky-700 mt-2 font-mono">RM 0.00</div>
+          <p class="text-xs text-slate-500 mt-1">Akaun rasmi bank masjid</p>
         </div>
 
-        <!-- Jumlah Duit Keluar -->
-        <div class="card-stat bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-600">Jumlah Duit Keluar</span>
-            <span class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
-              <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
-            </span>
+        <!-- Kad 3: Baki Tabung Khairat Kematian -->
+        <div class="card-stat bg-white rounded-2xl p-5 border border-amber-200/80 shadow-sm relative overflow-hidden">
+          <div class="absolute right-0 top-0 translate-x-2 -translate-y-2 opacity-5 pointer-events-none">
+            <i data-lucide="heart-handshake" class="w-28 h-28 text-amber-900"></i>
           </div>
-          <div id="stat-total-expense" class="text-2xl font-bold text-rose-600 mt-2">RM 0.00</div>
-          <p class="text-xs text-slate-600 mt-1">Utiliti, pembaikan & perbelanjaan</p>
-        </div>
-
-        <!-- Rekod Resit -->
-        <div class="card-stat bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-600">Bukti Resit Tersimpan</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-800">Tabung Khairat Kematian</span>
             <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-              <i data-lucide="receipt" class="w-4 h-4"></i>
+              <i data-lucide="heart-handshake" class="w-4 h-4"></i>
             </span>
           </div>
-          <div id="stat-receipt-count" class="text-2xl font-bold text-amber-600 mt-2">0 Resit</div>
-          <p class="text-xs text-slate-600 mt-1">Lampiran bukti sedia untuk diaudit</p>
+          <div id="stat-khairat-balance" class="text-2xl sm:text-3xl font-extrabold text-amber-700 mt-2 font-mono">RM 0.00</div>
+          <p class="text-xs text-slate-500 mt-1">Dana khas kebajikan & jenazah jemaah</p>
+        </div>
+
+        <!-- Kad 4: Jumlah Keseluruhan Dana Masjid -->
+        <div class="card-stat bg-gradient-to-br from-emerald-800 to-teal-900 rounded-2xl p-5 text-white shadow-md relative overflow-hidden">
+          <div class="absolute right-0 top-0 translate-x-2 -translate-y-2 opacity-10 pointer-events-none">
+            <i data-lucide="scale" class="w-28 h-28 text-white"></i>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-200">Jumlah Dana Keseluruhan</span>
+            <span class="w-8 h-8 rounded-lg bg-white/10 text-emerald-200 flex items-center justify-center border border-white/20">
+              <i data-lucide="scale" class="w-4 h-4"></i>
+            </span>
+          </div>
+          <div id="stat-net-balance" class="text-2xl sm:text-3xl font-extrabold text-white mt-2 font-mono">RM 0.00</div>
+          <p class="text-xs text-emerald-100/90 mt-1">Tabung Am: <span id="stat-general-balance" class="font-bold">RM 0.00</span></p>
         </div>
 
       </section>
 
+      <!-- JALUR STATISTIK PENDAPATAN & PERBELANJAAN SEMASA -->
+      <section class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-3 rounded-xl border border-slate-200 text-xs">
+        <div class="flex items-center gap-3 px-3 py-1.5 border-b sm:border-b-0 sm:border-r border-slate-100">
+          <span class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="arrow-down-left" class="w-4 h-4"></i>
+          </span>
+          <div>
+            <span class="text-slate-500 font-medium">Jumlah Duit Masuk:</span>
+            <span id="stat-total-income" class="font-bold text-teal-700 ml-1">RM 0.00</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 px-3 py-1.5 border-b sm:border-b-0 sm:border-r border-slate-100">
+          <span class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </span>
+          <div>
+            <span class="text-slate-500 font-medium">Jumlah Duit Keluar:</span>
+            <span id="stat-total-expense" class="font-bold text-rose-700 ml-1">RM 0.00</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 px-3 py-1.5">
+          <span class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="receipt" class="w-4 h-4"></i>
+          </span>
+          <div>
+            <span class="text-slate-500 font-medium">Resit & Baucar Tersimpan:</span>
+            <span id="stat-receipt-count" class="font-bold text-slate-800 ml-1">0 Fail</span>
+          </div>
+        </div>
+      </section>
+
       <!-- BAR PENAPIS & CARIAN -->
       <section class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
           
           <!-- Carian -->
           <div class="md:col-span-2 relative">
@@ -180,12 +230,21 @@
             </select>
           </div>
 
-          <!-- Penapis Jenis -->
+          <!-- Penapis Akaun (Tunai vs Bank) -->
           <div>
-            <select id="filter-type" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
-              <option value="">Semua Jenis</option>
-              <option value="INCOME">Wang Masuk (+)</option>
-              <option value="EXPENSE">Wang Keluar (-)</option>
+            <select id="filter-account" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="">Semua Akaun</option>
+              <option value="CASH">💵 Tunai Sahaja</option>
+              <option value="BANK">🏦 Bank Sahaja</option>
+            </select>
+          </div>
+
+          <!-- Penapis Tabung (Am vs Khairat) -->
+          <div>
+            <select id="filter-fund" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="">Semua Tabung</option>
+              <option value="GENERAL">🕌 Tabung Am</option>
+              <option value="KHAIRAT">🤝 Tabung Khairat</option>
             </select>
           </div>
 
@@ -316,6 +375,27 @@
         <div>
           <label for="tx-payee" id="label-tx-payee" class="block text-xs font-bold uppercase text-slate-600 mb-1">Diterima Daripada / Penyumbang</label>
           <input type="text" id="tx-payee" placeholder="Nama orang, syarikat pembekal atau tabung..." class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <!-- Akaun & Pilihan Tabung -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Akaun Terlibat -->
+          <div>
+            <label for="tx-account" class="block text-xs font-bold uppercase text-slate-600 mb-1">Akaun Terlibat *</label>
+            <select id="tx-account" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+              <option value="CASH">💵 Tunai di Tangan (Cash)</option>
+              <option value="BANK">🏦 Akaun Bank Masjid (Bank)</option>
+            </select>
+          </div>
+
+          <!-- Tabung Terlibat -->
+          <div>
+            <label for="tx-fund" class="block text-xs font-bold uppercase text-slate-600 mb-1">Tabung Masjid *</label>
+            <select id="tx-fund" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+              <option value="GENERAL">🕌 Tabung Am Masjid</option>
+              <option value="KHAIRAT">🤝 Tabung Khairat Kematian</option>
+            </select>
+          </div>
         </div>
 
         <!-- Kaedah Bayaran -->
@@ -450,6 +530,15 @@
           </div>
         </div>
 
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Skop Tabung Penyata</label>
+          <select id="report-fund" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg">
+            <option value="ALL" selected>Semua Dana (Buku Tunai 2-Lajur Lengkap)</option>
+            <option value="KHAIRAT">Penyata Khas Tabung Khairat Kematian</option>
+            <option value="GENERAL">Penyata Tabung Am Sahaja</option>
+          </select>
+        </div>
+
         <div class="pt-2 space-y-2">
           <button id="btn-print-cash-book" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
             <i data-lucide="file-text" class="w-4 h-4"></i>
@@ -563,6 +652,26 @@
           <div>
             <label class="block text-xs font-bold uppercase text-slate-600 mb-1">No. K/P atau No. Pendaftaran</label>
             <input type="text" id="vb-id-no" placeholder="Cth: 880101-12-5555 (Pilihan)" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Akaun Terlibat -->
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Akaun Sumber *</label>
+            <select id="vb-account" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+              <option value="CASH">💵 Tunai di Tangan (Cash)</option>
+              <option value="BANK">🏦 Akaun Bank Masjid (Bank)</option>
+            </select>
+          </div>
+
+          <!-- Tabung Terlibat -->
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Tabung Masjid *</label>
+            <select id="vb-fund" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+              <option value="GENERAL">🕌 Tabung Am Masjid</option>
+              <option value="KHAIRAT">🤝 Tabung Khairat Kematian</option>
+            </select>
           </div>
         </div>
 
@@ -751,6 +860,218 @@
     </div>
   </div>
 
+  <!-- ========================================== -->
+  <!-- MODAL: PINDAHAN DANA (TRANSFER / KONTRA)   -->
+  <!-- ========================================== -->
+  <div id="modal-transfer" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-100 overflow-hidden my-6">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 bg-gradient-to-r from-sky-700 to-sky-800 text-white flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+            <i data-lucide="arrow-left-right" class="w-5 h-5 text-white"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base">Pindahan Dana (Transfer / Kontra)</h3>
+            <p class="text-xs text-sky-100">Pindahan Tunai &lt;--&gt; Bank atau Tabung Am &lt;--&gt; Khairat</p>
+          </div>
+        </div>
+        <button type="button" id="modal-transfer-close" class="text-white/80 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <form id="form-transfer" class="p-6 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Tarikh Pindahan -->
+          <div>
+            <label for="transfer-date" class="block text-xs font-bold uppercase text-slate-600 mb-1">Tarikh Pindahan *</label>
+            <input type="date" id="transfer-date" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500">
+          </div>
+
+          <!-- No Baucar Pindahan -->
+          <div>
+            <label for="transfer-voucher" class="block text-xs font-bold uppercase text-slate-600 mb-1">No. Slip / Baucar *</label>
+            <input type="text" id="transfer-voucher" required placeholder="MAA-BP-2026-0001" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 font-mono font-bold">
+          </div>
+        </div>
+
+        <!-- Aliran Pindahan (Dari Akaun -> Ke Akaun) -->
+        <div class="p-3 bg-sky-50/70 border border-sky-100 rounded-xl space-y-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-sky-900 block">Aliran Pindahan Akaun</span>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="transfer-from-account" class="block text-[11px] font-semibold text-slate-700 mb-1">Dikeluarkan Dari (Asal) *</label>
+              <select id="transfer-from-account" class="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium">
+                <option value="CASH">💵 Tunai di Tangan (Cash)</option>
+                <option value="BANK">🏦 Akaun Bank Masjid</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="transfer-to-account" class="block text-[11px] font-semibold text-slate-700 mb-1">Dimasukkan Ke (Destinasi) *</label>
+              <select id="transfer-to-account" class="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium">
+                <option value="BANK">🏦 Akaun Bank Masjid</option>
+                <option value="CASH">💵 Tunai di Tangan (Cash)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-sky-100">
+            <div>
+              <label for="transfer-from-fund" class="block text-[11px] font-semibold text-slate-700 mb-1">Tabung Asal *</label>
+              <select id="transfer-from-fund" class="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-xs">
+                <option value="GENERAL">🕌 Tabung Am Masjid</option>
+                <option value="KHAIRAT">🤝 Tabung Khairat Kematian</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="transfer-to-fund" class="block text-[11px] font-semibold text-slate-700 mb-1">Tabung Destinasi *</label>
+              <select id="transfer-to-fund" class="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 text-xs">
+                <option value="GENERAL">🕌 Tabung Am Masjid</option>
+                <option value="KHAIRAT">🤝 Tabung Khairat Kematian</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Jumlah RM -->
+        <div>
+          <label for="transfer-amount" class="block text-xs font-bold uppercase text-slate-600 mb-1">Jumlah Pindahan (RM) *</label>
+          <div class="relative">
+            <span class="absolute left-3 top-2.5 text-sm font-bold text-slate-600">RM</span>
+            <input type="number" id="transfer-amount" step="0.01" min="0.01" required placeholder="0.00" class="w-full pl-11 pr-3 py-2.5 text-base bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 font-bold text-slate-900 font-mono">
+          </div>
+        </div>
+
+        <!-- Butiran / Catatan -->
+        <div>
+          <label for="transfer-desc" class="block text-xs font-bold uppercase text-slate-600 mb-1">Keterangan / Rujukan Pindahan</label>
+          <textarea id="transfer-desc" rows="2" placeholder="Cth: Bank-in kutipan Infaq Jumaat ke mesin CDM Bank Islam / Pengeluaran tunai belanja runcit" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+        </div>
+
+        <!-- Lampiran Resit Slip ATM/CDM -->
+        <div class="border-t border-slate-100 pt-3">
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Lampiran Slip ATM / Slip Deposit CDM</label>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <label for="transfer-receipt-file" class="cursor-pointer inline-flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition">
+                <i data-lucide="camera" class="w-4 h-4 text-sky-600"></i>
+                <span>Ambil / Pilih Gambar Slip CDM</span>
+              </label>
+              <input type="file" id="transfer-receipt-file" accept="image/*" class="hidden">
+              <span id="transfer-receipt-filename" class="text-xs text-slate-600 truncate max-w-xs">Tiada fail dipilih</span>
+            </div>
+
+            <!-- Preview Slip -->
+            <div id="transfer-preview-container" class="hidden relative border border-slate-200 rounded-xl overflow-hidden bg-slate-100 max-h-40 flex items-center justify-center">
+              <img id="transfer-preview-img" src="" alt="Pratonton Slip" class="max-h-40 w-auto object-contain">
+              <button type="button" id="btn-remove-transfer-receipt" class="absolute top-2 right-2 bg-rose-600 text-white p-1 rounded-full shadow-md hover:bg-rose-700 transition" title="Padam Slip">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Butang Tindakan -->
+        <div class="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-end gap-2">
+          <button type="button" id="modal-transfer-cancel" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition">
+            Batal
+          </button>
+          <button type="submit" id="btn-save-transfer" class="px-5 py-2 text-sm bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold shadow-sm transition flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span>Simpan Pindahan Kontra</span>
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: TETAPKAN BAKI AWAL (OPENING BALANCE)-->
+  <!-- ========================================== -->
+  <div id="modal-opening-balance" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-100 overflow-hidden my-6">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 bg-gradient-to-r from-slate-800 to-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center border border-amber-400/30">
+            <i data-lucide="settings-2" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base">Tetapkan Baki Awal Masjid</h3>
+            <p class="text-xs text-slate-300">Masukkan angka daripada rekod buku lama</p>
+          </div>
+        </div>
+        <button type="button" id="modal-ob-close" class="text-white/80 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <form id="form-opening-balance" class="p-6 space-y-4">
+        <div>
+          <label for="ob-date" class="block text-xs font-bold uppercase text-slate-600 mb-1">Tarikh Permulaan Baki Awal *</label>
+          <input type="date" id="ob-date" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div class="space-y-3 pt-1">
+          <!-- Baki Tunai -->
+          <div>
+            <label for="ob-cash" class="block text-xs font-bold uppercase text-slate-700 mb-1">1. Baki Pegangan Tunai di Tangan (RM) *</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-sm font-bold text-slate-600">RM</span>
+              <input type="number" id="ob-cash" step="0.01" min="0" required placeholder="0.00" class="w-full pl-11 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold font-mono">
+            </div>
+            <p class="text-[11px] text-slate-500 mt-0.5">Duit fizikal yang disimpan Bendahari / peti besi masjid</p>
+          </div>
+
+          <!-- Baki Bank -->
+          <div>
+            <label for="ob-bank" class="block text-xs font-bold uppercase text-slate-700 mb-1">2. Baki Duit di Dalam Akaun Bank (RM) *</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-sm font-bold text-slate-600">RM</span>
+              <input type="number" id="ob-bank" step="0.01" min="0" required placeholder="0.00" class="w-full pl-11 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold font-mono">
+            </div>
+            <p class="text-[11px] text-slate-500 mt-0.5">Mengikut penyata rasmi akaun bank masjid</p>
+          </div>
+
+          <!-- Hak Tabung Khairat -->
+          <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-xl">
+            <label for="ob-khairat" class="block text-xs font-bold uppercase text-amber-900 mb-1">3. Daripada Jumlah Di Atas, Hak Tabung Khairat (RM) *</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-sm font-bold text-slate-600">RM</span>
+              <input type="number" id="ob-khairat" step="0.01" min="0" required placeholder="0.00" class="w-full pl-11 pr-3 py-2 text-sm bg-white border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold font-mono text-amber-900">
+            </div>
+            <p class="text-[11px] text-amber-800/80 mt-1">Baki kutipan yuran / derma khas khairat kematian sedia ada</p>
+          </div>
+        </div>
+
+        <div>
+          <label for="ob-notes" class="block text-xs font-bold uppercase text-slate-600 mb-1">Catatan Pengesahan Mesyuarat / Rujukan</label>
+          <input type="text" id="ob-notes" placeholder="Cth: Disahkan baki penutup akaun per 31 Disember 2025" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs">
+        </div>
+
+        <!-- Butang Tindakan -->
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+          <button type="button" id="modal-ob-cancel" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition">
+            Batal
+          </button>
+          <button type="submit" id="btn-save-ob" class="px-5 py-2 text-sm bg-slate-900 hover:bg-black text-white rounded-lg font-bold shadow-sm transition">
+            Simpan Baki Awal Rasmi
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
   <!-- SKRIN KUNCI KESELAMATAN PIN (OVERLAY KESELAMATAN PENUH) -->
   <div id="screen-pin-lock" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md hidden flex flex-col items-center justify-center p-4">
     <div class="max-w-sm w-full bg-slate-900 border border-emerald-500/30 rounded-2xl p-6 sm:p-8 shadow-2xl text-center space-y-5">
@@ -909,12 +1230,106 @@
       </div>
     </div>
 
-    <!-- TEMPLAT 2: PENYATA BUKU TUNAI / ALIRAN WANG KELUAR MASUK -->
+    <!-- TEMPLAT 1B: BAUCAR PINDAHAN DANA (SLIP KONTRA) -->
+    <div id="print-transfer-view" class="hidden print-page">
+      <div class="border-b-2 border-slate-800 pb-3 text-center">
+        <h1 class="text-xl font-bold tracking-wide uppercase text-slate-900">MASJID AL-AZHAR</h1>
+        <p class="text-xs font-semibold text-slate-700">KAMPUNG SEPAKAT JAYA, 88450 SEPANGGAR, KOTA KINABALU, SABAH</p>
+        <p class="text-xs text-slate-700 mt-0.5">SISTEM PENGURUSAN KEWANGAN MASJID</p>
+      </div>
+
+      <div class="my-4 text-center">
+        <span class="inline-block border-2 border-slate-900 px-4 py-1 font-bold text-base uppercase tracking-wider bg-slate-100">
+          BAUCAR PINDAHAN DANA / SLIP KONTRA
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 text-xs mb-3">
+        <div>
+          <p><span class="font-bold">Dikeluarkan Dari (Asal):</span> <span id="ptv-from" class="font-semibold">-</span></p>
+          <p class="mt-1"><span class="font-bold">Dimasukkan Ke (Destinasi):</span> <span id="ptv-to" class="font-semibold">-</span></p>
+          <p class="mt-1"><span class="font-bold">Tabung Terlibat:</span> <span id="ptv-funds">-</span></p>
+        </div>
+        <div class="text-right">
+          <p><span class="font-bold">No. Baucar Pindahan:</span> <span id="ptv-voucher" class="font-mono font-bold">-</span></p>
+          <p class="mt-1"><span class="font-bold">Tarikh Pindahan:</span> <span id="ptv-date">-</span></p>
+          <p class="mt-1"><span class="font-bold">Tujuan:</span> <span id="ptv-type">Pindahan Kontra Sahaja</span></p>
+        </div>
+      </div>
+
+      <table class="table-print">
+        <thead>
+          <tr>
+            <th style="width: 45px;" class="text-center">Bil</th>
+            <th>Keterangan / Butiran Pindahan Dana</th>
+            <th style="width: 140px;" class="text-right">Jumlah (RM)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-center">1</td>
+            <td id="ptv-description" class="py-3">-</td>
+            <td id="ptv-amount" class="text-right font-bold py-3">RM 0.00</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2" class="text-right font-bold bg-slate-100">JUMLAH PINDAHAN (RM):</td>
+            <td id="ptv-total-amount" class="text-right font-bold bg-slate-100">RM 0.00</td>
+          </tr>
+          <tr>
+            <td colspan="3" class="py-2.5 px-3 bg-slate-50 text-xs">
+              <span class="font-bold">Jumlah Dalam Perkataan:</span>
+              <span id="ptv-amount-in-words" class="italic ml-1 font-semibold">Ringgit Malaysia: -</span>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <!-- Kotak Tandatangan -->
+      <div class="grid grid-cols-3 gap-6 pt-8 text-xs">
+        <div class="text-center">
+          <div class="signature-box">
+            <p class="font-bold">DISEDIAKAN OLEH</p>
+            <p class="mt-8">......................................................</p>
+            <p class="font-semibold mt-1">BENDAHARI MASJID</p>
+            <p class="text-[10px] text-slate-600">Tarikh: .......................................</p>
+          </div>
+        </div>
+        <div class="text-center">
+          <div class="signature-box">
+            <p class="font-bold">DISAHKAN / DILULUSKAN</p>
+            <p class="mt-8">......................................................</p>
+            <p class="font-semibold mt-1">PENGERUSI MASJID</p>
+            <p class="text-[10px] text-slate-600">Tarikh: .......................................</p>
+          </div>
+        </div>
+        <div class="text-center">
+          <div class="signature-box">
+            <p class="font-bold">DISAKSIKAN OLEH</p>
+            <p class="mt-8">......................................................</p>
+            <p class="font-semibold mt-1">AJK / PEMEGANG AMANAH</p>
+            <p class="text-[10px] text-slate-600">Tarikh: .......................................</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lampiran Slip ATM/CDM -->
+      <div id="ptv-receipt-attachment" class="mt-8 pt-4 border-t border-slate-300">
+        <p class="text-xs font-bold uppercase text-slate-700 mb-2">Lampiran Bukti Slip Deposit CDM / Resit ATM:</p>
+        <div class="text-center">
+          <img id="ptv-receipt-image" src="" alt="Slip Pindahan" class="receipt-print-img">
+        </div>
+      </div>
+    </div>
+
+    <!-- TEMPLAT 2: PENYATA BUKU TUNAI 2-LAJUR (TUNAI & BANK) -->
     <div id="print-cashbook-view" class="hidden print-page">
       <div class="border-b-2 border-slate-800 pb-3 text-center">
         <h1 class="text-xl font-bold tracking-wide uppercase text-slate-900">MASJID AL-AZHAR</h1>
         <p class="text-xs font-semibold text-slate-700">KAMPUNG SEPAKAT JAYA, 88450 SEPANGGAR, KOTA KINABALU, SABAH</p>
-        <p class="text-xs text-slate-700 mt-0.5">PENYATA BUKU TUNAI & ALIRAN WANG KELUAR MASUK</p>
+        <p class="text-xs text-slate-700 mt-0.5">PENYATA BUKU TUNAI &amp; ALIRAN WANG KELUAR MASUK</p>
+        <p id="cb-fund-subtitle" class="text-xs font-bold text-emerald-800 mt-1 uppercase">SEMUA DANA (TUNAI &amp; BANK)</p>
       </div>
 
       <div class="my-3 flex items-center justify-between text-xs font-semibold">
@@ -925,13 +1340,15 @@
       <table class="table-print">
         <thead>
           <tr>
-            <th style="width: 75px;">Tarikh</th>
-            <th style="width: 120px;">No. Baucar</th>
-            <th style="width: 100px;">Kategori</th>
-            <th>Keterangan / Penerima / Pembayar</th>
-            <th style="width: 90px;" class="text-right">Masuk (RM)</th>
-            <th style="width: 90px;" class="text-right">Keluar (RM)</th>
-            <th style="width: 90px;" class="text-right">Baki (RM)</th>
+            <th style="width: 70px;">Tarikh</th>
+            <th style="width: 105px;">No. Baucar</th>
+            <th style="width: 70px;">Tabung</th>
+            <th>Keterangan / Butiran</th>
+            <th style="width: 75px;" class="text-right">Tunai (M)</th>
+            <th style="width: 75px;" class="text-right">Bank (M)</th>
+            <th style="width: 75px;" class="text-right">Tunai (K)</th>
+            <th style="width: 75px;" class="text-right">Bank (K)</th>
+            <th style="width: 80px;" class="text-right">Baki Bersih</th>
           </tr>
         </thead>
         <tbody id="cb-table-body">
@@ -940,8 +1357,10 @@
         <tfoot class="font-bold bg-slate-100">
           <tr>
             <td colspan="4" class="text-right">JUMLAH KESELURUHAN:</td>
-            <td id="cb-sum-income" class="text-right">RM 0.00</td>
-            <td id="cb-sum-expense" class="text-right">RM 0.00</td>
+            <td id="cb-sum-cash-in" class="text-right">RM 0.00</td>
+            <td id="cb-sum-bank-in" class="text-right">RM 0.00</td>
+            <td id="cb-sum-cash-out" class="text-right">RM 0.00</td>
+            <td id="cb-sum-bank-out" class="text-right">RM 0.00</td>
             <td id="cb-sum-balance" class="text-right">RM 0.00</td>
           </tr>
         </tfoot>

@@ -22,14 +22,44 @@ merekod aliran tunai keluar masuk secara telus, tersusun, dan mesra audit.
 2. CARA MEREKOD DUIT MASUK & DUIT KELUAR
 ------------------------------------------------------------------------
 - Rekod Duit Masuk (Kutipan/Infaq):
-  Tekan butang hijau "+ Duit Masuk", masukkan tarikh, kategori, jumlah RM,
+  Tekan butang hijau "+ Duit Masuk", pilih Akaun (Tunai atau Bank) dan Tabung
+  (Tabung Am atau Tabung Khairat). Masukkan tarikh, kategori, jumlah RM,
   nama penyumbang/tabung, dan tekan "Simpan Transaksi".
 
 - Rekod Duit Keluar (Perbelanjaan & Resit):
   Tekan butang merah "- Duit Keluar", nombor baucar automatik akan dijana
-  (cth: MAA-BK-2026-0001). Masukkan kategori, jumlah RM, nama penerima/kedai.
+  (cth: MAA-BK-2026-0001). Pilih akaun pembayaran (Tunai atau Bank) dan tabung.
+  Masukkan kategori, jumlah RM, nama penerima/kedai.
   Tekan butang kamera untuk memuat naik atau menangkap gambar resit fizikal.
   Tekan "Simpan Transaksi".
+
+------------------------------------------------------------------------
+2b. SISTEM PEGANGAN TUNAI, AKAUN BANK & TABUNG KHAIRAT KEMATIAN
+------------------------------------------------------------------------
+Sistem kini dilengkapi pengurusan dwi-akaun aset dan dana terikat:
+
+1. 4 KAD BAKI UTAMA DI ATAS SKRIN:
+   - 💵 Pegangan Tunai (Cash): Duit fizikal dalam tangan Bendahari / peti besi.
+   - 🏦 Duit di Bank: Baki dalam akaun bank rasmi masjid.
+   - 🤝 Tabung Khairat Kematian: Baki dana khas yuran/kebajikan khairat.
+   - ⚖️ Jumlah Keseluruhan Dana: Gabungan penuh kecairan masjid.
+
+2. BUTANG [ ⚙️ Baki Awal ] (Opening Balance):
+   - Gunakan butang ini untuk memasukkan angka baki buku akaun lama:
+     * Berapa tunai fizikal sedia ada di tangan.
+     * Berapa baki sedia ada dalam akaun bank.
+     * Berapa daripada jumlah tersebut merupakan hak Tabung Khairat Kematian.
+   - Baki ini akan menjadi titik tolak permulaan sistem.
+
+3. BUTANG [ ⇄ Pindahan Dana ] (Pindahan Kontra / Transfer):
+   - Gunakan butang ini apabila memindahkan duit antara Tunai dan Bank:
+     * Masukkan tunai kutipan jumaat ke mesin CDM Bank (Tunai -> Bank).
+     * Keluarkan tunai dari mesin ATM untuk bayar upah/runcit (Bank -> Tunai).
+     * Pindahan peruntukan antara Tabung Am dan Tabung Khairat.
+   - Pindahan Kontra TIDAK akan menaikkan rekod perbelanjaan atau pendapatan
+     tahunan (tiada masalah "double count").
+   - Anda boleh mencetak "Baucar Pindahan Dana / Slip Kontra (A4)" beserta
+     lampiran slip CDM/ATM rasmi untuk simpanan fail fail audit.
 
 ------------------------------------------------------------------------
 3. CARA MENCETAK BAUCAR BAYARAN & PENYATA AUDIT (A4)
@@ -40,10 +70,15 @@ merekod aliran tunai keluar masuk secara telus, tersusun, dan mesra audit.
   petak tandatangan (Bendahari, Pengerusi, Penerima), dan lampiran gambar resit.
   Pilih pencetak anda atau pilih "Save as PDF".
 
-- Cetak Penyata Buku Tunai Bulanan/Tahunan:
-  Klik butang "Penyata & Cetak" di bahagian atas, pilih Bulan dan Tahun,
-  kemudian klik "Cetak Penyata Buku Tunai (A4)". Penyata lengkap dengan
-  ruang perakuan Juruaudit Dalaman sedia dicetak.
+- Cetak Baucar Pindahan Dana / Slip Kontra:
+  Pada baris transaksi pindahan (MAA-BP-xxxx), klik butang cetak slip untuk
+  menjana slip pindahan bersaiz A4 lengkap dengan tandatangan kelulusan.
+
+- Cetak Penyata Buku Tunai 2-Lajur (Tunai & Bank):
+  Klik butang "Penyata & Cetak" di bahagian atas, pilih Bulan, Tahun dan
+  Skop Tabung (Semua Dana, Penyata Khas Khairat Kematian, atau Tabung Am).
+  Kemudian klik "Cetak Penyata Buku Tunai (A4)". Penyata format 2-Lajur lengkap
+  dengan pecahan Tunai, Bank dan ruang perakuan Juruaudit Dalaman sedia dicetak.
 
 ------------------------------------------------------------------------
 4. KESELAMATAN PIN & KAWALAN AKSES KHAS

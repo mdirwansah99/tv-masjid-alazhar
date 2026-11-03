@@ -81,10 +81,13 @@
   }
 
   // 2. PENJANAAN NOMBOR BAUCAR (VOUCHER NUMBER)
-  // EXPENSE -> MAA-BK-2026-0001 (Baucar Keluar)
-  // INCOME  -> MAA-BM-2026-0001 (Baucar Masuk / Resit Penerimaan)
+  // EXPENSE  -> MAA-BK-2026-0001 (Baucar Keluar)
+  // INCOME   -> MAA-BM-2026-0001 (Baucar Masuk / Resit Penerimaan)
+  // TRANSFER -> MAA-BP-2026-0001 (Baucar Pindahan Dana / Slip Kontra)
   function generateVoucherNo(type, year, sequenceNumber) {
-    const prefix = type === 'EXPENSE' ? 'MAA-BK' : 'MAA-BM';
+    let prefix = 'MAA-BM';
+    if (type === 'EXPENSE') prefix = 'MAA-BK';
+    else if (type === 'TRANSFER') prefix = 'MAA-BP';
     const paddedSeq = String(sequenceNumber).padStart(4, '0');
     return `${prefix}-${year}-${paddedSeq}`;
   }
@@ -95,11 +98,20 @@
     if (!data.date || typeof data.date !== 'string') {
       errors.push('Tarikh diperlukan');
     }
-    if (!data.type || !['INCOME', 'EXPENSE'].includes(data.type)) {
+    if (!data.type || !['INCOME', 'EXPENSE', 'TRANSFER', 'OPENING_BALANCE'].includes(data.type)) {
       errors.push('Jenis transaksi diperlukan');
     }
-    if (!data.category || typeof data.category !== 'string' || !data.category.trim()) {
-      errors.push('Kategori diperlukan');
+    if (data.type === 'TRANSFER') {
+      if (!data.fromAccount || !data.toAccount) {
+        errors.push('Akaun asal dan akaun destinasi diperlukan untuk pindahan');
+      }
+      if (data.fromAccount === data.toAccount && data.fromFund === data.toFund) {
+        errors.push('Pindahan mestilah melibatkan akaun atau tabung yang berbeza');
+      }
+    } else {
+      if (!data.category || typeof data.category !== 'string' || !data.category.trim()) {
+        errors.push('Kategori diperlukan');
+      }
     }
     const amt = Number(data.amount);
     if (isNaN(amt) || amt <= 0) {
@@ -111,33 +123,83 @@
     };
   }
 
-  // 4. PENGIRAAN RINGKASAN KEWANGAN (CEGAH RALAT FLOATING POINT)
+  // BANTUAN PENENTUAN AKAUN & TABUNG (SERASI DATA LAMA)
+  function resolveAccount(item = {}) {
+    if (item.account === 'CASH' || item.account === 'BANK') return item.account;
+    const pm = (item.paymentMethod || '').toLowerCase();
+    if (pm.includes('tunai') || pm.includes('cash')) return 'CASH';
+    return 'BANK';
+  }
+
+  function resolveFund(item = {}) {
+    if (item.fund === 'KHAIRAT' || item.fund === 'GENERAL') return item.fund;
+    const cat = (item.category || '').toLowerCase();
+    if (cat.includes('khairat') || cat.includes('jenazah') || cat.includes('kebajikan & anak yatim')) {
+      return 'KHAIRAT';
+    }
+    return 'GENERAL';
+  }
+
+  // 4. PENGIRAAN RINGKASAN KEWANGAN (TUNAI, BANK, KHAIRAT & JUMLAH DANA)
   function calculateSummary(transactions = []) {
     let totalIncomeCents = 0;
     let totalExpenseCents = 0;
+    let cashBalanceCents = 0;
+    let bankBalanceCents = 0;
+    let khairatBalanceCents = 0;
 
     for (const item of transactions) {
       const cents = Math.round((Number(item.amount) || 0) * 100);
-      if (item.type === 'INCOME') {
+      const acc = resolveAccount(item);
+      const fund = resolveFund(item);
+
+      if (item.type === 'INCOME' || item.type === 'OPENING_BALANCE') {
         totalIncomeCents += cents;
+        if (acc === 'CASH') cashBalanceCents += cents;
+        else bankBalanceCents += cents;
+
+        if (fund === 'KHAIRAT') khairatBalanceCents += cents;
       } else if (item.type === 'EXPENSE') {
         totalExpenseCents += cents;
+        if (acc === 'CASH') cashBalanceCents -= cents;
+        else bankBalanceCents -= cents;
+
+        if (fund === 'KHAIRAT') khairatBalanceCents -= cents;
+      } else if (item.type === 'TRANSFER') {
+        // Kontra: Pindahan Tunai <-> Bank
+        const fromAcc = item.fromAccount || 'CASH';
+        const toAcc = item.toAccount || 'BANK';
+        if (fromAcc === 'CASH') cashBalanceCents -= cents;
+        if (fromAcc === 'BANK') bankBalanceCents -= cents;
+        if (toAcc === 'CASH') cashBalanceCents += cents;
+        if (toAcc === 'BANK') bankBalanceCents += cents;
+
+        // Pindahan Tabung Am <-> Khairat
+        const fromF = item.fromFund || fund;
+        const toF = item.toFund || fund;
+        if (fromF === 'KHAIRAT' && toF !== 'KHAIRAT') khairatBalanceCents -= cents;
+        if (toF === 'KHAIRAT' && fromF !== 'KHAIRAT') khairatBalanceCents += cents;
       }
     }
 
     const netBalanceCents = totalIncomeCents - totalExpenseCents;
+    const generalFundCents = netBalanceCents - khairatBalanceCents;
 
     return {
       totalIncome: Number((totalIncomeCents / 100).toFixed(2)),
       totalExpense: Number((totalExpenseCents / 100).toFixed(2)),
       netBalance: Number((netBalanceCents / 100).toFixed(2)),
+      cashBalance: Number((cashBalanceCents / 100).toFixed(2)),
+      bankBalance: Number((bankBalanceCents / 100).toFixed(2)),
+      khairatBalance: Number((khairatBalanceCents / 100).toFixed(2)),
+      generalBalance: Number((generalFundCents / 100).toFixed(2)),
       count: transactions.length
     };
   }
 
   // 5. PENAPIS TRANSAKSI (FILTER)
   function filterTransactions(transactions = [], filters = {}) {
-    const { year, month, type, category, search } = filters;
+    const { year, month, type, category, search, account, fund } = filters;
 
     return transactions.filter(item => {
       if (year && !item.date.startsWith(String(year))) {
@@ -150,6 +212,12 @@
         return false;
       }
       if (category && item.category !== category) {
+        return false;
+      }
+      if (account && resolveAccount(item) !== account) {
+        return false;
+      }
+      if (fund && resolveFund(item) !== fund) {
         return false;
       }
       if (search) {
@@ -243,6 +311,10 @@
       transactions: '++id, voucherNo, date, type, category, amount, payeeOrPayer, paymentMethod, createdAt',
       settings: 'key, value'
     });
+    db.version(2).stores({
+      transactions: '++id, voucherNo, date, type, category, amount, payeeOrPayer, paymentMethod, account, fund, createdAt',
+      settings: 'key, value'
+    });
 
     dbInstance = db;
     return db;
@@ -254,6 +326,8 @@
     validateTransaction,
     calculateSummary,
     filterTransactions,
+    resolveAccount,
+    resolveFund,
     createBackupPayload,
     validateBackupPayload,
     compressReceiptImage,

@@ -102,3 +102,50 @@ test('numberToWordsMY converts Ringgit amounts accurately to Malay words', () =>
   assert.equal(numberToWordsMY(1500.50), 'Ringgit Malaysia: Satu Ribu Lima Ratus Dan Sen Lima Puluh Sahaja');
   assert.equal(numberToWordsMY(420.05), 'Ringgit Malaysia: Empat Ratus Dua Puluh Dan Sen Lima Sahaja');
 });
+
+test('calculateSummary and validateTransaction handle TRANSFER, Cash/Bank, and Khairat correctly', () => {
+  const transferVoucher = generateVoucherNo('TRANSFER', 2026, 1);
+  assert.equal(transferVoucher, 'MAA-BP-2026-0001');
+
+  const validTransfer = validateTransaction({
+    date: '2026-10-10',
+    type: 'TRANSFER',
+    amount: 500,
+    fromAccount: 'CASH',
+    toAccount: 'BANK',
+    fromFund: 'GENERAL',
+    toFund: 'GENERAL'
+  });
+  assert.equal(validTransfer.isValid, true);
+
+  const txs = [
+    // Baki Awal Tunai: RM1,000, Bank: RM5,000 (termasuk Khairat: RM2,000)
+    { type: 'INCOME', amount: 1000, account: 'CASH', fund: 'GENERAL', paymentMethod: 'Tunai' },
+    { type: 'INCOME', amount: 3000, account: 'BANK', fund: 'GENERAL', paymentMethod: 'Pindahan Bank' },
+    { type: 'INCOME', amount: 2000, account: 'BANK', fund: 'KHAIRAT', category: 'Tabung Khairat Kematian' },
+    // Belanja Tunai RM200
+    { type: 'EXPENSE', amount: 200, account: 'CASH', fund: 'GENERAL', paymentMethod: 'Tunai' },
+    // Belanja Jenazah dari Khairat RM500 melalui Bank
+    { type: 'EXPENSE', amount: 500, account: 'BANK', fund: 'KHAIRAT', category: 'Pengurusan Jenazah' },
+    // Transfer dari Cash ke Bank RM400
+    { type: 'TRANSFER', amount: 400, fromAccount: 'CASH', toAccount: 'BANK' }
+  ];
+
+  const sum = calculateSummary(txs);
+  // Total Income = 1000 + 3000 + 2000 = 6000
+  assert.equal(sum.totalIncome, 6000.00);
+  // Total Expense = 200 + 500 = 700 (Transfer not counted as expense!)
+  assert.equal(sum.totalExpense, 700.00);
+  // Net Balance = 6000 - 700 = 5300
+  assert.equal(sum.netBalance, 5300.00);
+  // Cash = 1000 in - 200 out - 400 transferred to bank = 400
+  assert.equal(sum.cashBalance, 400.00);
+  // Bank = 5000 in - 500 out + 400 transferred from cash = 4900
+  assert.equal(sum.bankBalance, 4900.00);
+  // Total Cash + Bank = 400 + 4900 = 5300 == netBalance
+  assert.equal(sum.cashBalance + sum.bankBalance, sum.netBalance);
+  // Khairat Balance = 2000 in - 500 out = 1500
+  assert.equal(sum.khairatBalance, 1500.00);
+  // General Balance = 5300 - 1500 = 3800
+  assert.equal(sum.generalBalance, 3800.00);
+});

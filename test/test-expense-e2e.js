@@ -234,18 +234,72 @@ function createLocalServer() {
     }
     console.log('✓ Semakan 5: Templat Baucar Bayaran A4 dijana dengan sempurna.');
 
-    // Semakan 6: Uji Cetakan Penyata Buku Tunai (Cash Book)
-    console.log('Menguji laporan Penyata Buku Tunai...');
+    // Semakan 6: Uji Cetakan Penyata Buku Tunai (Cash Book 2-Lajur)
+    console.log('Menguji laporan Penyata Buku Tunai (2-Lajur: Tunai & Bank)...');
     await page.click('#btn-open-reports');
     await page.waitForSelector('#modal-reports:not(.hidden)');
     await page.click('#btn-print-cash-book');
     await page.waitForTimeout(500);
 
     const cashbookText = await page.locator('#print-cashbook-view').innerText();
-    if (!cashbookText.includes('PENYATA BUKU TUNAI') || !cashbookText.includes('JURUAUDIT')) {
-      throw new Error('Templat Buku Tunai tidak mengandungi ruang perakuan juruaudit.');
+    if (!cashbookText.includes('PENYATA BUKU TUNAI') || !cashbookText.includes('JURUAUDIT') || !cashbookText.includes('TUNAI') || !cashbookText.includes('BANK')) {
+      throw new Error('Templat Buku Tunai 2-Lajur tidak mengandungi lajur Tunai/Bank atau ruang perakuan juruaudit.');
     }
-    console.log('✓ Semakan 6: Penyata Buku Tunai sedia cetak A4 lulus pengesahan.');
+    console.log('✓ Semakan 6: Penyata Buku Tunai 2-Lajur sedia cetak A4 lulus pengesahan.');
+
+    // Semakan 8: Semakan 4 Kad Baki Utama (Tunai, Bank, Khairat, Jumlah Dana)
+    console.log('Menguji paparan 4 Kad Metrik Kewangan...');
+    const cashCard = await page.locator('#stat-cash-balance').innerText();
+    const bankCard = await page.locator('#stat-bank-balance').innerText();
+    const khairatCard = await page.locator('#stat-khairat-balance').innerText();
+    const netCard = await page.locator('#stat-net-balance').innerText();
+
+    if (!cashCard.includes('RM') || !bankCard.includes('RM') || !khairatCard.includes('RM') || !netCard.includes('RM')) {
+      throw new Error(`Kad metrik 4-lajur tidak lengkap: Cash=${cashCard}, Bank=${bankCard}, Khairat=${khairatCard}, Net=${netCard}`);
+    }
+    console.log(`✓ Semakan 8: 4 Kad Metrik disahkan [Tunai: ${cashCard} | Bank: ${bankCard} | Khairat: ${khairatCard} | Jumlah: ${netCard}]`);
+
+    // Semakan 9: Uji Pindahan Dana Kontra (Bank -> Tunai / Tunai -> Bank)
+    console.log('Menguji Pindahan Dana Kontra (Transfer Cash/Bank)...');
+    await page.click('#btn-open-transfer');
+    await page.waitForSelector('#modal-transfer:not(.hidden)');
+
+    await page.selectOption('#transfer-from-account', 'BANK');
+    await page.selectOption('#transfer-to-account', 'CASH');
+    await page.fill('#transfer-amount', '200.00');
+    await page.fill('#transfer-desc', 'Keluarkan tunai dari Maybank untuk beli barang gotong-royong');
+
+    await page.click('#btn-save-transfer');
+    await page.waitForTimeout(600);
+
+    // Pastikan butang cetak slip pindahan dana wujud dan berfungsi
+    const transferPrintBtn = page.locator('.btn-print-transfer').first();
+    await transferPrintBtn.click();
+    await page.waitForTimeout(500);
+
+    const transferSlipText = await page.locator('#print-transfer-view').innerText();
+    if (!transferSlipText.includes('BAUCAR PINDAHAN DANA') || !transferSlipText.includes('SLIP KONTRA')) {
+      throw new Error('Slip Pindahan Dana / Baucar Kontra gagal dijana.');
+    }
+    console.log('✓ Semakan 9: Pindahan Dana Kontra berjaya & Slip Kontra A4 disahkan.');
+
+    // Semakan 10: Uji Tetapan Baki Awal (Opening Balance)
+    console.log('Menguji Tetapan Baki Awal (Opening Balance)...');
+    await page.click('#btn-open-opening-balance');
+    await page.waitForSelector('#modal-opening-balance:not(.hidden)');
+
+    await page.fill('#ob-cash', '500.00');
+    await page.fill('#ob-bank', '10000.00');
+    await page.fill('#ob-khairat', '2500.00');
+    await page.fill('#ob-notes', 'Baki Bawa Ke Hadapan mengikut buku audit 2025');
+
+    await page.click('#form-opening-balance button[type="submit"]');
+    await page.waitForTimeout(600);
+
+    const newCash = await page.locator('#stat-cash-balance').innerText();
+    const newBank = await page.locator('#stat-bank-balance').innerText();
+    const newKhairat = await page.locator('#stat-khairat-balance').innerText();
+    console.log(`✓ Semakan 10: Baki Awal berjaya ditetapkan [Tunai: ${newCash} | Bank: ${newBank} | Khairat: ${newKhairat}].`);
 
     // Semakan 7: Uji Sandaran Data (Export JSON)
     console.log('Menguji fungsi sandaran data (Export Backup)...');
@@ -267,7 +321,7 @@ function createLocalServer() {
     }
 
     console.log('\n======================================================');
-    console.log('KESEMUA 7 SEMAKAN UJIAN E2E BERJAYA DILULUSKAN (100%)');
+    console.log('KESEMUA 10 SEMAKAN UJIAN E2E BERJAYA DILULUSKAN (100%)');
     console.log('======================================================\n');
 
   } finally {
