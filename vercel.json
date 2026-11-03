@@ -5,6 +5,8 @@
     { "source": "/akaun", "destination": "/expense-tracker/index.html" },
     { "source": "/akaun/", "destination": "/expense-tracker/index.html" },
     { "source": "/duit", "destination": "/expense-tracker/index.html" },
-    { "source": "/duit/", "destination": "/expense-tracker/index.html" }
+    { "source": "/duit/", "destination": "/expense-tracker/index.html" },
+    { "source": "/expense-tracker", "destination": "/expense-tracker/index.html" },
+    { "source": "/expense-tracker/", "destination": "/expense-tracker/index.html" }
   ]
 }
